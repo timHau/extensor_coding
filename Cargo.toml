@@ -1,0 +1,9 @@
+[package]
+name = "ba_proto"
+version = "0.1.0"
+authors = ["tim hau <tim.hau@hotmail.de>"]
+edition = "2018"
+
+[dependencies]
+petgraph = "0.5.1"
+nalgebra = "0.25.1"
