@@ -3,7 +3,6 @@ extern crate nalgebra as na;
 use petgraph::Graph;
 use na::DMatrix;
 
-
 pub fn build_complete_graph(n: i32) -> Graph<i32, i32> {
     let mut g = Graph::<i32, i32>::new();
 
@@ -25,8 +24,7 @@ pub fn build_complete_graph(n: i32) -> Graph<i32, i32> {
 }
 
 pub fn get_vandermonde(vertices: Vec<i64>, k: usize) -> DMatrix<f64> {
-    let n = vertices.len();
-    DMatrix::from_fn(n, k, |i, j| -> f64 {
+    DMatrix::from_fn(vertices.len(), k, |i, j| -> f64 {
         (vertices[i]).pow(j as u32) as f64
     })
 }
