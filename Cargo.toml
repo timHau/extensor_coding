@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 petgraph = "0.5.1"
 nalgebra = "0.25.1"
+indexmap = "1.6.2"
