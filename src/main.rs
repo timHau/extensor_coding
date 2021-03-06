@@ -1,13 +1,17 @@
-mod utils;
 mod extensor;
+mod utils;
 
-extern crate  nalgebra as na;
-use na::{DVector, DMatrix};
-use petgraph::Graph;
-use petgraph::graph::{NodeIndex, EdgeIndex};
+extern crate nalgebra as na;
+use na::{DMatrix, DVector};
+use petgraph::graph::{EdgeIndex, NodeIndex};
 use petgraph::visit::GetAdjacencyMatrix;
+use petgraph::Graph;
 
-fn compute_walk_sum(g: Graph<i32, i32>, f_vert: fn(usize) -> DVector<f64>, f_edge: fn(usize, usize) -> f64) {
+fn compute_walk_sum(
+    g: Graph<i32, i32>,
+    f_vert: fn(usize) -> DVector<f64>,
+    f_edge: fn(usize, usize) -> f64,
+) {
     let n = g.node_count();
     let adj_mat = g.adjacency_matrix();
     let mut a: Vec<DVector<f64>> = Vec::new();
@@ -21,11 +25,10 @@ fn compute_walk_sum(g: Graph<i32, i32>, f_vert: fn(usize) -> DVector<f64>, f_edg
         }
     }
     // let a = DMatrix::from_row_slice(n, n, &g.adjacency_matrix().as_slice());
-    let v = g.node_indices().map(|i| f_vert(i.index()) );
+    let v = g.node_indices().map(|i| f_vert(i.index()));
 }
 
 fn main() {
-
     let k5 = utils::build_complete_graph(5);
     // println!("{:?}", k5);
 

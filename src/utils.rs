@@ -1,7 +1,7 @@
 extern crate nalgebra as na;
 
+use na::{DMatrix, DVector};
 use petgraph::Graph;
-use na::{DVector, DMatrix};
 
 pub fn build_complete_graph(n: i32) -> Graph<i32, i32> {
     let mut g = Graph::<i32, i32>::new();

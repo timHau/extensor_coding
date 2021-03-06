@@ -1,10 +1,11 @@
-use std::{ops, fmt};
-use indexmap::{IndexMap}; // Map with insertion ordering
-use std::ops::Index;
+use indexmap::IndexMap;
+use permutation::permutation;
+use std::iter::FromIterator;
+use std::{fmt, ops};
 
 #[derive(Debug)]
 struct ExTensor {
-    data: IndexMap<Vec<i32>, f64>,  // basis : coeff
+    data: IndexMap<Vec<i32>, f64>, // basis : coeff
 }
 
 impl ExTensor {
@@ -13,7 +14,11 @@ impl ExTensor {
     /// example:
     /// ``` ExTensor::new(&[3.0, -7.0], &[&[1, 3], &[3]]) // 3e_{1,3} - 7e_{3} ```
     fn new(coeffs: &[f64], basis: &[&[i32]]) -> ExTensor {
-        assert_eq!(coeffs.len(), basis.len(), "coeffs and basis must be of same length");
+        assert_eq!(
+            coeffs.len(),
+            basis.len(),
+            "coeffs and basis must be of same length"
+        );
         let mut data = IndexMap::new();
         for i in 0..basis.len() {
             data.insert(basis[i].to_vec(), coeffs[i]);
@@ -28,6 +33,34 @@ impl ExTensor {
         let mut data = IndexMap::new();
         data.insert(vec![basis], coeff);
         ExTensor { data }
+    }
+
+    /// get sign of permutation that brings the basis at 'basis_index' into increasing order
+    /// output ∈ {-1, 1}
+    fn get_sign(&self, basis_index: usize) -> i32 {
+        // from here: https://math.stackexchange.com/questions/65923/how-does-one-compute-the-sign-of-a-permutation
+        let v = self.data.get_index(basis_index).unwrap().0; // get the basis at basis_index
+        let perm = permutation::sort(&v[..]); // get permutation that would sort that basis
+        let p = perm.apply_slice(Vec::from_iter(0..v.len()));
+
+        let mut visited = vec![false; v.len()]; // mark all visited
+        let mut sign = 1;
+        for k in 0..v.len() {
+            if !visited[k] {
+                let mut next = k;
+                let mut l = 0;
+                while !visited[next] {
+                    l += 1;
+                    visited[next] = true;
+                    next = p[next];
+                }
+                if l % 2 == 0 {
+                    sign = -sign;
+                }
+            }
+        }
+
+        sign
     }
 }
 
@@ -52,6 +85,17 @@ impl ops::Add<ExTensor> for ExTensor {
         ExTensor { data }
     }
 }
+
+/*
+impl ops::Mul<ExTensor> for ExTensor {
+    type Output = ExTensor;
+
+    fn mul(self, rhs: ExTensor) -> ExTensor {
+        let sign = 1;
+
+    }
+}
+ */
 
 impl ops::Mul<f64> for ExTensor {
     type Output = ExTensor;
@@ -87,7 +131,6 @@ impl fmt::Display for ExTensor {
     }
 }
 
-
 #[cfg(test)]
 mod extensor_tests {
     use crate::extensor::ExTensor;
@@ -95,9 +138,9 @@ mod extensor_tests {
 
     #[test]
     fn add() {
-        let x = ExTensor::new(&[3.0, -7.0], &[&[1, 3], &[3]]);
-        let y = ExTensor::new(&[1.0, 2.0], &[&[1], &[3]]);
-        let sum = x + y;
+        let x_1 = ExTensor::new(&[3.0, -7.0], &[&[1, 3], &[3]]);
+        let x_2 = ExTensor::new(&[1.0, 2.0], &[&[1], &[3]]);
+        let sum = x_1 + x_2;
         let res = ExTensor::new(&[3.0, -5.0, 1.0], &[&[1, 3], &[3], &[1]]);
         assert_eq!(sum.data, res.data);
     }
@@ -105,10 +148,21 @@ mod extensor_tests {
     #[test]
     fn scalar_mul() {
         let x_1 = ExTensor::new(&[3.0, 2.0], &[&[1, 2], &[3, 4]]) * 2.0;
-        let x_2= 2.0 * ExTensor::new(&[3.0, 2.0], &[&[1, 2], &[3, 4]]);
+        let x_2 = 2.0 * ExTensor::new(&[3.0, 2.0], &[&[1, 2], &[3, 4]]);
         let res = ExTensor::new(&[6.0, 4.0], &[&[1, 2], &[3, 4]]);
         assert_eq!(x_1.data, res.data);
         assert_eq!(x_2.data, res.data);
         assert_eq!(x_1.data, x_2.data);
+    }
+
+    #[test]
+    fn sign() {
+        let x_1 = ExTensor::new(&[3.0], &[&[2, 1]]);
+        assert_eq!(x_1.get_sign(0), -1);
+        let x_2 = ExTensor::new(&[3.0], &[&[1, 2]]);
+        assert_eq!(x_2.get_sign(0), 1);
+        let x_3 = ExTensor::new(&[1.0, 1.0], &[&[2, 3, 4, 5, 6], &[2, 1]]);
+        assert_eq!(x_3.get_sign(0), 1);
+        assert_eq!(x_3.get_sign(1), -1);
     }
 }
