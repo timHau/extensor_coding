@@ -36,6 +36,7 @@ impl ops::Add<ExTensor> for ExTensor {
 
     fn add(self, rhs: ExTensor) -> ExTensor {
         let mut data = IndexMap::new();
+
         let joined_data = self.data.iter().chain(rhs.data.iter());
         for val in joined_data {
             let basis = val.0.to_vec();
@@ -46,6 +47,31 @@ impl ops::Add<ExTensor> for ExTensor {
             } else {
                 data.insert(basis, coeff);
             }
+        }
+
+        ExTensor { data }
+    }
+}
+
+impl ops::Mul<f64> for ExTensor {
+    type Output = ExTensor;
+
+    fn mul(self, c: f64) -> ExTensor {
+        let mut data = IndexMap::new();
+        for val in self.data {
+            data.insert(val.0, val.1 * c);
+        }
+        ExTensor { data }
+    }
+}
+
+impl ops::Mul<ExTensor> for f64 {
+    type Output = ExTensor;
+
+    fn mul(self, ex: ExTensor) -> ExTensor {
+        let mut data = IndexMap::new();
+        for val in ex.data {
+            data.insert(val.0, self * val.1);
         }
         ExTensor { data }
     }
@@ -76,4 +102,13 @@ mod extensor_tests {
         assert_eq!(sum.data, res.data);
     }
 
+    #[test]
+    fn scalar_mul() {
+        let x_1 = ExTensor::new(&[3.0, 2.0], &[&[1, 2], &[3, 4]]) * 2.0;
+        let x_2= 2.0 * ExTensor::new(&[3.0, 2.0], &[&[1, 2], &[3, 4]]);
+        let res = ExTensor::new(&[6.0, 4.0], &[&[1, 2], &[3, 4]]);
+        assert_eq!(x_1.data, res.data);
+        assert_eq!(x_2.data, res.data);
+        assert_eq!(x_1.data, x_2.data);
+    }
 }
