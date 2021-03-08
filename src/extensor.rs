@@ -1,5 +1,5 @@
 use indexmap::IndexMap;
-use permutation::permutation;
+use permutation::{permutation};
 use std::iter::FromIterator;
 use std::{fmt, ops};
 
@@ -62,6 +62,20 @@ impl ExTensor {
 
         sign
     }
+
+    fn sorted(&self) -> ExTensor {
+        let mut data = IndexMap::new();
+
+        for (i, d) in self.data.iter().enumerate() {
+            let sign = self.get_sign(i) as f64;
+            let coeff_next = d.1 * sign;
+            let mut basis_next = d.0.to_vec();
+            basis_next.sort();
+            data.insert(basis_next, coeff_next);
+        }
+
+        ExTensor { data }
+    }
 }
 
 impl ops::Add<&ExTensor> for &ExTensor {
@@ -105,7 +119,6 @@ impl ops::Mul<&ExTensor> for &ExTensor {
                     let coeff_next = coeff_rhs * coeff_lhs;
                     data.insert(basis_next, coeff_next);
                 }
-
             }
         }
 
@@ -179,6 +192,7 @@ impl fmt::Display for ExTensor {
 mod extensor_tests {
     use crate::extensor::ExTensor;
     use std::collections::HashMap;
+    use indexmap::map::IndexMap;
 
     #[test]
     fn add() {
@@ -225,5 +239,16 @@ mod extensor_tests {
         let x_3 = &ExTensor::simple(2.0, 3);
         let prod_3 = x_1 * x_3;
         println!("{}", prod_3);
+
+        // test anti-commutativity
+        let x_4 = &ExTensor::simple(2.0, 1);
+        let x_5 = &ExTensor::simple(4.0, 3);
+        let prod_4 = x_4 * x_5;
+        let mut res = IndexMap::new();
+        res.insert(vec![1, 3], 8.0);
+        let prod_5 = (x_5 * x_4).sorted();
+        let mut res_anti = IndexMap::new();
+        res_anti.insert(vec![1, 3], -8.0);
+        assert_eq!(prod_5.data, res_anti);
     }
 }
