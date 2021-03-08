@@ -1,7 +1,7 @@
 use indexmap::IndexMap;
 use permutation::{permutation};
 use std::iter::FromIterator;
-use std::{fmt, ops};
+use std::{fmt, ops, cmp};
 
 #[derive(Debug)]
 struct ExTensor {
@@ -150,6 +150,12 @@ impl ops::Mul<ExTensor> for f64 {
     }
 }
 
+impl cmp::PartialEq<ExTensor> for ExTensor {
+    fn eq(&self, other: &ExTensor) -> bool {
+        self.data == other.data
+    }
+}
+
 impl fmt::Display for ExTensor {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut s = String::new();
@@ -200,9 +206,9 @@ mod extensor_tests {
         let x_2 = &ExTensor::new(&[1.0, 2.0], &[&[1], &[3]]);
         let sum = x_1 + x_2;
         let res = ExTensor::new(&[3.0, -5.0, 1.0], &[&[1, 3], &[3], &[1]]);
-        assert_eq!(sum.data, res.data);
+        assert_eq!(sum, res);
         let sum_2 = x_2 + x_1;
-        assert_eq!(sum.data, sum_2.data)
+        assert_eq!(sum, sum_2)
     }
 
     #[test]
@@ -210,9 +216,9 @@ mod extensor_tests {
         let x_1 = ExTensor::new(&[3.0, 2.0], &[&[1, 2], &[3, 4]]) * 2.0;
         let x_2 = 2.0 * ExTensor::new(&[3.0, 2.0], &[&[1, 2], &[3, 4]]);
         let res = ExTensor::new(&[6.0, 4.0], &[&[1, 2], &[3, 4]]);
-        assert_eq!(x_1.data, res.data);
-        assert_eq!(x_2.data, res.data);
-        assert_eq!(x_1.data, x_2.data);
+        assert_eq!(x_1, res);
+        assert_eq!(x_2, res);
+        assert_eq!(x_1, x_2);
     }
 
     #[test]
@@ -236,19 +242,18 @@ mod extensor_tests {
         let prod_2 = x_2 * x_2;
         assert!(prod_1.data.len() == 0);
 
-        let x_3 = &ExTensor::simple(2.0, 3);
-        let prod_3 = x_1 * x_3;
-        println!("{}", prod_3);
-
         // test anti-commutativity
-        let x_4 = &ExTensor::simple(2.0, 1);
-        let x_5 = &ExTensor::simple(4.0, 3);
-        let prod_4 = x_4 * x_5;
-        let mut res = IndexMap::new();
-        res.insert(vec![1, 3], 8.0);
-        let prod_5 = (x_5 * x_4).sorted();
-        let mut res_anti = IndexMap::new();
-        res_anti.insert(vec![1, 3], -8.0);
-        assert_eq!(prod_5.data, res_anti);
+        let x_3 = &ExTensor::simple(2.0, 1);
+        let x_4 = &ExTensor::simple(4.0, 3);
+        let prod_4 = x_3 * x_4;
+        let res_1 = ExTensor::new(&[8.0], &[&[1, 3]]);
+        let prod_5 = (x_4 * x_3).sorted();
+        let res_anti = ExTensor::new(&[-8.0], &[&[1, 3]]);
+        assert_eq!(prod_4, res_1);
+        assert_eq!(prod_5, res_anti);
+        let x_5 = &ExTensor::new(&[1.0], &[&[1,3,2]]).sorted();
+        let res_2 = ExTensor::new(&[-1.0], &[&[1,2,3]]);
+        assert_eq!(*x_5, res_2);
     }
+
 }
