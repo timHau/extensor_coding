@@ -70,7 +70,7 @@ impl ops::Add<ExTensor> for ExTensor {
     fn add(self, rhs: ExTensor) -> ExTensor {
         let mut data = IndexMap::new();
 
-        let joined_data = self.data.iter().chain(rhs.data.iter());
+        let joined_data: Vec<_> = self.data.iter().chain(rhs.data.iter()).collect();
         for val in joined_data {
             let basis = val.0.to_vec();
             let coeff = *val.1;
@@ -86,16 +86,25 @@ impl ops::Add<ExTensor> for ExTensor {
     }
 }
 
-/*
-impl ops::Mul<ExTensor> for ExTensor {
+impl ops::Mul<&ExTensor> for &ExTensor {
     type Output = ExTensor;
 
-    fn mul(self, rhs: ExTensor) -> ExTensor {
-        let sign = 1;
+    fn mul(self, rhs: &ExTensor) -> ExTensor {
+        let mut data = IndexMap::new();
+        for d in self.data.iter() {
+            data.insert(d.0.to_vec(), *d.1);
+        }
+        for d in rhs.data.iter() {
+            if data.contains_key(d.0) {
+                data.insert(d.0.to_vec(), data[d.0] * d.1);
+            } else {
+                data.insert(d.0.to_vec(), *d.1);
+            }
+        }
 
+        ExTensor { data }
     }
 }
- */
 
 impl ops::Mul<f64> for ExTensor {
     type Output = ExTensor;
@@ -112,9 +121,9 @@ impl ops::Mul<f64> for ExTensor {
 impl ops::Mul<ExTensor> for f64 {
     type Output = ExTensor;
 
-    fn mul(self, ex: ExTensor) -> ExTensor {
+    fn mul(self, rhs: ExTensor) -> ExTensor {
         let mut data = IndexMap::new();
-        for val in ex.data {
+        for val in rhs.data {
             data.insert(val.0, self * val.1);
         }
         ExTensor { data }
@@ -164,5 +173,22 @@ mod extensor_tests {
         let x_3 = ExTensor::new(&[1.0, 1.0], &[&[2, 3, 4, 5, 6], &[2, 1]]);
         assert_eq!(x_3.get_sign(0), 1);
         assert_eq!(x_3.get_sign(1), -1);
+    }
+
+    #[test]
+    fn mul() {
+        let x_1 = &ExTensor::new(&[3.0, -7.0], &[&[1, 3], &[3]]);
+        let x_2 = &ExTensor::new(&[1.0, 2.0], &[&[1], &[3]]);
+        let prod_1 = x_1 * x_2;
+        let res = ExTensor::new(&[3.0, -14.0, 1.0], &[&[1, 3], &[3], &[1]]);
+        assert_eq!(prod_1.data, res.data);
+        let prod_2 = x_2 * x_1;
+        assert_eq!(prod_1.data, prod_2.data);
+
+        let x_3 = &ExTensor::simple(2.0, 1);
+        let x_4 = &ExTensor::simple(2.0, 1);
+        let prod_3 = x_3 * x_4;
+        let res = ExTensor::simple(4.0, 1);
+        assert_eq!(prod_3.data, res.data);
     }
 }

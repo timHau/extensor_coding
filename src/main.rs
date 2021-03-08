@@ -2,8 +2,9 @@ mod extensor;
 mod utils;
 
 extern crate nalgebra as na;
-use na::{DMatrix, DVector};
-use petgraph::graph::{EdgeIndex, NodeIndex};
+
+use na::{DVector};
+// use petgraph::graph::{EdgeIndex, NodeIndex};
 use petgraph::visit::GetAdjacencyMatrix;
 use petgraph::Graph;
 
@@ -19,13 +20,15 @@ fn compute_walk_sum(
         let i = a_ij / n; // row index
         let j = a_ij % n; // col index
         if adj_mat.contains(a_ij) {
-            a.push(f_vert(i) * f_edge(i, j));
+            let value = f_vert(i) * f_edge(i, j);
+            a.push(value);
         } else {
-            a.push(DVector::from_element(n, 0.0));
+            let zero_vec = DVector::from_element(n, 0.0);
+            a.push(zero_vec);
         }
     }
     // let a = DMatrix::from_row_slice(n, n, &g.adjacency_matrix().as_slice());
-    let v = g.node_indices().map(|i| f_vert(i.index()));
+    let _v = g.node_indices().map(|i| f_vert(i.index()));
 }
 
 fn main() {
@@ -35,13 +38,14 @@ fn main() {
     fn f_vert(v: usize) -> DVector<f64> {
         let k = 5;
         utils::vandermonde_vec(v, k)
-    };
+    }
+    ;
     fn f_edge(_e_from: usize, _e_to: usize) -> f64 {
         1.0
     }
     compute_walk_sum(k5, f_vert, f_edge);
 
-    let vertices = vec![1, 2, 3, 4];
+    let _vertices = vec![1, 2, 3, 4];
     // let _m = utils::get_vandermonde(vertices, k);
     // println!("{}", m);
     // println!("{}", m.determinant());

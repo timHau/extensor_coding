@@ -24,7 +24,7 @@ pub fn build_complete_graph(n: i32) -> Graph<i32, i32> {
 }
 
 pub fn vandermonde_vec(i: usize, k: usize) -> DVector<f64> {
-    DVector::from_iterator(k, (1..k).map(|j| i.pow(j as u32) as f64).into_iter())
+    DVector::from_iterator(k, (0..k).map(|j| (i+1).pow(j as u32) as f64).into_iter())
 }
 
 pub fn get_vandermonde(vertices: Vec<i64>, k: usize) -> DMatrix<f64> {
