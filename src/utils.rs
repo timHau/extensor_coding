@@ -2,6 +2,8 @@ extern crate nalgebra as na;
 
 use na::{DMatrix, DVector};
 use petgraph::Graph;
+use std::collections::HashSet;
+use std::hash::Hash;
 
 pub fn build_complete_graph(n: i32) -> Graph<i32, i32> {
     let mut g = Graph::<i32, i32>::new();
@@ -31,4 +33,13 @@ pub fn get_vandermonde(vertices: Vec<i64>, k: usize) -> DMatrix<f64> {
     DMatrix::from_fn(vertices.len(), k, |i, j| -> f64 {
         (vertices[i]).pow(j as u32) as f64
     })
+}
+
+pub fn has_unique_elements<T>(iter: T) -> bool
+    where
+        T: IntoIterator,
+        T::Item: Eq + Hash,
+{
+    let mut uniq = HashSet::new();
+    iter.into_iter().all(move |x| uniq.insert(x))
 }

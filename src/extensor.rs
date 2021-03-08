@@ -64,10 +64,10 @@ impl ExTensor {
     }
 }
 
-impl ops::Add<ExTensor> for ExTensor {
+impl ops::Add<&ExTensor> for &ExTensor {
     type Output = ExTensor;
 
-    fn add(self, rhs: ExTensor) -> ExTensor {
+    fn add(self, rhs: &ExTensor) -> ExTensor {
         let mut data = IndexMap::new();
 
         let joined_data: Vec<_> = self.data.iter().chain(rhs.data.iter()).collect();
@@ -91,14 +91,21 @@ impl ops::Mul<&ExTensor> for &ExTensor {
 
     fn mul(self, rhs: &ExTensor) -> ExTensor {
         let mut data = IndexMap::new();
-        for d in self.data.iter() {
-            data.insert(d.0.to_vec(), *d.1);
-        }
-        for d in rhs.data.iter() {
-            if data.contains_key(d.0) {
-                data.insert(d.0.to_vec(), data[d.0] * d.1);
-            } else {
-                data.insert(d.0.to_vec(), *d.1);
+
+        for val_lhs in self.data.iter() {
+            let basis_lhs = val_lhs.0;
+            let coeff_lhs = val_lhs.1;
+
+            for val_rhs in rhs.data.iter() {
+                let basis_rhs = val_rhs.0;
+                let coeff_rhs = val_rhs.1;
+                let basis_next: Vec<_> = [&basis_lhs[..], &basis_rhs[..]].concat();
+
+                if super::utils::has_unique_elements(&basis_next) {
+                    let coeff_next = coeff_rhs * coeff_lhs;
+                    data.insert(basis_next, coeff_next);
+                }
+
             }
         }
 
@@ -133,9 +140,37 @@ impl ops::Mul<ExTensor> for f64 {
 impl fmt::Display for ExTensor {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut s = String::new();
-        for d in self.data.iter() {
-            s += format!("{}e_{:?} ", d.1, d.0).as_str();
+        if self.data.len() == 0 {
+            return write!(f, "0");
         }
+
+        let mut count_term = 0;
+        for d in self.data.iter() {
+            let base = String::new();
+            if *d.1 < 0.0 {
+                s += format!("({}) ", d.1).as_str();
+            } else {
+                s += format!("{} ", d.1).as_str();
+            }
+
+            let mut count_base = 0;
+            for b in d.0.iter() {
+                if count_base == d.0.len() - 1 {
+                    if count_term == self.data.len() - 1 {
+                        s += format!("e_{}", b).as_str();
+                    } else {
+                        s += format!("e_{} + ", b).as_str();
+                    }
+                } else {
+                    s += format!("e_{}∧", b).as_str();
+                }
+                count_base += 1;
+            }
+
+            count_term += 1;
+        }
+
+
         write!(f, "{}", s)
     }
 }
@@ -147,11 +182,13 @@ mod extensor_tests {
 
     #[test]
     fn add() {
-        let x_1 = ExTensor::new(&[3.0, -7.0], &[&[1, 3], &[3]]);
-        let x_2 = ExTensor::new(&[1.0, 2.0], &[&[1], &[3]]);
+        let x_1 = &ExTensor::new(&[3.0, -7.0], &[&[1, 3], &[3]]);
+        let x_2 = &ExTensor::new(&[1.0, 2.0], &[&[1], &[3]]);
         let sum = x_1 + x_2;
         let res = ExTensor::new(&[3.0, -5.0, 1.0], &[&[1, 3], &[3], &[1]]);
         assert_eq!(sum.data, res.data);
+        let sum_2 = x_2 + x_1;
+        assert_eq!(sum.data, sum_2.data)
     }
 
     #[test]
@@ -177,18 +214,16 @@ mod extensor_tests {
 
     #[test]
     fn mul() {
-        let x_1 = &ExTensor::new(&[3.0, -7.0], &[&[1, 3], &[3]]);
-        let x_2 = &ExTensor::new(&[1.0, 2.0], &[&[1], &[3]]);
-        let prod_1 = x_1 * x_2;
-        let res = ExTensor::new(&[3.0, -14.0, 1.0], &[&[1, 3], &[3], &[1]]);
-        assert_eq!(prod_1.data, res.data);
-        let prod_2 = x_2 * x_1;
-        assert_eq!(prod_1.data, prod_2.data);
+        let x_1 = &ExTensor::simple(1.0, 1);
+        let prod_1 = x_1 * x_1;
+        assert!(prod_1.data.len() == 0);
 
-        let x_3 = &ExTensor::simple(2.0, 1);
-        let x_4 = &ExTensor::simple(2.0, 1);
-        let prod_3 = x_3 * x_4;
-        let res = ExTensor::simple(4.0, 1);
-        assert_eq!(prod_3.data, res.data);
+        let x_2 = &ExTensor::new(&[1.0, 2.0], &[&[1, 2], &[2, 3]]);
+        let prod_2 = x_2 * x_2;
+        assert!(prod_1.data.len() == 0);
+
+        let x_3 = &ExTensor::simple(2.0, 3);
+        let prod_3 = x_1 * x_3;
+        println!("{}", prod_3);
     }
 }
