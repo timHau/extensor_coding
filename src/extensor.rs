@@ -21,9 +21,15 @@ impl ExTensor {
         );
         let mut data = IndexMap::new();
         for i in 0..basis.len() {
-            data.insert(basis[i].to_vec(), coeffs[i]);
+            let basis_next = basis[i].to_vec();
+            if data.contains_key(&basis_next) {
+                let coeff_old = data.get(&basis_next).unwrap();
+                data.insert(basis_next, coeff_old * coeffs[i]);
+            } else {
+                data.insert(basis_next, coeffs[i]);
+            }
         }
-        ExTensor { data }
+        ExTensor { data }.sorted()
     }
 
     /// construct a simple exterior tensor e.g. only using a single basis set
@@ -178,10 +184,10 @@ impl fmt::Display for ExTensor {
                     if count_term == self.data.len() - 1 {
                         s += format!("e_{}", b).as_str();
                     } else {
-                        s += format!("e_{} + ", b).as_str();
+                        s += format!("e_{}  +  ", b).as_str();
                     }
                 } else {
-                    s += format!("e_{}∧", b).as_str();
+                    s += format!("e_{} ∧ ", b).as_str();
                 }
                 count_base += 1;
             }
@@ -206,9 +212,9 @@ mod extensor_tests {
         let x_2 = &ExTensor::new(&[1.0, 2.0], &[&[1], &[3]]);
         let sum = x_1 + x_2;
         let res = ExTensor::new(&[3.0, -5.0, 1.0], &[&[1, 3], &[3], &[1]]);
-        assert_eq!(sum, res);
+        assert_eq!(sum, res, "exterior sum is definined component wise");
         let sum_2 = x_2 + x_1;
-        assert_eq!(sum, sum_2)
+        assert_eq!(sum, sum_2, "exterior sum is commutative")
     }
 
     #[test]
@@ -216,31 +222,28 @@ mod extensor_tests {
         let x_1 = ExTensor::new(&[3.0, 2.0], &[&[1, 2], &[3, 4]]) * 2.0;
         let x_2 = 2.0 * ExTensor::new(&[3.0, 2.0], &[&[1, 2], &[3, 4]]);
         let res = ExTensor::new(&[6.0, 4.0], &[&[1, 2], &[3, 4]]);
-        assert_eq!(x_1, res);
-        assert_eq!(x_2, res);
-        assert_eq!(x_1, x_2);
+        assert_eq!(x_1, res, "scalar multiplication is right commutative");
+        assert_eq!(x_2, res, "scalar multiplication is left commutative");
+        assert_eq!(x_1, x_2, "scalar multiplication is commutative");
     }
 
     #[test]
     fn sign() {
-        let x_1 = ExTensor::new(&[3.0], &[&[2, 1]]);
-        assert_eq!(x_1.get_sign(0), -1);
+        let x_1 = ExTensor::new(&[-3.0], &[&[2, 1]]);
         let x_2 = ExTensor::new(&[3.0], &[&[1, 2]]);
-        assert_eq!(x_2.get_sign(0), 1);
-        let x_3 = ExTensor::new(&[1.0, 1.0], &[&[2, 3, 4, 5, 6], &[2, 1]]);
-        assert_eq!(x_3.get_sign(0), 1);
-        assert_eq!(x_3.get_sign(1), -1);
+        assert_eq!(x_1, x_2, "exterior tensors are anti commutative");
     }
 
     #[test]
     fn mul() {
         let x_1 = &ExTensor::simple(1.0, 1);
         let prod_1 = x_1 * x_1;
-        assert!(prod_1.data.len() == 0);
+        let zero_tensor = &ExTensor::new(&[], &[]);
+        assert_eq!(prod_1, zero_tensor, "x wedge x vanishes");
 
         let x_2 = &ExTensor::new(&[1.0, 2.0], &[&[1, 2], &[2, 3]]);
         let prod_2 = x_2 * x_2;
-        assert!(prod_1.data.len() == 0);
+        assert_eq!(prod_1, "x wedge x vanishes on non simple ex tensors");
 
         // test anti-commutativity
         let x_3 = &ExTensor::simple(2.0, 1);
@@ -249,11 +252,8 @@ mod extensor_tests {
         let res_1 = ExTensor::new(&[8.0], &[&[1, 3]]);
         let prod_5 = (x_4 * x_3).sorted();
         let res_anti = ExTensor::new(&[-8.0], &[&[1, 3]]);
-        assert_eq!(prod_4, res_1);
-        assert_eq!(prod_5, res_anti);
-        let x_5 = &ExTensor::new(&[1.0], &[&[1,3,2]]).sorted();
-        let res_2 = ExTensor::new(&[-1.0], &[&[1,2,3]]);
-        assert_eq!(*x_5, res_2);
+        assert_eq!(prod_4, res_1, "wedge product on simple extensors");
+        assert_eq!(prod_5, res_anti, "wedge product on simple extensors is anti communative");
     }
 
 }
