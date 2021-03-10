@@ -1,7 +1,6 @@
 use indexmap::IndexMap;
 use permutation::{permutation};
 use std::iter::FromIterator;
-use std::{fmt, ops, cmp};
 
 #[derive(Debug)]
 struct ExTensor {
@@ -82,7 +81,7 @@ impl ExTensor {
     }
 }
 
-impl ops::Add<&ExTensor> for &ExTensor {
+impl std::ops::Add<&ExTensor> for &ExTensor {
     type Output = ExTensor;
 
     fn add(self, rhs: &ExTensor) -> ExTensor {
@@ -104,7 +103,7 @@ impl ops::Add<&ExTensor> for &ExTensor {
     }
 }
 
-impl ops::Mul<&ExTensor> for &ExTensor {
+impl std::ops::Mul<&ExTensor> for &ExTensor {
     type Output = ExTensor;
 
     fn mul(self, rhs: &ExTensor) -> ExTensor {
@@ -130,7 +129,7 @@ impl ops::Mul<&ExTensor> for &ExTensor {
     }
 }
 
-impl ops::Mul<f64> for ExTensor {
+impl std::ops::Mul<f64> for ExTensor {
     type Output = ExTensor;
 
     fn mul(self, c: f64) -> ExTensor {
@@ -142,7 +141,7 @@ impl ops::Mul<f64> for ExTensor {
     }
 }
 
-impl ops::Mul<ExTensor> for f64 {
+impl std::ops::Mul<ExTensor> for f64 {
     type Output = ExTensor;
 
     fn mul(self, rhs: ExTensor) -> ExTensor {
@@ -154,14 +153,14 @@ impl ops::Mul<ExTensor> for f64 {
     }
 }
 
-impl cmp::PartialEq<ExTensor> for ExTensor {
+impl std::cmp::PartialEq<ExTensor> for ExTensor {
     fn eq(&self, other: &ExTensor) -> bool {
         self.data == other.data
     }
 }
 
-impl fmt::Display for ExTensor {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl std::fmt::Display for ExTensor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut s = String::new();
         if self.data.len() == 0 {
             return write!(f, "0");
@@ -251,10 +250,18 @@ mod extensor_tests {
 
         let x_5 = &ExTensor::new(&[2.0, 3.0], &[&[1], &[2]]);
         let x_6 = &ExTensor::new(&[4.0, 5.0], &[&[1], &[2]]);
-        let prod = &(x_5 * x_6);
+        let prod_6 = &(x_5 * x_6);
         let det = na::Matrix2::new(2.0, 3.0, 4.0, 5.0).determinant();
-        let res_det = &ExTensor::new(&[det], &[&[1, 2]]);
-        assert_eq!(prod, res_det, "Wedge Product exhibits determinant on F^2x2");
+        let res_det_1 = &ExTensor::new(&[det], &[&[1, 2]]);
+        assert_eq!(prod_6, res_det_1, "Wedge Product exhibits determinant on F^2x2");
+
+        let x_7 = &ExTensor::new(&[2.0, 3.0, 4.0], &[&[1], &[2], &[3]]);
+        let x_8 = &ExTensor::new(&[5.0, 6.0, 7.0], &[&[1], &[2], &[3]]);
+        let x_9 = &ExTensor::new(&[8.0, 9.0, 10.0], &[&[1], &[2], &[3]]);
+        let prod_7 = &(&(x_7 * x_8) * x_9);
+        let det_2 = na::Matrix3::new(2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0).determinant();
+        let res_det_2 = &ExTensor::new(&[det_2], &[&[1, 2, 3]]);
+        assert_eq!(prod_7, res_det_2, "Wedge Product exhibits determinant on F^3x3");
     }
 
 }
