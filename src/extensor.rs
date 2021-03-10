@@ -1,5 +1,4 @@
 use indexmap::IndexMap;
-use permutation::{permutation};
 use std::iter::FromIterator;
 
 #[derive(Debug)]
@@ -39,11 +38,10 @@ impl ExTensor {
     fn get_sign(&self, basis_index: usize) -> i32 {
         // from here: https://math.stackexchange.com/questions/65923/how-does-one-compute-the-sign-of-a-permutation
         let v = self.data.get_index(basis_index).unwrap().0; // get the basis at basis_index
-        let perm = permutation::sort(&v[..]); // get permutation that would sort that basis
-        let p = perm.apply_slice(Vec::from_iter(0..v.len()));
+        let perm = super::utils::get_permutation_to_sort(&v); // get permutation that would sort that basis
 
-        let mut visited = vec![false; v.len()]; // mark all visited
-        let mut sign = 1;
+        let mut visited = vec![false; v.len()]; // mark all as not visited
+        let mut sign = 1;  // initial sign
         for k in 0..v.len() {
             if !visited[k] {
                 let mut next = k;
@@ -51,7 +49,7 @@ impl ExTensor {
                 while !visited[next] {
                     l += 1;
                     visited[next] = true;
-                    next = p[next];
+                    next = perm[next];
                 }
                 if l % 2 == 0 {
                     sign = -sign;
