@@ -48,9 +48,6 @@ fn main() {
     }
     // compute_walk_sum(k5, f_vert, f_edge);
 
-    let graph_path = String::from("src/data/path_graph_10.g6");
-    graph::parse_graph6(&graph_path);
-
     let _vertices = vec![1, 2, 3, 4];
     // let _m = utils::get_vandermonde(vertices, k);
     // println!("{}", m);

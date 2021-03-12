@@ -199,7 +199,7 @@ mod extensor_tests {
     use indexmap::map::IndexMap;
 
     #[test]
-    fn add() {
+    fn test_extensor_add() {
         let x_1 = &ExTensor::new(&[3.0, -7.0], &[&[1, 3], &[3]]);
         let x_2 = &ExTensor::new(&[1.0, 2.0], &[&[1], &[3]]);
         let sum = x_1 + x_2;
@@ -210,7 +210,7 @@ mod extensor_tests {
     }
 
     #[test]
-    fn scalar_mul() {
+    fn test_extensor_scalar_mul() {
         let x_1 = ExTensor::new(&[3.0, 2.0], &[&[1, 2], &[3, 4]]) * 2.0;
         let x_2 = 2.0 * ExTensor::new(&[3.0, 2.0], &[&[1, 2], &[3, 4]]);
         let res = ExTensor::new(&[6.0, 4.0], &[&[1, 2], &[3, 4]]);
@@ -220,18 +220,18 @@ mod extensor_tests {
     }
 
     #[test]
-    fn sign() {
+    fn test_extensor_sign() {
         let x_1 = ExTensor::new(&[-3.0], &[&[2, 1]]);
         let x_2 = ExTensor::new(&[3.0], &[&[1, 2]]);
         assert_eq!(x_1, x_2, "exterior tensors are anti commutative");
     }
 
     #[test]
-    fn mul() {
+    fn text_extensor_mul() {
         let x_1 = &ExTensor::simple(1.0, 1);
-        let prod_1 = x_1 * x_1;
+        let prod_1 = &(x_1 * x_1);
         let zero_tensor = &ExTensor::new(&[], &[]);
-        // assert_eq!(prod_1, zero_tensor, "x wedge x vanishes");
+        assert_eq!(prod_1, zero_tensor, "x wedge x vanishes");
 
         // test anti-commutativity
         let x_3 = &ExTensor::simple(2.0, 1);
@@ -258,5 +258,4 @@ mod extensor_tests {
         let res_det_2 = &ExTensor::new(&[det_2], &[&[1, 2, 3]]);
         assert_eq!(prod_7, res_det_2, "Wedge Product exhibits determinant on F^3x3");
     }
-
 }
