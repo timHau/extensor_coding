@@ -1,5 +1,6 @@
 mod extensor;
 mod utils;
+mod graph;
 
 extern crate nalgebra as na;
 
@@ -8,6 +9,7 @@ use na::{DVector};
 use petgraph::visit::GetAdjacencyMatrix;
 use petgraph::Graph;
 
+/*
 fn compute_walk_sum(
     g: Graph<i32, i32>,
     f_vert: fn(usize) -> DVector<f64>,
@@ -30,6 +32,7 @@ fn compute_walk_sum(
     // let a = DMatrix::from_row_slice(n, n, &g.adjacency_matrix().as_slice());
     let _v = g.node_indices().map(|i| f_vert(i.index()));
 }
+ */
 
 fn main() {
     let k5 = utils::build_complete_graph(5);
@@ -43,7 +46,10 @@ fn main() {
     fn f_edge(_e_from: usize, _e_to: usize) -> f64 {
         1.0
     }
-    compute_walk_sum(k5, f_vert, f_edge);
+    // compute_walk_sum(k5, f_vert, f_edge);
+
+    let graph_path = String::from("src/data/path_graph_10.g6");
+    graph::parse_graph6(&graph_path);
 
     let _vertices = vec![1, 2, 3, 4];
     // let _m = utils::get_vandermonde(vertices, k);

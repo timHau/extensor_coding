@@ -108,22 +108,19 @@ impl std::ops::Mul<&ExTensor> for &ExTensor {
         let mut data = IndexMap::new();
 
         for val_lhs in self.data.iter() {
-            let basis_lhs = val_lhs.0;
-            let coeff_lhs = val_lhs.1;
 
             for val_rhs in rhs.data.iter() {
-                let basis_rhs = val_rhs.0;
                 let coeff_rhs = val_rhs.1;
-                let basis_next: Vec<_> = [&basis_lhs[..], &basis_rhs[..]].concat();
+                let basis_next: Vec<_> = [&val_lhs.0[..], &val_rhs.0[..]].concat();
 
                 if super::utils::has_unique_elements(&basis_next) {
-                    let coeff_next = coeff_rhs * coeff_lhs;
+                    let coeff_next = val_rhs.1 * val_lhs.1;
                     data.insert(basis_next, coeff_next);
                 }
             }
         }
 
-        ExTensor { data }.sorted()
+        ExTensor { data }
     }
 }
 
@@ -241,14 +238,14 @@ mod extensor_tests {
         let x_4 = &ExTensor::simple(4.0, 3);
         let prod_4 = x_3 * x_4;
         let res_1 = ExTensor::new(&[8.0], &[&[1, 3]]);
-        let prod_5 = x_4 * x_3;
+        let prod_5 = (x_4 * x_3).sorted();
         let res_anti = ExTensor::new(&[-8.0], &[&[1, 3]]);
         assert_eq!(prod_4, res_1, "wedge product on simple extensors");
         assert_eq!(prod_5, res_anti, "wedge product on simple extensors is anti communative");
 
         let x_5 = &ExTensor::new(&[2.0, 3.0], &[&[1], &[2]]);
         let x_6 = &ExTensor::new(&[4.0, 5.0], &[&[1], &[2]]);
-        let prod_6 = &(x_5 * x_6);
+        let prod_6 = &(x_5 * x_6).sorted();
         let det = na::Matrix2::new(2.0, 3.0, 4.0, 5.0).determinant();
         let res_det_1 = &ExTensor::new(&[det], &[&[1, 2]]);
         assert_eq!(prod_6, res_det_1, "Wedge Product exhibits determinant on F^2x2");
@@ -256,7 +253,7 @@ mod extensor_tests {
         let x_7 = &ExTensor::new(&[2.0, 3.0, 4.0], &[&[1], &[2], &[3]]);
         let x_8 = &ExTensor::new(&[5.0, 6.0, 7.0], &[&[1], &[2], &[3]]);
         let x_9 = &ExTensor::new(&[8.0, 9.0, 10.0], &[&[1], &[2], &[3]]);
-        let prod_7 = &(&(x_7 * x_8) * x_9);
+        let prod_7 = &(&(x_7 * x_8) * x_9).sorted();
         let det_2 = na::Matrix3::new(2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0).determinant();
         let res_det_2 = &ExTensor::new(&[det_2], &[&[1, 2, 3]]);
         assert_eq!(prod_7, res_det_2, "Wedge Product exhibits determinant on F^3x3");
