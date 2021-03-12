@@ -5,15 +5,14 @@ use na::allocator::Allocator;
 
 #[derive(Debug)]
 struct Graph {
-    adjacency_matrix: Box<na::DMatrix<u8>>,
+    adj_mat: Box<na::DMatrix<u8>>,
 }
 
 impl Graph {
-
-   fn from_graph6(path_str: &String) -> Graph {
+    fn from_graph6(path_str: &String) -> Graph {
         // read file if it exists
         let file = std::fs::read(path_str)
-            .expect("Input file not found");
+            .expect(".graph6 input file not found");
 
         // TODO handle graphs with more than 62 vertices
         let n = (file[0] - 63) as usize;
@@ -32,20 +31,19 @@ impl Graph {
                 }
             });
 
-        let mut adjacency_matrix: na::DMatrix<u8> = na::DMatrix::zeros(n, n);
+        let mut adj_mat: na::DMatrix<u8> = na::DMatrix::zeros(n, n);
         let mut buffer_iter = buffer.iter();
         for i in 1..n {
             for j in 0..i {
                 if *(buffer_iter.next().unwrap()) == 1 {
-                    adjacency_matrix[i * n + j] = 1;
-                    adjacency_matrix[j * n + i] = 1;
+                    adj_mat[i * n + j] = 1;
+                    adj_mat[j * n + i] = 1;
                 }
             }
         }
 
-        Graph { adjacency_matrix: Box::new(adjacency_matrix) }
+        Graph { adj_mat: Box::new(adj_mat) }
     }
-
 }
 
 
@@ -54,9 +52,29 @@ mod test {
     use crate::graph::Graph;
 
     #[test]
-    fn test_graph6() {
-        let graph_path = String::from("src/data/path_graph_10.g6");
+    #[should_panic(expected = ".graph6 input file not found")]
+    fn test_graph6_not_found() {
+        // test that
+        let graph_path = String::from("src/data/this_is_not_a_file.g6");
         Graph::from_graph6(&graph_path);
+    }
 
+    #[test]
+    fn test_adj_mat() {
+        let path_10 = String::from("src/data/test_graph_path10.g6");
+        let g = Graph::from_graph6(&path_10);
+        let expect = na::DMatrix::from_row_slice(10, 10, &[
+            0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+            0, 1, 0, 1, 0, 0, 0, 0, 0, 0,
+            0, 0, 1, 0, 1, 0, 0, 0, 0, 0,
+            0, 0, 0, 1, 0, 1, 0, 0, 0, 0,
+            0, 0, 0, 0, 1, 0, 1, 0, 0, 0,
+            0, 0, 0, 0, 0, 1, 0, 1, 0, 0,
+            0, 0, 0, 0, 0, 0, 1, 0, 1, 0,
+            0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
+            0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+        ]);
+        assert_eq!(g.adj_mat, Box::new(expect));
     }
 }
