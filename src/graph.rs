@@ -8,10 +8,7 @@ struct Graph {
 }
 
 impl Graph {
-
     fn file_n_from_graph6(path_str: &str) -> (Vec<u8>, usize) {
-        // TODO handle graphs with more than 62 vertices
-
         // read file if it exists
         let mut file = std::fs::read(path_str)
             .expect(".graph6 input file not found");
@@ -20,10 +17,19 @@ impl Graph {
         // check if >>graph6<< header is present
         let header = str::from_utf8(&file[..10]).unwrap();
         if header == ">>graph6<<" {
-            n = (file[10]- 63) as usize;
-            file = file[10..].to_vec();
+            n = (file[10] - 63) as usize;
+            file = file[11..].to_vec();
         } else {
-            n = (file[0] - 63) as usize
+            n = (file[0] - 63) as usize;
+            file = file[1..].to_vec();
+        }
+
+        if n > 62 {
+            let n1 = ((file[0] - 63) as i32) << 12;
+            let n2 = ((file[1] - 63) as i32) << 6;
+            let n3 = (file[2] - 63) as i32;
+            n = (n1 + n2 + n3) as usize;
+            file = file[3..].to_vec();
         }
 
         (file, n)
@@ -34,7 +40,6 @@ impl Graph {
 
         let mut buffer = Vec::new();
         file.into_iter()
-            .skip(1)
             .map(|b| b as i32 - 63)
             .for_each(|b| {
                 for shift in (0..6).rev() {
@@ -75,26 +80,26 @@ mod test {
     }
      */
 
-    fn get_path10_adj_mat() -> na::DMatrix<u8> {
-        na::DMatrix::from_row_slice(10, 10, &[
-            0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-            1, 0, 1, 0, 0, 0, 0, 0, 0, 0,
-            0, 1, 0, 1, 0, 0, 0, 0, 0, 0,
-            0, 0, 1, 0, 1, 0, 0, 0, 0, 0,
-            0, 0, 0, 1, 0, 1, 0, 0, 0, 0,
-            0, 0, 0, 0, 1, 0, 1, 0, 0, 0,
-            0, 0, 0, 0, 0, 1, 0, 1, 0, 0,
-            0, 0, 0, 0, 0, 0, 1, 0, 1, 0,
-            0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
-            0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-        ])
+    /// returns the adjacency matrix of the n path graph
+    fn get_n_path_graph_adj_mat(n: usize) -> na::DMatrix<u8> {
+        let mut res: na::DMatrix<u8> = na::DMatrix::zeros(n, n);
+
+        for i in 0..n {
+            for j in 0..n {
+                if i == j + 1 || i + 1 == j {
+                    res[i * n + j] = 1;
+                }
+            }
+        }
+
+        res
     }
 
     #[test]
     fn test_graph6_header() {
         let graph_with_header = String::from("src/data/test_graphs/path10_with_header.g6");
         let g = Graph::from_graph6(&graph_with_header);
-        let expect = get_path10_adj_mat();
+        let expect = get_n_path_graph_adj_mat(10);
         assert_eq!(g.adj_mat, Box::new(expect));
     }
 
@@ -102,13 +107,23 @@ mod test {
     fn test_adj_mat() {
         let path_10 = String::from("src/data/test_graphs/path10.g6");
         let g = Graph::from_graph6(&path_10);
-        let expect = get_path10_adj_mat();
+        let expect = get_n_path_graph_adj_mat(10);
         assert_eq!(g.adj_mat, Box::new(expect));
     }
 
     #[test]
     fn test_big_graph() {
         let path_100 = String::from("src/data/test_graphs/path100.g6");
-//        let g = Graph::from_graph6(&path_100);
+        let g = Graph::from_graph6(&path_100);
+        let expect = get_n_path_graph_adj_mat(100);
+        assert_eq!(g.adj_mat, Box::new(expect));
+    }
+
+    #[test]
+    fn test_big_graph_with_header() {
+        let path_100 = String::from("src/data/test_graphs/path100_with_header.g6");
+        let g = Graph::from_graph6(&path_100);
+        let expect = get_n_path_graph_adj_mat(100);
+        assert_eq!(g.adj_mat, Box::new(expect));
     }
 }
