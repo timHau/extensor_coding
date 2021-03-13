@@ -6,8 +6,8 @@ extern crate nalgebra as na;
 
 use na::{DVector};
 // use petgraph::graph::{EdgeIndex, NodeIndex};
-use petgraph::visit::GetAdjacencyMatrix;
-use petgraph::Graph;
+// use petgraph::visit::GetAdjacencyMatrix;
+// use petgraph::Graph;
 
 /*
 fn compute_walk_sum(
@@ -35,7 +35,7 @@ fn compute_walk_sum(
  */
 
 fn main() {
-    let k5 = utils::build_complete_graph(5);
+    let _k5 = utils::build_complete_graph(5);
     // println!("{:?}", k5);
 
     fn f_vert(v: usize) -> DVector<f64> {

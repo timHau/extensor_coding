@@ -1,5 +1,4 @@
 use indexmap::IndexMap;
-use std::iter::FromIterator;
 
 #[derive(Debug)]
 struct ExTensor {
@@ -9,9 +8,13 @@ struct ExTensor {
 impl ExTensor {
     /// create an new Extensor that does not need to be "simple"
     /// meaning sets with cardinality > 1 are supported
+    ///
     /// example:
-    /// ``` ExTensor::new(&[3.0, -7.0], &[&[1, 3], &[3]]) // 3e_{1,3} - 7e_{3} ```
-    fn new(coeffs: &[f64], basis: &[&[i32]]) -> ExTensor {
+    /// ```
+    /// ExTensor::new(&[3.0, -7.0], &[&[1, 3], &[3]]); // 3e_{1,3} - 7e_{3}
+    /// ```
+    ///
+    fn new(coeffs: &[f64], basis: &[&[i32]]) -> Self {
         assert_eq!(
             coeffs.len(),
             basis.len(),
@@ -26,21 +29,34 @@ impl ExTensor {
 
     /// construct a simple exterior tensor e.g. only using a single basis set
     /// example:
-    /// ``` Extensor::simple(9.0, 3) // 9e_{3} ```
-    fn simple(coeff: f64, basis: i32) -> ExTensor {
+    ///
+    /// ```
+    /// ExTensor::simple(9.0, 3); // 9e_{3}
+    /// ```
+    ///
+    fn simple(coeff: f64, basis: i32) -> Self {
         let mut data = IndexMap::new();
         data.insert(vec![basis], coeff);
         ExTensor { data }
     }
 
     /// get sign of permutation that brings the basis at 'basis_index' into increasing order
+    ///
+    /// ```
+    /// let t = ExTensor::new(&[1.0], &[&[2, 1]]);
+    /// assert_eq!(t.get_sign(), -1);
+    /// ```
+    ///
     /// output ∈ {-1, 1}
     fn get_sign(&self, basis_index: usize) -> i32 {
         // from here: https://math.stackexchange.com/questions/65923/how-does-one-compute-the-sign-of-a-permutation
-        let v = self.data.get_index(basis_index).unwrap().0; // get the basis at basis_index
-        let perm = super::utils::get_permutation_to_sort(&v); // get permutation that would sort that basis
+        // get the basis at basis_index
+        let v = self.data.get_index(basis_index).unwrap().0;
+        // get permutation that would sort that basis
+        let perm = super::utils::get_permutation_to_sort(&v);
 
-        let mut visited = vec![false; v.len()]; // mark all as not visited
+        // mark all as not visited
+        let mut visited = vec![false; v.len()];
         let mut sign = 1;  // initial sign
         for k in 0..v.len() {
             if !visited[k] {
@@ -60,7 +76,7 @@ impl ExTensor {
         sign
     }
 
-    fn sorted(&self) -> ExTensor {
+    fn sorted(&self) -> Self {
         let mut data = IndexMap::new();
 
         for (i, d) in self.data.iter().enumerate() {
@@ -110,7 +126,6 @@ impl std::ops::Mul<&ExTensor> for &ExTensor {
         for val_lhs in self.data.iter() {
 
             for val_rhs in rhs.data.iter() {
-                let coeff_rhs = val_rhs.1;
                 let basis_next: Vec<_> = [&val_lhs.0[..], &val_rhs.0[..]].concat();
 
                 if super::utils::has_unique_elements(&basis_next) {
@@ -163,7 +178,6 @@ impl std::fmt::Display for ExTensor {
 
         let mut count_term = 0;
         for d in self.data.iter() {
-            let base = String::new();
             if *d.1 < 0.0 {
                 s += format!("({}) ", d.1).as_str();
             } else {
@@ -195,8 +209,6 @@ impl std::fmt::Display for ExTensor {
 #[cfg(test)]
 mod extensor_tests {
     use crate::extensor::ExTensor;
-    use std::collections::HashMap;
-    use indexmap::map::IndexMap;
 
     #[test]
     fn test_extensor_add() {

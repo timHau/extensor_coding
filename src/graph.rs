@@ -1,7 +1,6 @@
 extern crate nalgebra as na;
 
-use na::DefaultAllocator;
-use na::allocator::Allocator;
+use std::str;
 
 #[derive(Debug)]
 struct Graph {
@@ -9,13 +8,30 @@ struct Graph {
 }
 
 impl Graph {
-    fn from_graph6(path_str: &String) -> Graph {
+
+    fn get_n(file: &Vec<u8>) -> usize {
+        // TODO handle graphs with more than 62 vertices
+
+        // check if >>graph6<< header is present
+        let header = str::from_utf8(&file[..10]).unwrap();
+        if header == ">>graph6<<" {
+            return (file[10]- 63) as usize;
+        }
+        (file[0] - 63) as usize
+    }
+
+    fn file_n_from_graph6(path_str: &str) -> (Vec<u8>, usize) {
         // read file if it exists
         let file = std::fs::read(path_str)
             .expect(".graph6 input file not found");
 
-        // TODO handle graphs with more than 62 vertices
-        let n = (file[0] - 63) as usize;
+        let n = Self::get_n(&file);
+
+        (file, n)
+    }
+
+    fn from_graph6(path_str: &str) -> Self {
+        let (file, n) = Self::file_n_from_graph6(path_str);
 
         let mut buffer = Vec::new();
         file.into_iter()
@@ -54,14 +70,20 @@ mod test {
     #[test]
     #[should_panic(expected = ".graph6 input file not found")]
     fn test_graph6_not_found() {
-        // test that
         let graph_path = String::from("src/data/this_is_not_a_file.g6");
         Graph::from_graph6(&graph_path);
     }
 
     #[test]
+    fn test_graph6_header() {
+        let graph_with_header = String::from("src/data/test_graphs/path10_with_header.g6");
+        let g = Graph::from_graph6(&graph_with_header);
+        println!("{:?}", g);
+    }
+
+//    #[test]
     fn test_adj_mat() {
-        let path_10 = String::from("src/data/test_graph_path10.g6");
+        let path_10 = String::from("src/data/test_graphs/path10.g6");
         let g = Graph::from_graph6(&path_10);
         let expect = na::DMatrix::from_row_slice(10, 10, &[
             0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
