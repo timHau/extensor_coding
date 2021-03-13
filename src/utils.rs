@@ -29,7 +29,7 @@ pub fn vandermonde_vec(i: usize, k: usize) -> DVector<f64> {
     DVector::from_iterator(k, (0..k).map(|j| (i+1).pow(j as u32) as f64).into_iter())
 }
 
-pub fn get_vandermonde(vertices: Vec<i64>, k: usize) -> DMatrix<f64> {
+pub fn _get_vandermonde(vertices: Vec<i64>, k: usize) -> DMatrix<f64> {
     DMatrix::from_fn(vertices.len(), k, |i, j| -> f64 {
         (vertices[i]).pow(j as u32) as f64
     })

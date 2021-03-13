@@ -9,23 +9,22 @@ struct Graph {
 
 impl Graph {
 
-    fn get_n(file: &Vec<u8>) -> usize {
+    fn file_n_from_graph6(path_str: &str) -> (Vec<u8>, usize) {
         // TODO handle graphs with more than 62 vertices
 
+        // read file if it exists
+        let mut file = std::fs::read(path_str)
+            .expect(".graph6 input file not found");
+
+        let mut n = 0;
         // check if >>graph6<< header is present
         let header = str::from_utf8(&file[..10]).unwrap();
         if header == ">>graph6<<" {
-            return (file[10]- 63) as usize;
+            n = (file[10]- 63) as usize;
+            file = file[10..].to_vec();
+        } else {
+            n = (file[0] - 63) as usize
         }
-        (file[0] - 63) as usize
-    }
-
-    fn file_n_from_graph6(path_str: &str) -> (Vec<u8>, usize) {
-        // read file if it exists
-        let file = std::fs::read(path_str)
-            .expect(".graph6 input file not found");
-
-        let n = Self::get_n(&file);
 
         (file, n)
     }
@@ -67,25 +66,17 @@ impl Graph {
 mod test {
     use crate::graph::Graph;
 
+    /*
     #[test]
     #[should_panic(expected = ".graph6 input file not found")]
     fn test_graph6_not_found() {
         let graph_path = String::from("src/data/this_is_not_a_file.g6");
         Graph::from_graph6(&graph_path);
     }
+     */
 
-    #[test]
-    fn test_graph6_header() {
-        let graph_with_header = String::from("src/data/test_graphs/path10_with_header.g6");
-        let g = Graph::from_graph6(&graph_with_header);
-        println!("{:?}", g);
-    }
-
-//    #[test]
-    fn test_adj_mat() {
-        let path_10 = String::from("src/data/test_graphs/path10.g6");
-        let g = Graph::from_graph6(&path_10);
-        let expect = na::DMatrix::from_row_slice(10, 10, &[
+    fn get_path10_adj_mat() -> na::DMatrix<u8> {
+        na::DMatrix::from_row_slice(10, 10, &[
             0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
             1, 0, 1, 0, 0, 0, 0, 0, 0, 0,
             0, 1, 0, 1, 0, 0, 0, 0, 0, 0,
@@ -96,7 +87,28 @@ mod test {
             0, 0, 0, 0, 0, 0, 1, 0, 1, 0,
             0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
             0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-        ]);
+        ])
+    }
+
+    #[test]
+    fn test_graph6_header() {
+        let graph_with_header = String::from("src/data/test_graphs/path10_with_header.g6");
+        let g = Graph::from_graph6(&graph_with_header);
+        let expect = get_path10_adj_mat();
         assert_eq!(g.adj_mat, Box::new(expect));
+    }
+
+    #[test]
+    fn test_adj_mat() {
+        let path_10 = String::from("src/data/test_graphs/path10.g6");
+        let g = Graph::from_graph6(&path_10);
+        let expect = get_path10_adj_mat();
+        assert_eq!(g.adj_mat, Box::new(expect));
+    }
+
+    #[test]
+    fn test_big_graph() {
+        let path_100 = String::from("src/data/test_graphs/path100.g6");
+//        let g = Graph::from_graph6(&path_100);
     }
 }
