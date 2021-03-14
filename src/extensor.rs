@@ -76,6 +76,7 @@ impl ExTensor {
         sign
     }
 
+    /// sort the basis and apply sign changes if necessary
     fn sorted(&self) -> Self {
         let mut data = IndexMap::new();
 
@@ -239,12 +240,15 @@ mod extensor_tests {
     }
 
     #[test]
-    fn text_extensor_mul() {
+    fn test_extensor_vanish() {
         let x_1 = &ExTensor::simple(1.0, 1);
         let prod_1 = &(x_1 * x_1);
         let zero_tensor = &ExTensor::new(&[], &[]);
         assert_eq!(prod_1, zero_tensor, "x wedge x vanishes");
+    }
 
+    #[test]
+    fn test_extensor_anti_comm() {
         // test anti-commutativity
         let x_3 = &ExTensor::simple(2.0, 1);
         let x_4 = &ExTensor::simple(4.0, 3);
@@ -254,14 +258,20 @@ mod extensor_tests {
         let res_anti = ExTensor::new(&[-8.0], &[&[1, 3]]);
         assert_eq!(prod_4, res_1, "wedge product on simple extensors");
         assert_eq!(prod_5, res_anti, "wedge product on simple extensors is anti communative");
+    }
 
+    #[test]
+    fn test_det_f2() {
         let x_5 = &ExTensor::new(&[2.0, 3.0], &[&[1], &[2]]);
         let x_6 = &ExTensor::new(&[4.0, 5.0], &[&[1], &[2]]);
         let prod_6 = &(x_5 * x_6).sorted();
         let det = na::Matrix2::new(2.0, 3.0, 4.0, 5.0).determinant();
         let res_det_1 = &ExTensor::new(&[det], &[&[1, 2]]);
         assert_eq!(prod_6, res_det_1, "Wedge Product exhibits determinant on F^2x2");
+    }
 
+    #[test]
+    fn test_det_f3() {
         let x_7 = &ExTensor::new(&[2.0, 3.0, 4.0], &[&[1], &[2], &[3]]);
         let x_8 = &ExTensor::new(&[5.0, 6.0, 7.0], &[&[1], &[2], &[3]]);
         let x_9 = &ExTensor::new(&[8.0, 9.0, 10.0], &[&[1], &[2], &[3]]);

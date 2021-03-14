@@ -8,20 +8,33 @@ struct Graph {
 }
 
 impl Graph {
-    fn file_n_from_graph6(path_str: &str) -> (Vec<u8>, usize) {
+    fn file_n_from(path_str: &str) -> (Vec<u8>, usize) {
         // read file if it exists
         let mut file = std::fs::read(path_str)
             .expect(".graph6 input file not found");
 
         let mut n = 0;
-        // check if >>graph6<< header is present
-        let header = str::from_utf8(&file[..10]).unwrap();
-        if header == ">>graph6<<" {
-            n = (file[10] - 63) as usize;
-            file = file[11..].to_vec();
+
+        let has_sparse_header = file.len() > 10 && str::from_utf8(&file[..11]).unwrap() == ">>sparse6<<";
+        let has_graph_header = file.len() > 9 && str::from_utf8(&file[..10]).unwrap() == ">>graph6<<";
+        let is_sparse = file[0] as char == ':' || has_sparse_header;
+
+        if !is_sparse {
+            if has_graph_header {
+                n = (file[10] - 63) as usize;
+                file = file[11..].to_vec();
+            } else {
+                n = (file[0] - 63) as usize;
+                file = file[1..].to_vec();
+            }
         } else {
-            n = (file[0] - 63) as usize;
-            file = file[1..].to_vec();
+            if has_sparse_header {
+                n = (file[12] - 63) as usize;
+                file = file[13..].to_vec();
+            } else {
+                n = (file[1] - 63) as usize;
+                file = file[2..].to_vec();
+            }
         }
 
         if n > 62 {
@@ -36,7 +49,7 @@ impl Graph {
     }
 
     fn from_graph6(path_str: &str) -> Self {
-        let (file, n) = Self::file_n_from_graph6(path_str);
+        let (file, n) = Self::file_n_from(path_str);
 
         let mut buffer = Vec::new();
         file.into_iter()
@@ -63,6 +76,14 @@ impl Graph {
         }
 
         Graph { adj_mat: Box::new(adj_mat) }
+    }
+
+    fn from_sparse6(path_str: &str) -> Self {
+        let (file, n) = Self::file_n_from(path_str);
+
+        println!("{}", n);
+
+        Graph { adj_mat: Box::new(na::DMatrix::zeros(10, 10) ) }
     }
 }
 
@@ -104,6 +125,23 @@ mod test {
     }
 
     #[test]
+    fn test_tutte_graph() {
+        let tutte_str = String::from("src/data/test_graphs/tutte_graph.g6");
+        let g = Graph::from_graph6(&tutte_str);
+
+        let tutte_mat_file = std::fs::read_to_string("src/data/test_graphs/tutte_mat.txt")
+            .expect("could not read tutte_mat.txt");
+        let tutte_mat_file = tutte_mat_file.replace('\n', " ");
+
+        let tutte_mat = tutte_mat_file.trim().split(" ")
+            .map(|c| c.parse::<u8>().unwrap())
+            .collect::<Vec<u8>>();
+
+        let t_mat = na::DMatrix::from_vec(46, 46, tutte_mat);
+        assert_eq!(g.adj_mat, Box::new(t_mat));
+    }
+
+    #[test]
     fn test_adj_mat() {
         let path_10 = String::from("src/data/test_graphs/path10.g6");
         let g = Graph::from_graph6(&path_10);
@@ -126,4 +164,11 @@ mod test {
         let expect = get_n_path_graph_adj_mat(100);
         assert_eq!(g.adj_mat, Box::new(expect));
     }
+
+    #[test]
+    fn test_sparse6() {
+        let path_10 = String::from("src/data/test_graphs/path10.s6");
+        let g = Graph::from_sparse6(&path_10);
+    }
+
 }
