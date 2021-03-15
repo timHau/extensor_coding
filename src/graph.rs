@@ -1,6 +1,6 @@
 extern crate nalgebra as na;
 
-use std::str;
+use crate::extensor::ExTensor;
 
 #[derive(Debug)]
 struct Graph {
@@ -10,13 +10,14 @@ struct Graph {
 impl Graph {
     fn file_n_from(path_str: &str) -> (Vec<u8>, usize) {
         // read file if it exists
-        let mut file = std::fs::read(path_str)
-            .expect(".graph6 input file not found");
+        let mut file = std::fs::read(path_str).expect(".graph6 input file not found");
 
         let mut n = 0;
 
-        let has_sparse_header = file.len() > 10 && str::from_utf8(&file[..11]).unwrap() == ">>sparse6<<";
-        let has_graph_header = file.len() > 9 && str::from_utf8(&file[..10]).unwrap() == ">>graph6<<";
+        let has_sparse_header =
+            file.len() > 10 && std::str::from_utf8(&file[..11]).unwrap() == ">>sparse6<<";
+        let has_graph_header =
+            file.len() > 9 && std::str::from_utf8(&file[..10]).unwrap() == ">>graph6<<";
         let is_sparse = file[0] as char == ':' || has_sparse_header;
 
         if !is_sparse {
@@ -27,15 +28,13 @@ impl Graph {
                 n = (file[0] - 63) as usize;
                 file = file[1..].to_vec();
             }
-        } else {
-            if has_sparse_header {
+        } else if has_sparse_header {
                 n = (file[12] - 63) as usize;
                 file = file[13..].to_vec();
             } else {
                 n = (file[1] - 63) as usize;
                 file = file[2..].to_vec();
             }
-        }
 
         if n > 62 {
             let n1 = ((file[0] - 63) as i32) << 12;
@@ -52,17 +51,16 @@ impl Graph {
         let (file, n) = Self::file_n_from(path_str);
 
         let mut buffer = Vec::new();
-        file.into_iter()
-            .map(|b| b as i32 - 63)
-            .for_each(|b| {
-                for shift in (0..6).rev() {
-                    if (b & 1 << shift) > 0 {
-                        buffer.push(1);
-                    } else {
-                        buffer.push(0);
-                    }
+        file.into_iter().for_each(|b| {
+            let v = b as i32 - 63;
+            for shift in (0..6).rev() {
+                if (v & 1 << shift) > 0 {
+                    buffer.push(1);
+                } else {
+                    buffer.push(0);
                 }
-            });
+            }
+        });
 
         let mut adj_mat: na::DMatrix<u8> = na::DMatrix::zeros(n, n);
         let mut buffer_iter = buffer.iter();
@@ -75,7 +73,9 @@ impl Graph {
             }
         }
 
-        Graph { adj_mat: Box::new(adj_mat) }
+        Graph {
+            adj_mat: Box::new(adj_mat),
+        }
     }
 
     fn from_sparse6(path_str: &str) -> Self {
@@ -83,14 +83,38 @@ impl Graph {
 
         println!("{}", n);
 
-        Graph { adj_mat: Box::new(na::DMatrix::zeros(10, 10) ) }
+        Graph {
+            adj_mat: Box::new(na::DMatrix::zeros(10, 10)),
+        }
+    }
+
+    fn compute_walk_sum(&self, k: u32, f_vert: fn(u32) -> ExTensor, f_edge: fn(u32, u32) -> f64) -> f64 {
+        let mut a = Vec::new();
+
+        let n = self.adj_mat.nrows();
+        for (i, v) in self.adj_mat.iter().enumerate() {
+            if *v == 1 {
+                let from = (i % n) as u32;
+                let to = (i / n) as u32;
+
+                let val_edge = f_edge(from, to);
+                let val_vert = f_vert(from);
+                let res = val_edge * val_vert;
+
+                a.push(res);
+            } else {
+                a.push(ExTensor::simple(0.0, 0));
+            }
+        }
+
+        0.0
     }
 }
-
 
 #[cfg(test)]
 mod test {
     use crate::graph::Graph;
+    use crate::extensor::ExTensor;
 
     /*
     #[test]
@@ -133,7 +157,9 @@ mod test {
             .expect("could not read tutte_mat.txt");
         let tutte_mat_file = tutte_mat_file.replace('\n', " ");
 
-        let tutte_mat = tutte_mat_file.trim().split(" ")
+        let tutte_mat = tutte_mat_file
+            .trim()
+            .split(" ")
             .map(|c| c.parse::<u8>().unwrap())
             .collect::<Vec<u8>>();
 
@@ -166,9 +192,19 @@ mod test {
     }
 
     #[test]
-    fn test_sparse6() {
-        let path_10 = String::from("src/data/test_graphs/path10.s6");
-        let g = Graph::from_sparse6(&path_10);
-    }
+    fn test_compute_walk() {
+        let path_10 = String::from("src/data/test_graphs/path10.g6");
+        let g = Graph::from_graph6(&path_10);
 
+        fn f_vert(v: u32) -> ExTensor {
+            ExTensor::simple(v as f64, 1 as i32)
+        }
+
+        fn f_edge(u: u32, v: u32) -> f64 {
+            1.0
+        }
+
+        let res = g.compute_walk_sum(10, f_vert, f_edge);
+        println!("{}", res);
+    }
 }

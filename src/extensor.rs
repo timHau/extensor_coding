@@ -1,7 +1,7 @@
 use indexmap::IndexMap;
 
-#[derive(Debug)]
-struct ExTensor {
+#[derive(Debug, Clone)]
+pub(crate) struct ExTensor {
     data: IndexMap<Vec<i32>, f64>, // basis : coeff
 }
 
@@ -14,7 +14,7 @@ impl ExTensor {
     /// ExTensor::new(&[3.0, -7.0], &[&[1, 3], &[3]]); // 3e_{1,3} - 7e_{3}
     /// ```
     ///
-    fn new(coeffs: &[f64], basis: &[&[i32]]) -> Self {
+    pub(crate) fn new(coeffs: &[f64], basis: &[&[i32]]) -> Self {
         assert_eq!(
             coeffs.len(),
             basis.len(),
@@ -34,7 +34,7 @@ impl ExTensor {
     /// ExTensor::simple(9.0, 3); // 9e_{3}
     /// ```
     ///
-    fn simple(coeff: f64, basis: i32) -> Self {
+    pub(crate) fn simple(coeff: f64, basis: i32) -> Self {
         let mut data = IndexMap::new();
         data.insert(vec![basis], coeff);
         ExTensor { data }
@@ -57,7 +57,7 @@ impl ExTensor {
 
         // mark all as not visited
         let mut visited = vec![false; v.len()];
-        let mut sign = 1;  // initial sign
+        let mut sign = 1; // initial sign
         for k in 0..v.len() {
             if !visited[k] {
                 let mut next = k;
@@ -83,7 +83,7 @@ impl ExTensor {
         for (i, d) in self.data.iter().enumerate() {
             let sign = self.get_sign(i) as f64;
             let mut basis_next = d.0.to_vec();
-            basis_next.sort();
+            basis_next.sort_unstable();
             if data.contains_key(&basis_next) {
                 let coeff_old = data.get(&basis_next).unwrap();
                 data.insert(basis_next, coeff_old + (d.1 * sign));
@@ -125,7 +125,6 @@ impl std::ops::Mul<&ExTensor> for &ExTensor {
         let mut data = IndexMap::new();
 
         for val_lhs in self.data.iter() {
-
             for val_rhs in rhs.data.iter() {
                 let basis_next: Vec<_> = [&val_lhs.0[..], &val_rhs.0[..]].concat();
 
@@ -173,7 +172,7 @@ impl std::cmp::PartialEq<ExTensor> for ExTensor {
 impl std::fmt::Display for ExTensor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut s = String::new();
-        if self.data.len() == 0 {
+        if self.data.is_empty() {
             return write!(f, "0");
         }
 
@@ -201,7 +200,6 @@ impl std::fmt::Display for ExTensor {
 
             count_term += 1;
         }
-
 
         write!(f, "{}", s)
     }
@@ -257,7 +255,10 @@ mod extensor_tests {
         let prod_5 = (x_4 * x_3).sorted();
         let res_anti = ExTensor::new(&[-8.0], &[&[1, 3]]);
         assert_eq!(prod_4, res_1, "wedge product on simple extensors");
-        assert_eq!(prod_5, res_anti, "wedge product on simple extensors is anti communative");
+        assert_eq!(
+            prod_5, res_anti,
+            "wedge product on simple extensors is anti communative"
+        );
     }
 
     #[test]
@@ -267,7 +268,10 @@ mod extensor_tests {
         let prod_6 = &(x_5 * x_6).sorted();
         let det = na::Matrix2::new(2.0, 3.0, 4.0, 5.0).determinant();
         let res_det_1 = &ExTensor::new(&[det], &[&[1, 2]]);
-        assert_eq!(prod_6, res_det_1, "Wedge Product exhibits determinant on F^2x2");
+        assert_eq!(
+            prod_6, res_det_1,
+            "Wedge Product exhibits determinant on F^2x2"
+        );
     }
 
     #[test]
@@ -278,6 +282,9 @@ mod extensor_tests {
         let prod_7 = &(&(x_7 * x_8) * x_9).sorted();
         let det_2 = na::Matrix3::new(2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0).determinant();
         let res_det_2 = &ExTensor::new(&[det_2], &[&[1, 2, 3]]);
-        assert_eq!(prod_7, res_det_2, "Wedge Product exhibits determinant on F^3x3");
+        assert_eq!(
+            prod_7, res_det_2,
+            "Wedge Product exhibits determinant on F^3x3"
+        );
     }
 }

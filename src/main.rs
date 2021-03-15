@@ -1,10 +1,10 @@
 mod extensor;
-mod utils;
 mod graph;
+mod utils;
 
 extern crate nalgebra as na;
 
-use na::{DVector};
+use na::DVector;
 // use petgraph::graph::{EdgeIndex, NodeIndex};
 // use petgraph::visit::GetAdjacencyMatrix;
 // use petgraph::Graph;
@@ -41,8 +41,7 @@ fn main() {
     fn f_vert(v: usize) -> DVector<f64> {
         let k = 5;
         utils::vandermonde_vec(v, k)
-    }
-    ;
+    };
     fn f_edge(_e_from: usize, _e_to: usize) -> f64 {
         1.0
     }

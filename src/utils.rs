@@ -26,7 +26,7 @@ pub fn build_complete_graph(n: i32) -> Graph<i32, i32> {
 }
 
 pub fn vandermonde_vec(i: usize, k: usize) -> DVector<f64> {
-    DVector::from_iterator(k, (0..k).map(|j| (i+1).pow(j as u32) as f64).into_iter())
+    DVector::from_iterator(k, (0..k).map(|j| (i + 1).pow(j as u32) as f64))
 }
 
 pub fn _get_vandermonde(vertices: Vec<i64>, k: usize) -> DMatrix<f64> {
@@ -35,9 +35,9 @@ pub fn _get_vandermonde(vertices: Vec<i64>, k: usize) -> DMatrix<f64> {
     })
 }
 
-pub fn get_permutation_to_sort<T>(v: &Vec<T>) -> Vec<usize>
-    where
-        T: std::cmp::Ord,
+pub fn get_permutation_to_sort<T>(v: &[T]) -> Vec<usize>
+where
+    T: std::cmp::Ord,
 {
     let mut perm: Vec<_> = (0..v.len()).collect();
     perm.sort_by_cached_key(|&i| &v[i]);
@@ -45,9 +45,9 @@ pub fn get_permutation_to_sort<T>(v: &Vec<T>) -> Vec<usize>
 }
 
 pub fn has_unique_elements<T>(iter: T) -> bool
-    where
-        T: IntoIterator,
-        T::Item: Eq + Hash,
+where
+    T: IntoIterator,
+    T::Item: Eq + Hash,
 {
     let mut uniq = HashSet::new();
     iter.into_iter().all(move |x| uniq.insert(x))
