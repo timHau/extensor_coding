@@ -1,13 +1,5 @@
-mod extensor;
-mod graph;
+mod structures;
 mod utils;
-
-extern crate nalgebra as na;
-
-use na::DVector;
-// use petgraph::graph::{EdgeIndex, NodeIndex};
-// use petgraph::visit::GetAdjacencyMatrix;
-// use petgraph::Graph;
 
 /*
 fn compute_walk_sum(
@@ -35,20 +27,5 @@ fn compute_walk_sum(
  */
 
 fn main() {
-    let _k5 = utils::build_complete_graph(5);
     // println!("{:?}", k5);
-
-    fn f_vert(v: usize) -> DVector<f64> {
-        let k = 5;
-        utils::vandermonde_vec(v, k)
-    };
-    fn f_edge(_e_from: usize, _e_to: usize) -> f64 {
-        1.0
-    }
-    // compute_walk_sum(k5, f_vert, f_edge);
-
-    let _vertices = vec![1, 2, 3, 4];
-    // let _m = utils::get_vandermonde(vertices, k);
-    // println!("{}", m);
-    // println!("{}", m.determinant());
 }

@@ -1,3 +1,4 @@
+use super::super::utils;
 use indexmap::IndexMap;
 
 #[derive(Debug, Clone)]
@@ -53,7 +54,7 @@ impl ExTensor {
         // get the basis at basis_index
         let v = self.data.get_index(basis_index).unwrap().0;
         // get permutation that would sort that basis
-        let perm = super::utils::get_permutation_to_sort(&v);
+        let perm = utils::get_permutation_to_sort(&v);
 
         // mark all as not visited
         let mut visited = vec![false; v.len()];
@@ -128,7 +129,7 @@ impl std::ops::Mul<&ExTensor> for &ExTensor {
             for val_rhs in rhs.data.iter() {
                 let basis_next: Vec<_> = [&val_lhs.0[..], &val_rhs.0[..]].concat();
 
-                if super::utils::has_unique_elements(&basis_next) {
+                if utils::has_unique_elements(&basis_next) {
                     let coeff_next = val_rhs.1 * val_lhs.1;
                     data.insert(basis_next, coeff_next);
                 }
@@ -205,9 +206,11 @@ impl std::fmt::Display for ExTensor {
     }
 }
 
+/*
 #[cfg(test)]
-mod extensor_tests {
-    use crate::extensor::ExTensor;
+mod tests {
+    use crate::structures::extensor::ExTensor;
+    use crate::structures::matrix::Matrix;
 
     #[test]
     fn test_extensor_add() {
@@ -266,7 +269,7 @@ mod extensor_tests {
         let x_5 = &ExTensor::new(&[2.0, 3.0], &[&[1], &[2]]);
         let x_6 = &ExTensor::new(&[4.0, 5.0], &[&[1], &[2]]);
         let prod_6 = &(x_5 * x_6).sorted();
-        let det = na::Matrix2::new(2.0, 3.0, 4.0, 5.0).determinant();
+        let det = Matrix::from_vec(2, 2, &vec![2.0, 3.0, 4.0, 5.0]).determinant();
         let res_det_1 = &ExTensor::new(&[det], &[&[1, 2]]);
         assert_eq!(
             prod_6, res_det_1,
@@ -280,7 +283,8 @@ mod extensor_tests {
         let x_8 = &ExTensor::new(&[5.0, 6.0, 7.0], &[&[1], &[2], &[3]]);
         let x_9 = &ExTensor::new(&[8.0, 9.0, 10.0], &[&[1], &[2], &[3]]);
         let prod_7 = &(&(x_7 * x_8) * x_9).sorted();
-        let det_2 = na::Matrix3::new(2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0).determinant();
+        let det_2 = Matrix::from_vec(2, 2, &vec![2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0])
+            .determinant();
         let res_det_2 = &ExTensor::new(&[det_2], &[&[1, 2, 3]]);
         assert_eq!(
             prod_7, res_det_2,
@@ -288,3 +292,4 @@ mod extensor_tests {
         );
     }
 }
+*/

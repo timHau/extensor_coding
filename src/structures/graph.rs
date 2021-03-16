@@ -1,10 +1,9 @@
-extern crate nalgebra as na;
-
-use crate::extensor::ExTensor;
+use super::extensor::ExTensor;
+use super::matrix::Matrix;
 
 #[derive(Debug)]
 struct Graph {
-    adj_mat: Box<na::DMatrix<u8>>,
+    adj_mat: Box<Matrix<u8>>,
 }
 
 impl Graph {
@@ -29,12 +28,12 @@ impl Graph {
                 file = file[1..].to_vec();
             }
         } else if has_sparse_header {
-                n = (file[12] - 63) as usize;
-                file = file[13..].to_vec();
-            } else {
-                n = (file[1] - 63) as usize;
-                file = file[2..].to_vec();
-            }
+            n = (file[12] - 63) as usize;
+            file = file[13..].to_vec();
+        } else {
+            n = (file[1] - 63) as usize;
+            file = file[2..].to_vec();
+        }
 
         if n > 62 {
             let n1 = ((file[0] - 63) as i32) << 12;
@@ -62,7 +61,8 @@ impl Graph {
             }
         });
 
-        let mut adj_mat: na::DMatrix<u8> = na::DMatrix::zeros(n, n);
+        let mut adj_mat = Matrix::zeros(n, n);
+        /*
         let mut buffer_iter = buffer.iter();
         for i in 1..n {
             for j in 0..i {
@@ -72,6 +72,7 @@ impl Graph {
                 }
             }
         }
+         */
 
         Graph {
             adj_mat: Box::new(adj_mat),
@@ -84,14 +85,20 @@ impl Graph {
         println!("{}", n);
 
         Graph {
-            adj_mat: Box::new(na::DMatrix::zeros(10, 10)),
+            adj_mat: Box::new(Matrix::zeros(10, 10)),
         }
     }
 
-    fn compute_walk_sum(&self, k: u32, f_vert: fn(u32) -> ExTensor, f_edge: fn(u32, u32) -> f64) -> f64 {
-        let mut a = Vec::new();
+    fn compute_walk_sum(
+        &self,
+        k: u32,
+        f_vert: fn(u32) -> ExTensor,
+        f_edge: fn(u32, u32) -> f64,
+    ) -> f64 {
+        // let mut a = Vec::new();
 
         let n = self.adj_mat.nrows();
+        /*
         for (i, v) in self.adj_mat.iter().enumerate() {
             if *v == 1 {
                 let from = (i % n) as u32;
@@ -106,15 +113,17 @@ impl Graph {
                 a.push(ExTensor::simple(0.0, 0));
             }
         }
+         */
 
         0.0
     }
 }
 
 #[cfg(test)]
-mod test {
-    use crate::graph::Graph;
-    use crate::extensor::ExTensor;
+mod tests {
+    use crate::structures::extensor::ExTensor;
+    use crate::structures::graph::Graph;
+    use crate::structures::matrix::Matrix;
 
     /*
     #[test]
@@ -125,9 +134,10 @@ mod test {
     }
      */
 
+    /*
     /// returns the adjacency matrix of the n path graph
-    fn get_n_path_graph_adj_mat(n: usize) -> na::DMatrix<u8> {
-        let mut res: na::DMatrix<u8> = na::DMatrix::zeros(n, n);
+    fn get_n_path_graph_adj_mat(n: usize) -> Matrix<u8> {
+       // let mut res: naDMatrix<u8> = na::DMatrix::zeros(n, n);
 
         for i in 0..n {
             for j in 0..n {
@@ -207,4 +217,6 @@ mod test {
         let res = g.compute_walk_sum(10, f_vert, f_edge);
         println!("{}", res);
     }
+
+    */
 }
