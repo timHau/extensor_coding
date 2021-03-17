@@ -1,5 +1,8 @@
 use super::super::utils;
 use indexmap::IndexMap;
+use std::ops::{Add, Mul, Sub};
+use std::cmp::PartialEq;
+use std::fmt::Display;
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct ExTensor {
@@ -97,9 +100,8 @@ impl ExTensor {
     }
 }
 
-impl std::ops::Add<&ExTensor> for &ExTensor {
+impl Add<&ExTensor> for &ExTensor {
     type Output = ExTensor;
-
     fn add(self, rhs: &ExTensor) -> ExTensor {
         let mut data = IndexMap::new();
 
@@ -119,9 +121,43 @@ impl std::ops::Add<&ExTensor> for &ExTensor {
     }
 }
 
-impl std::ops::Mul<&ExTensor> for &ExTensor {
+impl Add<ExTensor> for ExTensor {
     type Output = ExTensor;
+    fn add(self, rhs: ExTensor) -> ExTensor {
+        &self + &rhs
+    }
+}
 
+impl Sub<&ExTensor> for &ExTensor {
+    type Output = ExTensor;
+    fn sub(self, rhs: &ExTensor) -> ExTensor {
+        let mut data = IndexMap::new();
+
+        let joined_data: Vec<_> = self.data.iter().chain(rhs.data.iter()).collect();
+        for val in joined_data {
+            let basis = val.0.to_vec();
+            let coeff = *val.1;
+            if data.contains_key(&basis) {
+                let c = data.get(&basis).unwrap();
+                data.insert(basis, c - coeff);
+            } else {
+                data.insert(basis, coeff);
+            }
+        }
+
+        ExTensor { data }
+    }
+}
+
+impl Sub<ExTensor> for ExTensor {
+    type Output = ExTensor;
+    fn sub(self, rhs: ExTensor) -> ExTensor {
+        &self - &rhs
+    }
+}
+
+impl Mul<&ExTensor> for &ExTensor {
+    type Output = ExTensor;
     fn mul(self, rhs: &ExTensor) -> ExTensor {
         let mut data = IndexMap::new();
 
@@ -140,9 +176,15 @@ impl std::ops::Mul<&ExTensor> for &ExTensor {
     }
 }
 
-impl std::ops::Mul<f64> for ExTensor {
+impl Mul<ExTensor> for ExTensor {
     type Output = ExTensor;
+    fn mul(self, rhs: ExTensor) -> ExTensor {
+        &self * &rhs
+    }
+}
 
+impl Mul<f64> for ExTensor {
+    type Output = ExTensor;
     fn mul(self, c: f64) -> ExTensor {
         let mut data = IndexMap::new();
         for val in self.data {
@@ -152,9 +194,8 @@ impl std::ops::Mul<f64> for ExTensor {
     }
 }
 
-impl std::ops::Mul<ExTensor> for f64 {
+impl Mul<ExTensor> for f64 {
     type Output = ExTensor;
-
     fn mul(self, rhs: ExTensor) -> ExTensor {
         let mut data = IndexMap::new();
         for val in rhs.data {
@@ -164,13 +205,13 @@ impl std::ops::Mul<ExTensor> for f64 {
     }
 }
 
-impl std::cmp::PartialEq<ExTensor> for ExTensor {
+impl PartialEq<ExTensor> for ExTensor {
     fn eq(&self, other: &ExTensor) -> bool {
-        self.data == other.data
+        self.sorted().data == other.sorted().data
     }
 }
 
-impl std::fmt::Display for ExTensor {
+impl Display for ExTensor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut s = String::new();
         if self.data.is_empty() {
@@ -206,7 +247,15 @@ impl std::fmt::Display for ExTensor {
     }
 }
 
-/*
+#[macro_export]
+macro_rules! extensor {
+    ( $coeff: expr, $basis: expr ) => {
+        {
+            ExTensor::new(&$coeff, &$basis)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::structures::extensor::ExTensor;
@@ -220,7 +269,28 @@ mod tests {
         let res = ExTensor::new(&[3.0, -5.0, 1.0], &[&[1, 3], &[3], &[1]]);
         assert_eq!(sum, res, "exterior sum is definined component wise");
         let sum_2 = x_2 + x_1;
-        assert_eq!(sum, sum_2, "exterior sum is commutative")
+        assert_eq!(sum, sum_2, "exterior sum is commutative");
+    }
+
+    #[test]
+    fn test_extensor_mul_add() {
+        let x_1 = &ExTensor::simple(1.0, 1);
+        let x_2 = &ExTensor::simple(2.0, 1);
+        let x_3 = &ExTensor::simple(1.0, 2);
+        let x_4 = &ExTensor::simple(2.0, 2);
+        let a = x_1 * x_4 + x_2 * x_1;
+        let expect_a = ExTensor::new(&[2.0], &[&[1, 2]]);
+        let b = x_1 * x_3 + x_2 * x_4;
+        let expect_b = ExTensor::new(&[5.0], &[&[1, 2]]);
+        let c = x_3 * x_4 + x_4 * x_1;
+        let expect_c = ExTensor::new(&[-2.0], &[&[1, 2]]);
+        let d = x_3 * x_3 + x_4 * x_4;
+        let expect_d = ExTensor::new(&[], &[]);
+
+        assert_eq!(a, expect_a, "multiplying and then adding (inner product)");
+        assert_eq!(b, expect_b, "multiplying and then adding (inner product)");
+        assert_eq!(c, expect_c, "multiplying and then adding (inner product)");
+        assert_eq!(d, expect_d, "multiplying and then adding (inner product)");
     }
 
     #[test]
@@ -248,48 +318,45 @@ mod tests {
         assert_eq!(prod_1, zero_tensor, "x wedge x vanishes");
     }
 
-    #[test]
-    fn test_extensor_anti_comm() {
-        // test anti-commutativity
-        let x_3 = &ExTensor::simple(2.0, 1);
-        let x_4 = &ExTensor::simple(4.0, 3);
-        let prod_4 = x_3 * x_4;
-        let res_1 = ExTensor::new(&[8.0], &[&[1, 3]]);
-        let prod_5 = (x_4 * x_3).sorted();
-        let res_anti = ExTensor::new(&[-8.0], &[&[1, 3]]);
-        assert_eq!(prod_4, res_1, "wedge product on simple extensors");
-        assert_eq!(
-            prod_5, res_anti,
-            "wedge product on simple extensors is anti communative"
-        );
-    }
+        #[test]
+        fn test_extensor_anti_comm() {
+            // test anti-commutativity
+            let x_3 = &ExTensor::simple(2.0, 1);
+            let x_4 = &ExTensor::simple(4.0, 3);
+            let prod_4 = x_3 * x_4;
+            let res_1 = ExTensor::new(&[8.0], &[&[1, 3]]);
+            let prod_5 = x_4 * x_3;
+            let res_anti = ExTensor::new(&[-8.0], &[&[1, 3]]);
+            assert_eq!(prod_4, res_1, "wedge product on simple extensors");
+            assert_eq!(
+                prod_5, res_anti,
+                "wedge product on simple extensors is anti communative"
+            );
+        }
 
-    #[test]
-    fn test_det_f2() {
-        let x_5 = &ExTensor::new(&[2.0, 3.0], &[&[1], &[2]]);
-        let x_6 = &ExTensor::new(&[4.0, 5.0], &[&[1], &[2]]);
-        let prod_6 = &(x_5 * x_6).sorted();
-        let det = Matrix::from_vec(2, 2, &vec![2.0, 3.0, 4.0, 5.0]).determinant();
-        let res_det_1 = &ExTensor::new(&[det], &[&[1, 2]]);
-        assert_eq!(
-            prod_6, res_det_1,
-            "Wedge Product exhibits determinant on F^2x2"
-        );
-    }
+        #[test]
+        fn test_det_f2() {
+            let x_5 = &ExTensor::new(&[2.0, 3.0], &[&[1], &[2]]);
+            let x_6 = &ExTensor::new(&[4.0, 5.0], &[&[1], &[2]]);
+            let prod_6 = &(x_5 * x_6);
+            let det = &ExTensor::new(&[-2.0], &[&[1, 2]]);
+            assert_eq!(
+                prod_6, det,
+                "Wedge Product exhibits determinant on F^2x2"
+            );
+        }
 
-    #[test]
-    fn test_det_f3() {
-        let x_7 = &ExTensor::new(&[2.0, 3.0, 4.0], &[&[1], &[2], &[3]]);
-        let x_8 = &ExTensor::new(&[5.0, 6.0, 7.0], &[&[1], &[2], &[3]]);
-        let x_9 = &ExTensor::new(&[8.0, 9.0, 10.0], &[&[1], &[2], &[3]]);
-        let prod_7 = &(&(x_7 * x_8) * x_9).sorted();
-        let det_2 = Matrix::from_vec(2, 2, &vec![2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0])
-            .determinant();
-        let res_det_2 = &ExTensor::new(&[det_2], &[&[1, 2, 3]]);
-        assert_eq!(
-            prod_7, res_det_2,
-            "Wedge Product exhibits determinant on F^3x3"
-        );
-    }
+        #[test]
+        fn test_det_f3() {
+            let x_7 = &ExTensor::new(&[2.0, 3.0, 4.0], &[&[1], &[2], &[3]]);
+            let x_8 = &ExTensor::new(&[5.0, 6.0, 7.0], &[&[1], &[2], &[3]]);
+            let x_9 = &ExTensor::new(&[8.0, 9.0, 10.0], &[&[1], &[2], &[3]]);
+            let prod_7 = &(&(x_7 * x_8) * x_9).sorted();
+            let det = &ExTensor::new(&[0.0], &[&[1, 2, 3]]);
+            assert_eq!(
+                prod_7, det,
+                "Wedge Product exhibits determinant on F^3x3"
+            );
+        }
+
 }
-*/

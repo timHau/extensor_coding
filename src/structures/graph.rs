@@ -7,7 +7,6 @@ struct Graph {
 }
 
 impl Graph {
-    /*
     fn file_n_from(path_str: &str) -> (Vec<u8>, usize) {
         // read file if it exists
         let mut file = std::fs::read(path_str).expect(".graph6 input file not found");
@@ -62,13 +61,13 @@ impl Graph {
             }
         });
 
-
+        let mut adj_mat = Matrix::zeros(n, n);
         let mut buffer_iter = buffer.iter();
         for i in 1..n {
             for j in 0..i {
                 if *(buffer_iter.next().unwrap()) == 1 {
-                    adj_mat[i * n + j] = 1;
-                    adj_mat[j * n + i] = 1;
+                    adj_mat[(i, j)] = 1;
+                    adj_mat[(j, i)] = 1;
                 }
             }
         }
@@ -133,15 +132,14 @@ impl Graph {
     }
      */
 
-    /*
     /// returns the adjacency matrix of the n path graph
     fn get_n_path_graph_adj_mat(n: usize) -> Matrix<u8> {
-       // let mut res: naDMatrix<u8> = na::DMatrix::zeros(n, n);
+       let mut res: Matrix<u8> = Matrix::zeros(n, n);
 
         for i in 0..n {
             for j in 0..n {
                 if i == j + 1 || i + 1 == j {
-                    res[i * n + j] = 1;
+                    res[(i, j)] = 1;
                 }
             }
         }
@@ -149,73 +147,71 @@ impl Graph {
         res
     }
 
-    #[test]
-    fn test_graph6_header() {
-        let graph_with_header = String::from("src/data/test_graphs/path10_with_header.g6");
-        let g = Graph::from_graph6(&graph_with_header);
-        let expect = get_n_path_graph_adj_mat(10);
-        assert_eq!(g.adj_mat, Box::new(expect));
-    }
-
-    #[test]
-    fn test_tutte_graph() {
-        let tutte_str = String::from("src/data/test_graphs/tutte_graph.g6");
-        let g = Graph::from_graph6(&tutte_str);
-
-        let tutte_mat_file = std::fs::read_to_string("src/data/test_graphs/tutte_mat.txt")
-            .expect("could not read tutte_mat.txt");
-        let tutte_mat_file = tutte_mat_file.replace('\n', " ");
-
-        let tutte_mat = tutte_mat_file
-            .trim()
-            .split(" ")
-            .map(|c| c.parse::<u8>().unwrap())
-            .collect::<Vec<u8>>();
-
-        let t_mat = na::DMatrix::from_vec(46, 46, tutte_mat);
-        assert_eq!(g.adj_mat, Box::new(t_mat));
-    }
-
-    #[test]
-    fn test_adj_mat() {
-        let path_10 = String::from("src/data/test_graphs/path10.g6");
-        let g = Graph::from_graph6(&path_10);
-        let expect = get_n_path_graph_adj_mat(10);
-        assert_eq!(g.adj_mat, Box::new(expect));
-    }
-
-    #[test]
-    fn test_big_graph() {
-        let path_100 = String::from("src/data/test_graphs/path100.g6");
-        let g = Graph::from_graph6(&path_100);
-        let expect = get_n_path_graph_adj_mat(100);
-        assert_eq!(g.adj_mat, Box::new(expect));
-    }
-
-    #[test]
-    fn test_big_graph_with_header() {
-        let path_100 = String::from("src/data/test_graphs/path100_with_header.g6");
-        let g = Graph::from_graph6(&path_100);
-        let expect = get_n_path_graph_adj_mat(100);
-        assert_eq!(g.adj_mat, Box::new(expect));
-    }
-
-    #[test]
-    fn test_compute_walk() {
-        let path_10 = String::from("src/data/test_graphs/path10.g6");
-        let g = Graph::from_graph6(&path_10);
-
-        fn f_vert(v: u32) -> ExTensor {
-            ExTensor::simple(v as f64, 1 as i32)
+        #[test]
+        fn test_graph6_header() {
+            let graph_with_header = String::from("src/data/test_graphs/path10_with_header.g6");
+            let g = Graph::from_graph6(&graph_with_header);
+            let expect = get_n_path_graph_adj_mat(10);
+            assert_eq!(g.adj_mat, Box::new(expect));
         }
 
-        fn f_edge(u: u32, v: u32) -> f64 {
-            1.0
+        #[test]
+        fn test_tutte_graph() {
+            let tutte_str = String::from("src/data/test_graphs/tutte_graph.g6");
+            let g = Graph::from_graph6(&tutte_str);
+
+            let tutte_mat_file = std::fs::read_to_string("src/data/test_graphs/tutte_mat.txt")
+                .expect("could not read tutte_mat.txt");
+            let tutte_mat_file = tutte_mat_file.replace('\n', " ");
+
+            let tutte_mat = tutte_mat_file
+                .trim()
+                .split(" ")
+                .map(|c| c.parse::<u8>().unwrap())
+                .collect::<Vec<u8>>();
+
+            let t_mat = Matrix::from_vec(46, 46, tutte_mat);
+            assert_eq!(g.adj_mat, Box::new(t_mat));
         }
 
-        let res = g.compute_walk_sum(10, f_vert, f_edge);
-        println!("{}", res);
-    }
-     */
-     */
+        #[test]
+        fn test_adj_mat() {
+            let path_10 = String::from("src/data/test_graphs/path10.g6");
+            let g = Graph::from_graph6(&path_10);
+            let expect = get_n_path_graph_adj_mat(10);
+            assert_eq!(g.adj_mat, Box::new(expect));
+        }
+
+        #[test]
+        fn test_big_graph() {
+            let path_100 = String::from("src/data/test_graphs/path100.g6");
+            let g = Graph::from_graph6(&path_100);
+            let expect = get_n_path_graph_adj_mat(100);
+            assert_eq!(g.adj_mat, Box::new(expect));
+        }
+
+        #[test]
+        fn test_big_graph_with_header() {
+            let path_100 = String::from("src/data/test_graphs/path100_with_header.g6");
+            let g = Graph::from_graph6(&path_100);
+            let expect = get_n_path_graph_adj_mat(100);
+            assert_eq!(g.adj_mat, Box::new(expect));
+        }
+
+        #[test]
+        fn test_compute_walk() {
+            let path_10 = String::from("src/data/test_graphs/path10.g6");
+            let g = Graph::from_graph6(&path_10);
+
+            fn f_vert(v: u32) -> ExTensor {
+                ExTensor::simple(v as f64, 1 as i32)
+            }
+
+            fn f_edge(u: u32, v: u32) -> f64 {
+                1.0
+            }
+
+            let res = g.compute_walk_sum(10, f_vert, f_edge);
+            println!("{}", res);
+        }
 }
