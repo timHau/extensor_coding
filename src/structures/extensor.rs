@@ -1,7 +1,7 @@
 use super::super::utils;
 use indexmap::IndexMap;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub(crate) struct ExTensor {
     data: IndexMap<Vec<i32>, f64>, // basis : coeff
 }

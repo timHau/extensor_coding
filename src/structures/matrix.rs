@@ -1,7 +1,5 @@
-use std::cmp::max;
-use std::convert::Into;
-use std::ops::{Add, Mul, Sub};
-use std::process::Output;
+use std::cmp::PartialEq;
+use std::ops::{Add, AddAssign, Index, Mul, Not, Sub};
 
 #[derive(Debug)]
 pub(crate) struct Matrix<T> {
@@ -12,13 +10,15 @@ pub(crate) struct Matrix<T> {
 
 impl<T> Matrix<T>
 where
-    T: Clone + Default + Sub<Output = T> + Add<Output = T>,
-    for<'a> &'a T: Mul<Output = T>,
+    T: Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T>,
 {
     /// create a nrows x ncols matrix from the values inside vec
-    pub(crate) fn from_vec(nrows: usize, ncols: usize, vec: &Vec<T>) -> Self {
-        assert_eq!(nrows * ncols, vec.len(), "dimensions of vec does not match");
-        let data = vec.to_vec();
+    pub(crate) fn from_vec(nrows: usize, ncols: usize, data: Vec<T>) -> Self {
+        assert_eq!(
+            nrows * ncols,
+            data.len(),
+            "dimensions of vec does not match"
+        );
         Matrix { data, nrows, ncols }
     }
 
@@ -38,78 +38,47 @@ where
     pub(crate) fn ncols(&self) -> usize {
         self.nrows
     }
-
-    /// get the value at position i, j
-    fn get(&self, i: usize, j: usize) -> Option<&T> {
-        self.data.get(i * self.nrows + j)
-    }
-
-    /// compute the value of the determinante
-    /// for a 2x2 or 3x3 matrix use sarrus rule
-    /// for bigger matrices use LU decomposition
-    pub(crate) fn determinant(&self) -> T {
-        assert_eq!(
-            self.nrows, self.ncols,
-            "can only compute determinante on square matrices"
-        );
-        match self.nrows {
-            0 => T::default(),
-            1 => self.get(0, 0).unwrap().clone(),
-            2 => {
-                let m11 = self.get(0, 0).unwrap();
-                let m12 = self.get(0, 1).unwrap();
-                let m21 = self.get(1, 0).unwrap();
-                let m22 = self.get(1, 1).unwrap();
-
-                m11 * m22 - m21 * m12
-            }
-            3 => {
-                let m11 = self.get(0, 0).unwrap();
-                let m12 = self.get(0, 1).unwrap();
-                let m13 = self.get(0, 2).unwrap();
-
-                let m21 = self.get(1, 0).unwrap();
-                let m22 = self.get(1, 1).unwrap();
-                let m23 = self.get(1, 2).unwrap();
-
-                let m31 = self.get(2, 0).unwrap();
-                let m32 = self.get(2, 1).unwrap();
-                let m33 = self.get(2, 2).unwrap();
-
-                &(m11 * m22) * m33 + &(m12 * m23) * m31 + &(m13 * m21) * m32
-                    - &(m31 * m22) * m13
-                    - &(m32 * m23) * m11
-                    - &(m33 * m21) * m12
-            }
-            _ => T::default(),
-        }
-    }
 }
 
-/// implement matrix multiplication
-/// using a parallel algorithm, might be improved by using Strassen Algorithm or similar ones
-impl<T> std::ops::Mul<&Matrix<T>> for &Matrix<T>
+impl<T> Mul<&Matrix<T>> for &Matrix<T>
 where
-    T: Clone + std::ops::Mul<Output = T>,
+    T: Copy + Default + Mul<Output = T> + AddAssign,
 {
     type Output = Matrix<T>;
 
     fn mul(self, b: &Matrix<T>) -> Matrix<T> {
         assert_eq!(self.ncols, b.ncols, "dimensions of matrices dont match");
-        // split matrices into two submatrices
-        // this will also work on matricies that dont have dimension 2^k x 2^k
-        // Assume self has dimensions n x m, b has dimensions m x p
-        // define a thresold, if max(n, m, p) < threshold => use other algorithm
-        let thresshold = &(20 as usize);
-        if max(max(&self.nrows, &self.ncols), &b.ncols) < thresshold {
-            println!("TODO");
+        let mut data = Vec::new();
+
+        for i in 0..self.ncols {
+            for j in 0..b.nrows {
+                let mut c = T::default();
+                for k in 0..self.ncols {
+                    c += self[(i, k)] * b[(k, j)];
+                }
+                data.push(c);
+            }
         }
 
         Matrix {
-            data: vec![],
-            ncols: 0,
-            nrows: 0,
+            data,
+            nrows: self.nrows,
+            ncols: b.ncols,
         }
+    }
+}
+
+impl<T> Index<(usize, usize)> for Matrix<T> {
+    type Output = T;
+
+    fn index(&self, index: (usize, usize)) -> &T {
+        self.data.get(index.0 * self.nrows + index.1).unwrap()
+    }
+}
+
+impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
+    fn eq(&self, other: &Matrix<T>) -> bool {
+        self.data == other.data
     }
 }
 
@@ -119,10 +88,21 @@ mod tests {
 
     #[test]
     fn test_zero() {
-        let z = Matrix::<u8>::zeros(2, 2);
+        let z: Matrix<u8> = Matrix::zeros(2, 2);
         let res: Vec<u8> = vec![0, 0, 0, 0];
         assert_eq!(z.data, res, "zero 2x2 matrix works");
         assert_eq!(2 as usize, z.nrows, "zero matrix dimensions match");
         assert_eq!(2 as usize, z.ncols, "zero matrix dimensions match");
+    }
+
+    #[test]
+    fn test_mul() {
+        let a = Matrix::from_vec(2, 2, vec![0.0, 1.0, 2.0, 3.0]);
+        let b = Matrix::from_vec(2, 2, vec![3.0, 2.0, 1.0, 0.0]);
+        let c = &a * &b;
+        let expect = Matrix::from_vec(2, 2, vec![1.0, 0.0, 9.0, 4.0]);
+        assert_eq!(c.nrows, 2, "rows of product match");
+        assert_eq!(c.ncols, 2, "columns of product match");
+        assert_eq!(c, expect);
     }
 }

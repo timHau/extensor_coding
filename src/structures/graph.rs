@@ -7,6 +7,7 @@ struct Graph {
 }
 
 impl Graph {
+    /*
     fn file_n_from(path_str: &str) -> (Vec<u8>, usize) {
         // read file if it exists
         let mut file = std::fs::read(path_str).expect(".graph6 input file not found");
@@ -61,8 +62,7 @@ impl Graph {
             }
         });
 
-        let mut adj_mat = Matrix::zeros(n, n);
-        /*
+
         let mut buffer_iter = buffer.iter();
         for i in 1..n {
             for j in 0..i {
@@ -72,7 +72,6 @@ impl Graph {
                 }
             }
         }
-         */
 
         Graph {
             adj_mat: Box::new(adj_mat),
@@ -117,10 +116,10 @@ impl Graph {
 
         0.0
     }
-}
+    }
 
-#[cfg(test)]
-mod tests {
+    #[cfg(test)]
+    mod tests {
     use crate::structures::extensor::ExTensor;
     use crate::structures::graph::Graph;
     use crate::structures::matrix::Matrix;
@@ -217,6 +216,6 @@ mod tests {
         let res = g.compute_walk_sum(10, f_vert, f_edge);
         println!("{}", res);
     }
-
-    */
+     */
+     */
 }
