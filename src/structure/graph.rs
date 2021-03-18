@@ -11,7 +11,6 @@ pub(crate) struct Graph {
 /// implementation of the Graph structure used
 /// currently a graph is just its adjacency matrix
 impl Graph {
-
     /// ## file_n_from
     ///
     /// given a `path_str` which is the path to a graph6 file as a string, it opens the file and returns
@@ -120,8 +119,8 @@ impl Graph {
         let mut a = Vec::new();
         for (i, v) in (*self.adj_mat).data().iter().enumerate() {
             if *v == 1 {
-                let from = (i % n);
-                let to = (i / n);
+                let from = i % n;
+                let to = i / n;
                 let val_edge = f_edge(from, to);
                 let val_vert = f_vert(from);
                 a.push(val_edge * val_vert);
@@ -140,9 +139,6 @@ impl Graph {
         res
     }
 }
-
-
-
 
 #[cfg(test)]
 mod tests {

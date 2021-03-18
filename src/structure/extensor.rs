@@ -13,7 +13,6 @@ pub struct ExTensor {
 ///
 /// implements an Extensor, which is a mapping from a Vec<i32> (basis) to float (coefficient)
 impl ExTensor {
-
     /// ## new
     ///
     /// create an new Extensor that does not need to be "simple"
@@ -253,16 +252,14 @@ impl Display for ExTensor {
             return write!(f, "0");
         }
 
-        let mut count_term = 0;
-        for d in self.data.iter() {
+        for (count_term, d) in self.data.iter().enumerate() {
             if *d.1 < 0.0 {
                 s += format!("({}) ", d.1).as_str();
             } else {
                 s += format!("{} ", d.1).as_str();
             }
 
-            let mut count_base = 0;
-            for b in d.0.iter() {
+            for (count_base, b) in d.0.iter().enumerate() {
                 if count_base == d.0.len() - 1 {
                     if count_term == self.data.len() - 1 {
                         s += format!("e_{}", b).as_str();
@@ -272,10 +269,7 @@ impl Display for ExTensor {
                 } else {
                     s += format!("e_{} ∧ ", b).as_str();
                 }
-                count_base += 1;
             }
-
-            count_term += 1;
         }
 
         write!(f, "{}", s)

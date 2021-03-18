@@ -2,6 +2,9 @@ use super::structure::extensor::ExTensor;
 use std::collections::HashSet;
 use std::hash::Hash;
 
+type F = Box<dyn Fn(usize) -> ExTensor>;
+type G = Box<dyn Fn(usize, usize) -> f64>;
+
 pub fn get_permutation_to_sort<T>(v: &[T]) -> Vec<usize>
 where
     T: std::cmp::Ord,
@@ -21,12 +24,7 @@ where
 }
 
 /// given k create a vandermonde coding that takes v as input
-pub fn create_vandermonde(
-    k: usize,
-) -> (
-    Box<dyn Fn(usize) -> ExTensor>,
-    Box<dyn Fn(usize, usize) -> f64>,
-) {
+pub fn create_vandermonde(k: usize) -> (F, G) {
     let f_vert = move |v: usize| -> ExTensor {
         let coeffs: Vec<f64> = (0..k).map(|i| v.pow(i as u32) as f64).collect();
         let basis: Vec<Vec<i32>> = (0..k).map(|i| vec![i as i32]).collect();

@@ -55,9 +55,9 @@ where
     /// naive implementation of a matrix power
     /// can be optimised by first diagonalizing and then taking the eigenvalues to a power
     pub(crate) fn power(&self, k: usize) -> Self {
-        let mut b = Matrix::from_vec(self.nrows.clone(), self.ncols.clone(), self.data.clone());
-        for i in 1..k {
-            b = &b * &self;
+        let mut b = Matrix::from_vec(self.nrows, self.ncols, self.data.clone());
+        for _ in 1..k {
+            b = &b * self;
         }
         b
     }
