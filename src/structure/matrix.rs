@@ -103,8 +103,8 @@ impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::structures::extensor::ExTensor;
-    use crate::structures::matrix::Matrix;
+    use crate::structure::extensor::ExTensor;
+    use crate::structure::matrix::Matrix;
 
     #[test]
     fn zero() {

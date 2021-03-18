@@ -1,4 +1,5 @@
-mod structures;
+mod algorithm;
+mod structure;
 mod utils;
 
 fn main() {

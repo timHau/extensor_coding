@@ -5,7 +5,7 @@ use std::fmt::Display;
 use std::ops::{Add, Mul, Sub};
 
 #[derive(Debug, Clone, Default)]
-pub(crate) struct ExTensor {
+pub struct ExTensor {
     data: IndexMap<Vec<i32>, f64>, // basis : coeff
 }
 
@@ -274,8 +274,8 @@ macro_rules! extensor {
 
 #[cfg(test)]
 mod tests {
-    use crate::structures::extensor::ExTensor;
-    use crate::structures::matrix::Matrix;
+    use crate::structure::extensor::ExTensor;
+    use crate::structure::matrix::Matrix;
 
     #[test]
     fn extensor_add() {

@@ -2,12 +2,12 @@ use super::extensor::ExTensor;
 use super::matrix::Matrix;
 
 #[derive(Debug)]
-struct Graph {
+pub(crate) struct Graph {
     adj_mat: Box<Matrix<u8>>,
 }
 
 impl Graph {
-    fn file_n_from(path_str: &str) -> (Vec<u8>, usize) {
+    pub(crate) fn file_n_from(path_str: &str) -> (Vec<u8>, usize) {
         // read file if it exists
         let mut file = std::fs::read(path_str).expect(".graph6 input file not found");
 
@@ -46,7 +46,7 @@ impl Graph {
         (file, n)
     }
 
-    fn from_graph6(path_str: &str) -> Self {
+    pub(crate) fn from_graph6(path_str: &str) -> Self {
         let (file, n) = Self::file_n_from(path_str);
 
         let mut buffer = Vec::new();
@@ -87,12 +87,11 @@ impl Graph {
         }
     }
 
-    fn compute_walk_sum(
-        &self,
-        k: usize,
-        f_vert: fn(usize) -> ExTensor,
-        f_edge: fn(usize, usize) -> f64,
-    ) -> ExTensor {
+    pub(crate) fn compute_walk_sum<F, G>(&self, k: usize, f_vert: F, f_edge: G) -> ExTensor
+    where
+        F: Fn(usize) -> ExTensor,
+        G: Fn(usize, usize) -> f64,
+    {
         let mut a = Vec::new();
 
         let n = self.adj_mat.nrows();
@@ -109,7 +108,7 @@ impl Graph {
             }
         }
         let a = Matrix::from_vec(n, n, a).power(k - 1);
-        let b = Matrix::from_vec(n, 1, (1..(n+1)).map(|i| f_vert(i)).collect::<Vec<_>>());
+        let b = Matrix::from_vec(n, 1, (1..(n + 1)).map(|i| f_vert(i)).collect::<Vec<_>>());
         let mut res = ExTensor::zero();
         for v in (&a * &b).data().iter() {
             res = &res + v;
@@ -120,9 +119,10 @@ impl Graph {
 
 #[cfg(test)]
 mod tests {
-    use crate::structures::extensor::ExTensor;
-    use crate::structures::graph::Graph;
-    use crate::structures::matrix::Matrix;
+    use crate::structure::extensor::ExTensor;
+    use crate::structure::graph::Graph;
+    use crate::structure::matrix::Matrix;
+    use crate::utils;
 
     /*
     #[test]
@@ -203,19 +203,8 @@ mod tests {
     fn compute_walk() {
         let path_10 = String::from("src/data/test_graphs/path3.g6");
         let g = Graph::from_graph6(&path_10);
-
-        fn f_vert(v: usize) -> ExTensor {
-            let k = 3;
-            let coeffs: Vec<f64> = (0..k).map(|i| v.pow(i) as f64).collect();
-            let basis: Vec<Vec<i32>> = (0..k).map(|i| vec![i as i32]).collect();
-            ExTensor::from(coeffs, basis)
-        }
-
-        fn f_edge(u: usize, v: usize) -> f64 {
-            1.0
-        }
-
-        let res = g.compute_walk_sum(3, f_vert, f_edge);
+        let f_edge = |u: usize, v: usize| -> f64 { 1.0 };
+        let res = g.compute_walk_sum(3, utils::create_vandermonde(3), f_edge);
         let zero = ExTensor::zero();
         assert_ne!(res, zero, "compute walk with vandermonde coding");
     }
