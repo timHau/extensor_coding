@@ -40,7 +40,7 @@ where
     }
 
     pub(crate) fn data(&self) -> &Vec<T> {
-       &self.data
+        &self.data
     }
 
     /// naive implementation of a matrix power
@@ -82,7 +82,6 @@ where
     }
 }
 
-
 impl<T> Index<(usize, usize)> for Matrix<T> {
     type Output = T;
     fn index(&self, index: (usize, usize)) -> &T {
@@ -101,7 +100,6 @@ impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
         self.data == other.data
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -171,9 +169,48 @@ mod tests {
 
     #[test]
     fn mat_power() {
-        let a = Matrix::from_vec(3, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);
-        let r = a.power(2);
+        let power = Matrix::from_vec(3, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]).power(2);
         let expect = Matrix::from_vec(3, 3, vec![30, 36, 42, 66, 81, 96, 102, 126, 150]);
-        assert_eq!(r, expect, "3x3 matrix to the second power");
+        assert_eq!(power, expect, "3x3 matrix to the second power");
+    }
+
+    #[test]
+    fn mat_power_big() {
+        let power: Matrix<u128> = Matrix::from_vec(3, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]).power(11);
+        let expect = Matrix::from_vec(
+            3,
+            3,
+            vec![
+                2135095631568,
+                2623420941336,
+                3111746251104,
+                4835149302222,
+                5941013482665,
+                7046877663108,
+                7535202972876,
+                9258606023994,
+                10982009075112,
+            ],
+        );
+        assert_eq!(power, expect, "3x3 matrix to the 11th power");
+    }
+
+    #[test]
+    fn mat_extensor_power() {
+        let v = vec![
+            ExTensor::simple(1.0, 1),
+            ExTensor::simple(2.0, 1),
+            ExTensor::simple(1.0, 2),
+            ExTensor::simple(2.0, 2),
+        ];
+        let power = Matrix::from_vec(2, 2, v).power(2);
+        let r = vec![
+            ExTensor::new(&[2.0], &[&[1, 2]]),
+            ExTensor::new(&[4.0], &[&[1, 2]]),
+            ExTensor::new(&[-1.0], &[&[1, 2]]),
+            ExTensor::new(&[-2.0], &[&[1, 2]]),
+        ];
+        let expect = Matrix::from_vec(2, 2, r);
+        assert_eq!(power, expect, "2x2 extensor matrix to the second power");
     }
 }

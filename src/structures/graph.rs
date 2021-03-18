@@ -89,7 +89,7 @@ impl Graph {
 
     fn compute_walk_sum(
         &self,
-        k: u32,
+        k: usize,
         f_vert: fn(u32) -> ExTensor,
         f_edge: fn(u32, u32) -> f64,
     ) -> f64 {
@@ -110,7 +110,7 @@ impl Graph {
                 a.push(ExTensor::simple(0.0, 0));
             }
         }
-        let a = Matrix::from_vec(n, n, a);
+        let a = Matrix::from_vec(n, n, a).power(k - 1);
 
         0.0
     }
