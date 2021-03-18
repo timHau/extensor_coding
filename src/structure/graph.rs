@@ -20,7 +20,7 @@ impl Graph {
         // read file if it exists
         let mut file = std::fs::read(path_str).expect(".graph6 input file not found");
 
-        let mut n = 0;
+        let mut _n = 0;
 
         let has_sparse_header =
             file.len() > 10 && std::str::from_utf8(&file[..11]).unwrap() == ">>sparse6<<";
@@ -30,29 +30,29 @@ impl Graph {
 
         if !is_sparse {
             if has_graph_header {
-                n = (file[10] - 63) as usize;
+                _n = (file[10] - 63) as usize;
                 file = file[11..].to_vec();
             } else {
-                n = (file[0] - 63) as usize;
+                _n = (file[0] - 63) as usize;
                 file = file[1..].to_vec();
             }
         } else if has_sparse_header {
-            n = (file[12] - 63) as usize;
+            _n = (file[12] - 63) as usize;
             file = file[13..].to_vec();
         } else {
-            n = (file[1] - 63) as usize;
+            _n = (file[1] - 63) as usize;
             file = file[2..].to_vec();
         }
 
-        if n > 62 {
+        if _n > 62 {
             let n1 = ((file[0] - 63) as i32) << 12;
             let n2 = ((file[1] - 63) as i32) << 6;
             let n3 = (file[2] - 63) as i32;
-            n = (n1 + n2 + n3) as usize;
+            _n = (n1 + n2 + n3) as usize;
             file = file[3..].to_vec();
         }
 
-        (file, n)
+        (file, _n)
     }
 
     /// ## from_graph6

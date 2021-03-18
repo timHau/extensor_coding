@@ -116,8 +116,8 @@ impl ExTensor {
             let mut basis_next = d.0.to_vec();
             basis_next.sort_unstable();
             if data.contains_key(&basis_next) {
-                let coeff_old = data.get(&basis_next).unwrap();
-                data.insert(basis_next, coeff_old + (d.1 * sign));
+                let coeff_old = data.get(&basis_next).unwrap() + (d.1 * sign);
+                data.insert(basis_next, coeff_old);
             } else {
                 data.insert(basis_next, d.1 * sign);
             }
@@ -144,8 +144,8 @@ impl Add<&ExTensor> for &ExTensor {
             let basis = val.0.to_vec();
             let coeff = *val.1;
             if data.contains_key(&basis) {
-                let c = data.get(&basis).unwrap();
-                data.insert(basis, c + coeff);
+                let c = data.get(&basis).unwrap() + coeff;
+                data.insert(basis, c);
             } else {
                 data.insert(basis, coeff);
             }
@@ -172,8 +172,8 @@ impl Sub<&ExTensor> for &ExTensor {
             let basis = val.0.to_vec();
             let coeff = *val.1;
             if data.contains_key(&basis) {
-                let c = data.get(&basis).unwrap();
-                data.insert(basis, c - coeff);
+                let c = data.get(&basis).unwrap() - coeff;
+                data.insert(basis, c);
             } else {
                 data.insert(basis, coeff);
             }
@@ -286,7 +286,6 @@ macro_rules! extensor {
 #[cfg(test)]
 mod tests {
     use crate::structure::extensor::ExTensor;
-    use crate::structure::matrix::Matrix;
 
     #[test]
     fn extensor_add() {
