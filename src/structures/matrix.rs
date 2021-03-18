@@ -38,11 +38,25 @@ where
     pub(crate) fn ncols(&self) -> usize {
         self.nrows
     }
+
+    pub(crate) fn data(&self) -> &Vec<T> {
+       &self.data
+    }
+
+    /// naive implementation of a matrix power
+    /// can be optimised by first diagonalizing and then taking the eigenvalues to a power
+    pub(crate) fn power(&self, k: usize) -> Self {
+        let mut b = Matrix::from_vec(self.nrows.clone(), self.ncols.clone(), self.data.clone());
+        for i in 1..k {
+            b = &b * &self;
+        }
+        b
+    }
 }
 
 impl<T> Mul<&Matrix<T>> for &Matrix<T>
 where
-    T: std::fmt::Debug + Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T>,
+    T: Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T>,
 {
     type Output = Matrix<T>;
     fn mul(self, b: &Matrix<T>) -> Matrix<T> {
@@ -68,6 +82,7 @@ where
     }
 }
 
+
 impl<T> Index<(usize, usize)> for Matrix<T> {
     type Output = T;
     fn index(&self, index: (usize, usize)) -> &T {
@@ -87,13 +102,14 @@ impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
     }
 }
 
+
 #[cfg(test)]
 mod tests {
     use crate::structures::extensor::ExTensor;
     use crate::structures::matrix::Matrix;
 
     #[test]
-    fn test_zero() {
+    fn zero() {
         let z: Matrix<u8> = Matrix::zeros(2, 2);
         let res: Vec<u8> = vec![0, 0, 0, 0];
         assert_eq!(z.data, res, "zero 2x2 matrix works");
@@ -102,7 +118,7 @@ mod tests {
     }
 
     #[test]
-    fn test_mul() {
+    fn mul() {
         let a = Matrix::from_vec(2, 2, vec![0.0, 1.0, 2.0, 3.0]);
         let b = Matrix::from_vec(2, 2, vec![3.0, 2.0, 1.0, 0.0]);
         let c = &a * &b;
@@ -113,7 +129,7 @@ mod tests {
     }
 
     #[test]
-    fn test_mul_non_square() {
+    fn mul_non_square() {
         let a = Matrix::from_vec(4, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
         let b = Matrix::from_vec(3, 2, vec![1, 2, 3, 4, 5, 6]);
         let c = &a * &b;
@@ -124,7 +140,7 @@ mod tests {
     }
 
     #[test]
-    fn test_extensor_mat() {
+    fn extensor_mat() {
         let v = vec![
             ExTensor::simple(1.0, 1),
             ExTensor::simple(2.0, 1),
@@ -151,5 +167,13 @@ mod tests {
             prod, expect,
             "matrix multiplication with extensor components"
         );
+    }
+
+    #[test]
+    fn mat_power() {
+        let a = Matrix::from_vec(3, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        let r = a.power(2);
+        let expect = Matrix::from_vec(3, 3, vec![30, 36, 42, 66, 81, 96, 102, 126, 150]);
+        assert_eq!(r, expect, "3x3 matrix to the second power");
     }
 }

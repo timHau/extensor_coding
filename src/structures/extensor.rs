@@ -260,7 +260,7 @@ mod tests {
     use crate::structures::matrix::Matrix;
 
     #[test]
-    fn test_extensor_add() {
+    fn extensor_add() {
         let x_1 = &ExTensor::new(&[3.0, -7.0], &[&[1, 3], &[3]]);
         let x_2 = &ExTensor::new(&[1.0, 2.0], &[&[1], &[3]]);
         let sum = x_1 + x_2;
@@ -271,7 +271,7 @@ mod tests {
     }
 
     #[test]
-    fn test_extensor_mul_add() {
+    fn extensor_mul_add() {
         let x_1 = &ExTensor::simple(1.0, 1);
         let x_2 = &ExTensor::simple(2.0, 1);
         let x_3 = &ExTensor::simple(1.0, 2);
@@ -292,7 +292,7 @@ mod tests {
     }
 
     #[test]
-    fn test_extensor_scalar_mul() {
+    fn extensor_scalar_mul() {
         let x_1 = ExTensor::new(&[3.0, 2.0], &[&[1, 2], &[3, 4]]) * 2.0;
         let x_2 = 2.0 * ExTensor::new(&[3.0, 2.0], &[&[1, 2], &[3, 4]]);
         let res = ExTensor::new(&[6.0, 4.0], &[&[1, 2], &[3, 4]]);
@@ -302,14 +302,14 @@ mod tests {
     }
 
     #[test]
-    fn test_extensor_sign() {
+    fn extensor_sign() {
         let x_1 = ExTensor::new(&[-3.0], &[&[2, 1]]);
         let x_2 = ExTensor::new(&[3.0], &[&[1, 2]]);
         assert_eq!(x_1, x_2, "exterior tensors are anti commutative");
     }
 
     #[test]
-    fn test_extensor_vanish() {
+    fn extensor_vanish() {
         let x_1 = &ExTensor::simple(1.0, 1);
         let prod_1 = &(x_1 * x_1);
         let zero_tensor = &ExTensor::new(&[], &[]);
@@ -317,7 +317,7 @@ mod tests {
     }
 
     #[test]
-    fn test_extensor_anti_comm() {
+    fn extensor_anti_comm() {
         // test anti-commutativity
         let x_3 = &ExTensor::simple(2.0, 1);
         let x_4 = &ExTensor::simple(4.0, 3);
@@ -333,7 +333,7 @@ mod tests {
     }
 
     #[test]
-    fn test_det_f2() {
+    fn det_f2() {
         let x_5 = &ExTensor::new(&[2.0, 3.0], &[&[1], &[2]]);
         let x_6 = &ExTensor::new(&[4.0, 5.0], &[&[1], &[2]]);
         let prod_6 = &(x_5 * x_6);
@@ -342,7 +342,7 @@ mod tests {
     }
 
     #[test]
-    fn test_det_f3() {
+    fn det_f3() {
         let x_7 = &ExTensor::new(&[2.0, 3.0, 4.0], &[&[1], &[2], &[3]]);
         let x_8 = &ExTensor::new(&[5.0, 6.0, 7.0], &[&[1], &[2], &[3]]);
         let x_9 = &ExTensor::new(&[8.0, 9.0, 10.0], &[&[1], &[2], &[3]]);

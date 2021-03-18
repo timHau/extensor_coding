@@ -93,11 +93,10 @@ impl Graph {
         f_vert: fn(u32) -> ExTensor,
         f_edge: fn(u32, u32) -> f64,
     ) -> f64 {
-        // let mut a = Vec::new();
+        let mut a = Vec::new();
 
-        let _n = self.adj_mat.nrows();
-        /*
-        for (i, v) in self.adj_mat.iter().enumerate() {
+        let n = self.adj_mat.nrows();
+        for (i, v) in (*self.adj_mat).data().iter().enumerate() {
             if *v == 1 {
                 let from = (i % n) as u32;
                 let to = (i / n) as u32;
@@ -111,7 +110,7 @@ impl Graph {
                 a.push(ExTensor::simple(0.0, 0));
             }
         }
-         */
+        let a = Matrix::from_vec(n, n, a);
 
         0.0
     }
@@ -148,7 +147,7 @@ mod tests {
     }
 
     #[test]
-    fn test_graph6_header() {
+    fn graph6_header() {
         let graph_with_header = String::from("src/data/test_graphs/path10_with_header.g6");
         let g = Graph::from_graph6(&graph_with_header);
         let expect = get_n_path_graph_adj_mat(10);
@@ -156,7 +155,7 @@ mod tests {
     }
 
     #[test]
-    fn test_tutte_graph() {
+    fn tutte_graph() {
         let tutte_str = String::from("src/data/test_graphs/tutte_graph.g6");
         let g = Graph::from_graph6(&tutte_str);
 
@@ -175,7 +174,7 @@ mod tests {
     }
 
     #[test]
-    fn test_adj_mat() {
+    fn adj_mat() {
         let path_10 = String::from("src/data/test_graphs/path10.g6");
         let g = Graph::from_graph6(&path_10);
         let expect = get_n_path_graph_adj_mat(10);
@@ -183,7 +182,7 @@ mod tests {
     }
 
     #[test]
-    fn test_big_graph() {
+    fn big_graph() {
         let path_100 = String::from("src/data/test_graphs/path100.g6");
         let g = Graph::from_graph6(&path_100);
         let expect = get_n_path_graph_adj_mat(100);
@@ -191,7 +190,7 @@ mod tests {
     }
 
     #[test]
-    fn test_big_graph_with_header() {
+    fn big_graph_with_header() {
         let path_100 = String::from("src/data/test_graphs/path100_with_header.g6");
         let g = Graph::from_graph6(&path_100);
         let expect = get_n_path_graph_adj_mat(100);
@@ -199,7 +198,7 @@ mod tests {
     }
 
     #[test]
-    fn test_compute_walk() {
+    fn compute_walk() {
         let path_10 = String::from("src/data/test_graphs/path10.g6");
         let g = Graph::from_graph6(&path_10);
 
