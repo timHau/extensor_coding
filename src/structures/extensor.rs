@@ -31,6 +31,19 @@ impl ExTensor {
         ExTensor { data }.sorted()
     }
 
+    pub(crate) fn from(coeffs: Vec<f64>, basis: Vec<Vec<i32>>) -> Self {
+        assert_eq!(
+            coeffs.len(),
+            basis.len(),
+            "coeffs and basis must be of same length"
+        );
+        let mut data = IndexMap::new();
+        for i in 0..basis.len() {
+            data.insert(basis[i].to_vec(), coeffs[i]);
+        }
+        ExTensor { data }.sorted()
+    }
+
     /// construct a simple exterior tensor e.g. only using a single basis set
     /// example:
     ///
@@ -81,7 +94,7 @@ impl ExTensor {
     }
 
     /// sort the basis and apply sign changes if necessary
-    fn sorted(&self) -> Self {
+    pub(crate) fn sorted(&self) -> Self {
         let mut data = IndexMap::new();
 
         for (i, d) in self.data.iter().enumerate() {
@@ -97,6 +110,11 @@ impl ExTensor {
         }
 
         ExTensor { data }
+    }
+
+    /// return the zero / empty ex tensor
+    pub(crate) fn zero() -> Self {
+        ExTensor::new(&[], &[])
     }
 }
 
@@ -312,7 +330,7 @@ mod tests {
     fn extensor_vanish() {
         let x_1 = &ExTensor::simple(1.0, 1);
         let prod_1 = &(x_1 * x_1);
-        let zero_tensor = &ExTensor::new(&[], &[]);
+        let zero_tensor = &ExTensor::zero();
         assert_eq!(prod_1, zero_tensor, "x wedge x vanishes");
     }
 

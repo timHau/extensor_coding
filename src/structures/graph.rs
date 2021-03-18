@@ -90,29 +90,31 @@ impl Graph {
     fn compute_walk_sum(
         &self,
         k: usize,
-        f_vert: fn(u32) -> ExTensor,
-        f_edge: fn(u32, u32) -> f64,
-    ) -> f64 {
+        f_vert: fn(usize) -> ExTensor,
+        f_edge: fn(usize, usize) -> f64,
+    ) -> ExTensor {
         let mut a = Vec::new();
 
         let n = self.adj_mat.nrows();
         for (i, v) in (*self.adj_mat).data().iter().enumerate() {
             if *v == 1 {
-                let from = (i % n) as u32;
-                let to = (i / n) as u32;
+                let from = (i % n);
+                let to = (i / n);
 
                 let val_edge = f_edge(from, to);
                 let val_vert = f_vert(from);
-                let res = val_edge * val_vert;
-
-                a.push(res);
+                a.push(val_edge * val_vert);
             } else {
                 a.push(ExTensor::simple(0.0, 0));
             }
         }
         let a = Matrix::from_vec(n, n, a).power(k - 1);
-
-        0.0
+        let b = Matrix::from_vec(n, 1, (1..(n+1)).map(|i| f_vert(i)).collect::<Vec<_>>());
+        let mut res = ExTensor::zero();
+        for v in (&a * &b).data().iter() {
+            res = &res + v;
+        }
+        res
     }
 }
 
@@ -199,18 +201,22 @@ mod tests {
 
     #[test]
     fn compute_walk() {
-        let path_10 = String::from("src/data/test_graphs/path10.g6");
+        let path_10 = String::from("src/data/test_graphs/path3.g6");
         let g = Graph::from_graph6(&path_10);
 
-        fn f_vert(v: u32) -> ExTensor {
-            ExTensor::simple(v as f64, 1 as i32)
+        fn f_vert(v: usize) -> ExTensor {
+            let k = 3;
+            let coeffs: Vec<f64> = (0..k).map(|i| v.pow(i) as f64).collect();
+            let basis: Vec<Vec<i32>> = (0..k).map(|i| vec![i as i32]).collect();
+            ExTensor::from(coeffs, basis)
         }
 
-        fn f_edge(u: u32, v: u32) -> f64 {
+        fn f_edge(u: usize, v: usize) -> f64 {
             1.0
         }
 
-        let res = g.compute_walk_sum(10, f_vert, f_edge);
-        println!("{}", res);
+        let res = g.compute_walk_sum(3, f_vert, f_edge);
+        let zero = ExTensor::zero();
+        assert_ne!(res, zero, "compute walk with vandermonde coding");
     }
 }
