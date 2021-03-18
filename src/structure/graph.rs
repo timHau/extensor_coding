@@ -6,7 +6,17 @@ pub(crate) struct Graph {
     adj_mat: Box<Matrix<u8>>,
 }
 
+/// # Graph
+///
+/// implementation of the Graph structure used
+/// currently a graph is just its adjacency matrix
 impl Graph {
+
+    /// ## file_n_from
+    ///
+    /// given a `path_str` which is the path to a graph6 file as a string, it opens the file and returns
+    /// the file with `n` which is the number of vertices in that graph.
+    /// It works with .g6 and .s6 files, with and without headers. If the file is not found it will panic.
     pub(crate) fn file_n_from(path_str: &str) -> (Vec<u8>, usize) {
         // read file if it exists
         let mut file = std::fs::read(path_str).expect(".graph6 input file not found");
@@ -46,6 +56,9 @@ impl Graph {
         (file, n)
     }
 
+    /// ## from_graph6
+    ///
+    /// create a Graph from a .g6 file which is located at `path_str`.
     pub(crate) fn from_graph6(path_str: &str) -> Self {
         let (file, n) = Self::file_n_from(path_str);
 
@@ -87,19 +100,28 @@ impl Graph {
         }
     }
 
-    pub(crate) fn compute_walk_sum<F, G>(&self, k: usize, f_vert: F, f_edge: G) -> ExTensor
+    /// ## compute_walk_sum
+    ///
+    /// given an usize `k` and an extensor mapping compute its walk sum.
+    /// The mapping is a tuple of closures, where the first element is a function from
+    /// a vertex to a extensor and the second element is a function from two vertices (an edge) to
+    /// an f64. The walk sum is calculated as
+    /// ```
+    /// f(G, ξ) = (1 1 .. 1) A^(k-1) (ξ(v_1) ξ(v_2) ... ξ(v_n))^T
+    /// ```
+    pub(crate) fn compute_walk_sum<F, G>(&self, k: usize, mapping: (F, G)) -> ExTensor
     where
         F: Fn(usize) -> ExTensor,
         G: Fn(usize, usize) -> f64,
     {
-        let mut a = Vec::new();
-
+        let (f_vert, f_edge) = mapping;
         let n = self.adj_mat.nrows();
+
+        let mut a = Vec::new();
         for (i, v) in (*self.adj_mat).data().iter().enumerate() {
             if *v == 1 {
                 let from = (i % n);
                 let to = (i / n);
-
                 let val_edge = f_edge(from, to);
                 let val_vert = f_vert(from);
                 a.push(val_edge * val_vert);
@@ -109,13 +131,18 @@ impl Graph {
         }
         let a = Matrix::from_vec(n, n, a).power(k - 1);
         let b = Matrix::from_vec(n, 1, (1..(n + 1)).map(|i| f_vert(i)).collect::<Vec<_>>());
+
         let mut res = ExTensor::zero();
         for v in (&a * &b).data().iter() {
             res = &res + v;
         }
+
         res
     }
 }
+
+
+
 
 #[cfg(test)]
 mod tests {
@@ -203,8 +230,7 @@ mod tests {
     fn compute_walk() {
         let path_10 = String::from("src/data/test_graphs/path3.g6");
         let g = Graph::from_graph6(&path_10);
-        let f_edge = |u: usize, v: usize| -> f64 { 1.0 };
-        let res = g.compute_walk_sum(3, utils::create_vandermonde(3), f_edge);
+        let res = g.compute_walk_sum(3, utils::create_vandermonde(3));
         let zero = ExTensor::zero();
         assert_ne!(res, zero, "compute walk with vandermonde coding");
     }

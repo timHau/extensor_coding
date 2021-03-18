@@ -9,9 +9,15 @@ pub struct ExTensor {
     data: IndexMap<Vec<i32>, f64>, // basis : coeff
 }
 
+/// # ExTensor
+///
+/// implements an Extensor, which is a mapping from a Vec<i32> (basis) to float (coefficient)
 impl ExTensor {
+
+    /// ## new
+    ///
     /// create an new Extensor that does not need to be "simple"
-    /// meaning sets with cardinality > 1 are supported
+    /// meaning sets with cardinality > 1 are supported.
     ///
     /// example:
     /// ```
@@ -31,6 +37,9 @@ impl ExTensor {
         ExTensor { data }.sorted()
     }
 
+    /// ## from
+    ///
+    /// given an Vec<f64> of coefficients and a Vec of Vec<i32> of basis, create a new extensor.
     pub(crate) fn from(coeffs: Vec<f64>, basis: Vec<Vec<i32>>) -> Self {
         assert_eq!(
             coeffs.len(),
@@ -44,6 +53,8 @@ impl ExTensor {
         ExTensor { data }.sorted()
     }
 
+    /// ## simple
+    ///
     /// construct a simple exterior tensor e.g. only using a single basis set
     /// example:
     ///
@@ -57,6 +68,8 @@ impl ExTensor {
         ExTensor { data }
     }
 
+    /// ## get_sign
+    ///
     /// get sign of permutation that brings the basis at 'basis_index' into increasing order
     ///
     /// ```
@@ -93,6 +106,8 @@ impl ExTensor {
         sign
     }
 
+    /// ## sorted
+    ///
     /// sort the basis and apply sign changes if necessary
     pub(crate) fn sorted(&self) -> Self {
         let mut data = IndexMap::new();
@@ -112,6 +127,8 @@ impl ExTensor {
         ExTensor { data }
     }
 
+    /// ## zero
+    ///
     /// return the zero / empty ex tensor
     pub(crate) fn zero() -> Self {
         ExTensor::new(&[], &[])

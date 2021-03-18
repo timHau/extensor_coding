@@ -8,10 +8,15 @@ pub(crate) struct Matrix<T> {
     ncols: usize,
 }
 
+/// # Matrix
+///
+/// Implementation of a matrix, which is just a flat Vec
 impl<T> Matrix<T>
 where
     T: Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T>,
 {
+    /// ## from_vec
+    ///
     /// create a nrows x ncols matrix from the values inside vec
     pub(crate) fn from_vec(nrows: usize, ncols: usize, data: Vec<T>) -> Self {
         assert_eq!(
@@ -22,6 +27,8 @@ where
         Matrix { data, nrows, ncols }
     }
 
+    /// ## zeros
+    ///
     /// return the nrows x ncols matrix with all zeros
     pub(crate) fn zeros(nrows: usize, ncols: usize) -> Self {
         let mut data = Vec::new();
@@ -43,6 +50,8 @@ where
         &self.data
     }
 
+    /// ## power
+    ///
     /// naive implementation of a matrix power
     /// can be optimised by first diagonalizing and then taking the eigenvalues to a power
     pub(crate) fn power(&self, k: usize) -> Self {
