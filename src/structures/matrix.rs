@@ -89,8 +89,8 @@ impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::structures::matrix::Matrix;
     use crate::structures::extensor::ExTensor;
+    use crate::structures::matrix::Matrix;
 
     #[test]
     fn test_zero() {
@@ -125,13 +125,31 @@ mod tests {
 
     #[test]
     fn test_extensor_mat() {
-        let v = vec![ExTensor::simple(1.0, 1), ExTensor::simple(2.0, 1), ExTensor::simple(1.0, 2), ExTensor::simple(2.0, 2)];
+        let v = vec![
+            ExTensor::simple(1.0, 1),
+            ExTensor::simple(2.0, 1),
+            ExTensor::simple(1.0, 2),
+            ExTensor::simple(2.0, 2),
+        ];
         let t = Matrix::from_vec(2, 2, v);
-        let w = vec![ExTensor::simple(2.0, 2), ExTensor::simple(1.0, 2), ExTensor::simple(1.0, 1), ExTensor::simple(2.0, 1)];
+        let w = vec![
+            ExTensor::simple(2.0, 2),
+            ExTensor::simple(1.0, 2),
+            ExTensor::simple(1.0, 1),
+            ExTensor::simple(2.0, 1),
+        ];
         let d = Matrix::from_vec(2, 2, w);
         let prod = &t * &d;
-        let r = vec![ExTensor::new(&[2.0], &[&[1, 2]]), ExTensor::new(&[1.0], &[&[1, 2]]), ExTensor::new(&[-2.0], &[&[1, 2]]), ExTensor::new(&[-4.0], &[&[1, 2]])];
+        let r = vec![
+            ExTensor::new(&[2.0], &[&[1, 2]]),
+            ExTensor::new(&[1.0], &[&[1, 2]]),
+            ExTensor::new(&[-2.0], &[&[1, 2]]),
+            ExTensor::new(&[-4.0], &[&[1, 2]]),
+        ];
         let expect = Matrix::from_vec(2, 2, r);
-        assert_eq!(prod, expect, "matrix multiplication with extensor components");
+        assert_eq!(
+            prod, expect,
+            "matrix multiplication with extensor components"
+        );
     }
 }

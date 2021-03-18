@@ -6,4 +6,3 @@ edition = "2018"
 
 [dependencies]
 indexmap = "1.6.2"
-num-traits = "0.2.4"
