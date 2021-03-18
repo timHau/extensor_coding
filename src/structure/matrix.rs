@@ -1,5 +1,7 @@
-use std::cmp::PartialEq;
-use std::ops::{Add, Index, IndexMut, Mul, Sub};
+use std::{
+    cmp::PartialEq,
+    ops::{Add, Index, IndexMut, Mul, Sub},
+};
 
 #[derive(Debug)]
 pub(crate) struct Matrix<T> {
@@ -214,10 +216,10 @@ mod tests {
         ];
         let power = Matrix::from_vec(2, 2, v).power(2);
         let r = vec![
-            ExTensor::new(&[2.0], &[&[1, 2]]),
-            ExTensor::new(&[4.0], &[&[1, 2]]),
-            ExTensor::new(&[-1.0], &[&[1, 2]]),
-            ExTensor::new(&[-2.0], &[&[1, 2]]),
+            crate::extensor!([2.0], [[1, 2]]),
+            crate::extensor!([4.0], [[1, 2]]),
+            crate::extensor!([-1.0], [[1, 2]]),
+            crate::extensor!([-2.0], [[1, 2]]),
         ];
         let expect = Matrix::from_vec(2, 2, r);
         assert_eq!(power, expect, "2x2 extensor matrix to the second power");

@@ -1,5 +1,7 @@
-use super::extensor::ExTensor;
-use super::matrix::Matrix;
+use super::{
+    extensor::ExTensor,
+    matrix::Matrix,
+};
 
 #[derive(Debug)]
 pub(crate) struct Graph {

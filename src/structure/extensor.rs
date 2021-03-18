@@ -1,8 +1,10 @@
 use super::super::utils;
 use indexmap::IndexMap;
-use std::cmp::PartialEq;
-use std::fmt::Display;
-use std::ops::{Add, Mul, Sub};
+use std::{
+    cmp::PartialEq,
+    fmt::Display,
+    ops::{Add, Mul, Sub},
+};
 
 #[derive(Debug, Clone, Default)]
 pub struct ExTensor {
@@ -278,8 +280,12 @@ impl Display for ExTensor {
 
 #[macro_export]
 macro_rules! extensor {
-    ( $coeff: expr, $basis: expr ) => {{
-        ExTensor::new(&$coeff, &$basis)
+    ( $coeff: expr, [$($b: expr),+] ) => {{
+        let mut basis = Vec::new();
+        $(
+            basis.push($b.as_ref());
+        )+
+        ExTensor::new(&$coeff.as_ref(), &basis)
     }};
 }
 
@@ -289,10 +295,10 @@ mod tests {
 
     #[test]
     fn extensor_add() {
-        let x_1 = &ExTensor::new(&[3.0, -7.0], &[&[1, 3], &[3]]);
-        let x_2 = &ExTensor::new(&[1.0, 2.0], &[&[1], &[3]]);
+        let x_1 = &extensor!([3.0, -7.0], [[1, 3], [3]]);
+        let x_2 = &extensor!([1.0, 2.0], [[1], [3]]);
         let sum = x_1 + x_2;
-        let res = ExTensor::new(&[3.0, -5.0, 1.0], &[&[1, 3], &[3], &[1]]);
+        let res = extensor!([3.0, -5.0, 1.0], [[1, 3], [3], [1]]);
         assert_eq!(sum, res, "exterior sum is definined component wise");
         let sum_2 = x_2 + x_1;
         assert_eq!(sum, sum_2, "exterior sum is commutative");
@@ -305,13 +311,13 @@ mod tests {
         let x_3 = &ExTensor::simple(1.0, 2);
         let x_4 = &ExTensor::simple(2.0, 2);
         let a = x_1 * x_4 + x_2 * x_1;
-        let expect_a = ExTensor::new(&[2.0], &[&[1, 2]]);
+        let expect_a = extensor!([2.0], [[1, 2]]);
         let b = x_1 * x_3 + x_2 * x_4;
-        let expect_b = ExTensor::new(&[5.0], &[&[1, 2]]);
+        let expect_b = extensor!([5.0], [[1, 2]]);
         let c = x_3 * x_4 + x_4 * x_1;
-        let expect_c = ExTensor::new(&[-2.0], &[&[1, 2]]);
+        let expect_c = extensor!([-2.0], [[1, 2]]);
         let d = x_3 * x_3 + x_4 * x_4;
-        let expect_d = ExTensor::new(&[], &[]);
+        let expect_d = ExTensor::zero();
 
         assert_eq!(a, expect_a, "multiplying and then adding (inner product)");
         assert_eq!(b, expect_b, "multiplying and then adding (inner product)");
@@ -321,9 +327,9 @@ mod tests {
 
     #[test]
     fn extensor_scalar_mul() {
-        let x_1 = ExTensor::new(&[3.0, 2.0], &[&[1, 2], &[3, 4]]) * 2.0;
-        let x_2 = 2.0 * ExTensor::new(&[3.0, 2.0], &[&[1, 2], &[3, 4]]);
-        let res = ExTensor::new(&[6.0, 4.0], &[&[1, 2], &[3, 4]]);
+        let x_1 = extensor!([3.0, 2.0], [[1, 2], [3, 4]]) * 2.0;
+        let x_2 = 2.0 * extensor!([3.0, 2.0], [[1, 2], [3, 4]]);
+        let res = extensor!([6.0, 4.0], [[1, 2], [3, 4]]);
         assert_eq!(x_1, res, "scalar multiplication is right commutative");
         assert_eq!(x_2, res, "scalar multiplication is left commutative");
         assert_eq!(x_1, x_2, "scalar multiplication is commutative");
@@ -331,8 +337,8 @@ mod tests {
 
     #[test]
     fn extensor_sign() {
-        let x_1 = ExTensor::new(&[-3.0], &[&[2, 1]]);
-        let x_2 = ExTensor::new(&[3.0], &[&[1, 2]]);
+        let x_1 = extensor!([-3.0], [[2, 1]]);
+        let x_2 = extensor!([3.0], [[1, 2]]);
         assert_eq!(x_1, x_2, "exterior tensors are anti commutative");
     }
 
@@ -350,9 +356,9 @@ mod tests {
         let x_3 = &ExTensor::simple(2.0, 1);
         let x_4 = &ExTensor::simple(4.0, 3);
         let prod_4 = x_3 * x_4;
-        let res_1 = ExTensor::new(&[8.0], &[&[1, 3]]);
+        let res_1 = extensor!([8.0], [[1, 3]]);
         let prod_5 = x_4 * x_3;
-        let res_anti = ExTensor::new(&[-8.0], &[&[1, 3]]);
+        let res_anti = extensor!([-8.0], [[1, 3]]);
         assert_eq!(prod_4, res_1, "wedge product on simple extensors");
         assert_eq!(
             prod_5, res_anti,
@@ -362,20 +368,20 @@ mod tests {
 
     #[test]
     fn det_f2() {
-        let x_5 = &ExTensor::new(&[2.0, 3.0], &[&[1], &[2]]);
-        let x_6 = &ExTensor::new(&[4.0, 5.0], &[&[1], &[2]]);
+        let x_5 = &extensor!([2.0, 3.0], [[1], [2]]);
+        let x_6 = &extensor!([4.0, 5.0], [[1], [2]]);
         let prod_6 = &(x_5 * x_6);
-        let det = &ExTensor::new(&[-2.0], &[&[1, 2]]);
+        let det = &extensor!([-2.0], [[1, 2]]);
         assert_eq!(prod_6, det, "Wedge Product exhibits determinant on F^2x2");
     }
 
     #[test]
     fn det_f3() {
-        let x_7 = &ExTensor::new(&[2.0, 3.0, 4.0], &[&[1], &[2], &[3]]);
-        let x_8 = &ExTensor::new(&[5.0, 6.0, 7.0], &[&[1], &[2], &[3]]);
-        let x_9 = &ExTensor::new(&[8.0, 9.0, 10.0], &[&[1], &[2], &[3]]);
+        let x_7 = &extensor!([2.0, 3.0, 4.0], [[1], [2], [3]]);
+        let x_8 = &extensor!([5.0, 6.0, 7.0], [[1], [2], [3]]);
+        let x_9 = &extensor!([8.0, 9.0, 10.0], [[1], [2], [3]]);
         let prod_7 = &(&(x_7 * x_8) * x_9);
-        let det = &ExTensor::new(&[0.0], &[&[1, 2, 3]]);
+        let det = &extensor!([0.0], [[1, 2, 3]]);
         assert_eq!(prod_7, det, "Wedge Product exhibits determinant on F^3x3");
     }
 }

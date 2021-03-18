@@ -1,6 +1,8 @@
-use super::structure::extensor::ExTensor;
-use super::structure::graph::Graph;
-use super::utils;
+use super::{
+    structure::extensor::ExTensor,
+    structure::graph::Graph,
+    utils,
+};
 
 /// # Algorithm U
 ///

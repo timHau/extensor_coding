@@ -1,6 +1,8 @@
 use super::structure::extensor::ExTensor;
-use std::collections::HashSet;
-use std::hash::Hash;
+use std::{
+    collections::HashSet,
+    hash::Hash,
+};
 
 type F = Box<dyn Fn(usize) -> ExTensor>;
 type G = Box<dyn Fn(usize, usize) -> f64>;
