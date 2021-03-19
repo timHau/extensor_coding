@@ -166,10 +166,10 @@ mod tests {
         let d = Matrix::from_vec(2, 2, w);
         let prod = &t * &d;
         let r = vec![
-            ExTensor::new(&[2.0], &[&[1, 2]]),
-            ExTensor::new(&[1.0], &[&[1, 2]]),
-            ExTensor::new(&[-2.0], &[&[1, 2]]),
-            ExTensor::new(&[-4.0], &[&[1, 2]]),
+            crate::extensor!([2.0], [[1, 2]]),
+            crate::extensor!([1.0], [[1, 2]]),
+            crate::extensor!([-2.0], [[1, 2]]),
+            crate::extensor!([-4.0], [[1, 2]]),
         ];
         let expect = Matrix::from_vec(2, 2, r);
         assert_eq!(

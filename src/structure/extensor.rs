@@ -113,15 +113,15 @@ impl ExTensor {
     pub(crate) fn sorted(&self) -> Self {
         let mut data = IndexMap::new();
 
-        for (i, d) in self.data.iter().enumerate() {
+        for (i, (basis, coeff)) in self.data.iter().enumerate() {
             let sign = self.get_sign(i) as f64;
-            let mut basis_next = d.0.to_vec();
+            let mut basis_next = basis.to_vec();
             basis_next.sort_unstable();
             if data.contains_key(&basis_next) {
-                let coeff_old = data.get(&basis_next).unwrap() + (d.1 * sign);
+                let coeff_old = data.get(&basis_next).unwrap() + (coeff * sign);
                 data.insert(basis_next, coeff_old);
             } else {
-                data.insert(basis_next, d.1 * sign);
+                data.insert(basis_next, coeff * sign);
             }
         }
 
@@ -134,6 +134,20 @@ impl ExTensor {
     pub(crate) fn zero() -> Self {
         ExTensor::new(&[], &[])
     }
+
+    /// ## lifted
+    ///
+    /// calculate the lifted version
+    pub(crate) fn lifted(&self) -> Self {
+        let mut data = IndexMap::new();
+        let n = self.data.len() as i32;
+        for (basis, coeff) in self.data.iter() {
+            let basis_next: Vec<i32> = basis.iter().map(|v| v + n).collect();
+            data.insert(basis_next, coeff.clone());
+        }
+        &ExTensor{ data } * self
+    }
+
 }
 
 impl Add<&ExTensor> for &ExTensor {
@@ -383,5 +397,12 @@ mod tests {
         let prod_7 = &(&(x_7 * x_8) * x_9);
         let det = &extensor!([0.0], [[1, 2, 3]]);
         assert_eq!(prod_7, det, "Wedge Product exhibits determinant on F^3x3");
+    }
+
+    #[test]
+    fn lifted() {
+        let x = extensor!([2.0, 3.0], [[1], [2]]);
+        let l = x.lifted();
+        println!("{}", l);
     }
 }
