@@ -1,8 +1,4 @@
-use super::{
-    structure::extensor::ExTensor,
-    structure::graph::Graph,
-    utils,
-};
+use super::{structure::extensor::ExTensor, structure::graph::Graph, utils};
 
 /// # Algorithm U
 ///

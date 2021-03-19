@@ -127,9 +127,8 @@ impl ExTensor {
             let basis_next: Vec<i32> = basis.iter().map(|v| v + n).collect();
             data.insert(basis_next, coeff.clone());
         }
-        &ExTensor{ data } * self
+        self * &ExTensor { data }
     }
-
 }
 
 impl Add<&ExTensor> for &ExTensor {
@@ -385,6 +384,7 @@ mod tests {
     fn lifted() {
         let x = extensor!([2.0, 3.0], [[1], [2]]);
         let l = x.lifted();
-        println!("{}", l);
+        let a = extensor!([2.0, 3.0], [[3], [4]]);
+        assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
     }
 }

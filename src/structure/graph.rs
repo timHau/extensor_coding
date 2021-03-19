@@ -1,7 +1,4 @@
-use super::{
-    extensor::ExTensor,
-    matrix::Matrix,
-};
+use super::{extensor::ExTensor, matrix::Matrix};
 
 #[derive(Debug)]
 pub struct Graph {
