@@ -19,12 +19,6 @@ impl ExTensor {
     ///
     /// create an new Extensor that does not need to be "simple"
     /// meaning sets with cardinality > 1 are supported.
-    ///
-    /// example:
-    /// ```
-    /// ExTensor::new(&[3.0, -7.0], &[&[1, 3], &[3]]); // 3e_{1,3} - 7e_{3}
-    /// ```
-    ///
     pub(crate) fn new(coeffs: &[f64], basis: &[&[i32]]) -> Self {
         assert_eq!(
             coeffs.len(),
@@ -57,12 +51,6 @@ impl ExTensor {
     /// ## simple
     ///
     /// construct a simple exterior tensor e.g. only using a single basis set
-    /// example:
-    ///
-    /// ```
-    /// ExTensor::simple(9.0, 3); // 9e_{3}
-    /// ```
-    ///
     pub(crate) fn simple(coeff: f64, basis: i32) -> Self {
         let mut data = IndexMap::new();
         data.insert(vec![basis], coeff);
@@ -72,12 +60,6 @@ impl ExTensor {
     /// ## get_sign
     ///
     /// get sign of permutation that brings the basis at 'basis_index' into increasing order
-    ///
-    /// ```
-    /// let t = ExTensor::new(&[1.0], &[&[2, 1]]);
-    /// assert_eq!(t.get_sign(), -1);
-    /// ```
-    ///
     /// output ∈ {-1, 1}
     fn get_sign(&self, basis_index: usize) -> i32 {
         // from here: https://math.stackexchange.com/questions/65923/how-does-one-compute-the-sign-of-a-permutation

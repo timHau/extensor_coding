@@ -4,7 +4,7 @@ use super::{
 };
 
 #[derive(Debug)]
-pub(crate) struct Graph {
+pub struct Graph {
     adj_mat: Box<Matrix<u8>>,
 }
 
@@ -60,7 +60,7 @@ impl Graph {
     /// ## from_graph6
     ///
     /// create a Graph from a .g6 file which is located at `path_str`.
-    pub(crate) fn from_graph6(path_str: &str) -> Self {
+    pub fn from_graph6(path_str: &str) -> Self {
         let (file, n) = Self::file_n_from(path_str);
 
         let mut buffer = Vec::new();
@@ -107,9 +107,9 @@ impl Graph {
     /// The mapping is a tuple of closures, where the first element is a function from
     /// a vertex to a extensor and the second element is a function from two vertices (an edge) to
     /// an f64. The walk sum is calculated as
-    /// ```
+    ///
     /// f(G, ξ) = (1 1 .. 1) A^(k-1) (ξ(v_1) ξ(v_2) ... ξ(v_n))^T
-    /// ```
+    ///
     pub(crate) fn compute_walk_sum<F, G>(&self, k: usize, mapping: (F, G)) -> ExTensor
     where
         F: Fn(usize) -> ExTensor,

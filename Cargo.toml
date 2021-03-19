@@ -6,3 +6,10 @@ edition = "2018"
 
 [dependencies]
 indexmap = "1.6.2"
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "wedge_product"
+harness = false
