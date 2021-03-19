@@ -91,7 +91,7 @@ impl Graph {
     fn from_sparse6(path_str: &str) -> Self {
         let (_file, n) = Self::file_n_from(path_str);
 
-        println!("{}", n);
+        println!("TODO {}", n);
 
         Graph {
             adj_mat: Box::new(Matrix::zeros(10, 10)),
@@ -118,13 +118,13 @@ impl Graph {
         let mut a = Vec::new();
         for (i, v) in (*self.adj_mat).data().iter().enumerate() {
             if *v == 1 {
-                let from = i % n;
-                let to = i / n;
+                let from = i / n + 1;
+                let to = i % n + 1;
                 let val_edge = f_edge(from, to);
                 let val_vert = f_vert(from);
                 a.push(val_edge * val_vert);
             } else {
-                a.push(ExTensor::simple(0.0, 0));
+                a.push(ExTensor::zero());
             }
         }
         let a = Matrix::from_vec(n, n, a).power(k - 1);
@@ -223,9 +223,10 @@ mod tests {
 
     #[test]
     fn compute_walk() {
-        let path_10 = String::from("src/data/test_graphs/path3.g6");
-        let g = Graph::from_graph6(&path_10);
-        let res = g.compute_walk_sum(3, utils::create_vandermonde(3));
+        let path_3 = String::from("src/data/test_graphs/path3.g6");
+        let g = Graph::from_graph6(&path_3);
+        let k = 3;
+        let res = g.compute_walk_sum(k, utils::create_vandermonde(k));
         let zero = ExTensor::zero();
         assert_ne!(res, zero, "compute walk with vandermonde coding");
     }

@@ -117,6 +117,17 @@ impl ExTensor {
         ExTensor::new(&[], &[])
     }
 
+    /// ## is_zero
+    ///
+    /// test if the extensor is zero, meaning no coeffiecients and no basis or all basis
+    /// have zero as a coefficient
+    pub(crate) fn is_zero(&self) -> bool {
+        match self.data.len() {
+            0 => true,
+            _ => self.sorted().data.iter().any(|(_, coeff)| *coeff == 0.0),
+        }
+    }
+
     /// ## lifted
     ///
     /// calculate the lifted version
@@ -386,5 +397,13 @@ mod tests {
         let l = x.lifted();
         let a = extensor!([2.0, 3.0], [[3], [4]]);
         assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
+    }
+
+    #[test]
+    fn is_zero() {
+        let x = extensor!([0.0, 0.0], [[1, 2, 3], [4, 5, 6]]);
+        let y = ExTensor::zero();
+        assert_eq!(x.is_zero(), true, "extensor with zero coefficients is zero");
+        assert_eq!(y.is_zero(), true, "extensor with empty basis is zero");
     }
 }

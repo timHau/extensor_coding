@@ -44,10 +44,6 @@ where
         self.nrows
     }
 
-    pub(crate) fn ncols(&self) -> usize {
-        self.nrows
-    }
-
     pub(crate) fn data(&self) -> &Vec<T> {
         &self.data
     }
@@ -58,7 +54,7 @@ where
     /// can be optimised by first diagonalizing and then taking the eigenvalues to a power
     pub(crate) fn power(&self, k: usize) -> Self {
         let mut b = Matrix::from_vec(self.nrows, self.ncols, self.data.clone());
-        for _ in 1..k {
+        for _ in 0..k - 1 {
             b = &b * self;
         }
         b
