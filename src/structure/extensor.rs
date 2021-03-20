@@ -128,6 +128,13 @@ impl ExTensor {
         }
     }
 
+    /// ## coeffs
+    ///
+    /// returns only the coefficients of the extensor
+    pub(crate) fn coeffs(&self) -> Vec<f64> {
+        self.data.iter().map(|d| *d.1).collect::<Vec<f64>>()
+    }
+
     /// ## lifted
     ///
     /// calculate the lifted version
