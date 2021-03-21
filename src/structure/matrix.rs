@@ -1,7 +1,31 @@
 use std::{
     cmp::PartialEq,
     ops::{Add, Index, IndexMut, Mul, Sub},
+    thread,
 };
+use super::extensor::ExTensor;
+
+#[derive(Debug)]
+pub(crate) struct MatrixSlice<T> {
+    data: Vec<T>,
+    index: usize,
+}
+
+/// multiply two matrix slices. 
+/// (x_1 ... x_n)* (y_1 ... y_n)^T
+impl<T> Mul<MatrixSlice<T>> for MatrixSlice<T> 
+where
+    T: Default + Mul<Output = T> + Add<Output = T>
+{
+    type Output = (usize, usize, T);
+    fn mul(self, other: MatrixSlice<T>) -> (usize, usize, T) {
+        let mut res = T::default();
+        for (a, b) in self.data.into_iter().zip(other.data.into_iter()) {
+            res = res + (a * b);
+        }
+        (self.index, other.index, res)
+    }
+}
 
 #[derive(Debug)]
 pub(crate) struct Matrix<T> {
@@ -15,7 +39,7 @@ pub(crate) struct Matrix<T> {
 /// Implementation of a matrix, which is just a flat Vec
 impl<T> Matrix<T>
 where
-    T: Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T>,
+    T: Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Send + 'static,
 {
     /// ## from_vec
     ///
@@ -40,10 +64,40 @@ where
         Matrix { data, nrows, ncols }
     }
 
+    /// ## nrows
+    ///
+    /// return the number of rows 
     pub(crate) fn nrows(&self) -> usize {
         self.nrows
     }
 
+    /// ## row
+    ///
+    /// return the row at index `i`
+    fn row(&self, i: usize) -> MatrixSlice<T> {
+        let mut data = Vec::new();
+        let index = i * self.ncols;
+        for j in index..(index + self.ncols) {
+            data.push(self.data[j].clone());
+        }
+        MatrixSlice { data, index: i }
+    }
+
+    /// ## col
+    ///
+    /// return the column at index `i`
+    fn col(&self, i: usize) -> MatrixSlice<T> {
+        let index = i % self.nrows;
+        let mut data = Vec::new();
+        for j in (index..self.nrows * self.ncols).step_by(self.ncols) {
+            data.push(self.data[j].clone());
+        }
+        MatrixSlice { data, index: i }
+    }
+
+    /// ## data
+    ///
+    /// return the components
     pub(crate) fn data(&self) -> &Vec<T> {
         &self.data
     }
@@ -52,40 +106,52 @@ where
     ///
     /// naive implementation of a matrix power
     /// can be optimised by first diagonalizing and then taking the eigenvalues to a power
-    pub(crate) fn power(&self, k: usize) -> Self {
+    pub(crate) fn power(self, k: usize) -> Self {
         let mut b = Matrix::from_vec(self.nrows, self.ncols, self.data.clone());
         for _ in 0..k - 1 {
-            b = &b * self;
+             b = &b * &self;
         }
         b
     }
 }
 
+impl Matrix<f64> {
+
+    /// ## ones
+    ///
+    /// returns a `n x m` Matrix of ones
+    fn ones(nrows: usize, ncols: usize) -> Matrix<f64> {
+        let data: Vec<f64> = (0..nrows * ncols).map(|_| 1.).collect();
+        Matrix { data, nrows, ncols }
+    }
+
+}
+
 impl<T> Mul<&Matrix<T>> for &Matrix<T>
 where
-    T: Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T>,
+    T: Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Send + 'static,
 {
     type Output = Matrix<T>;
-    fn mul(self, b: &Matrix<T>) -> Matrix<T> {
-        assert_eq!(self.ncols, b.nrows, "dimensions of matrices dont match");
-        let mut data = Vec::new();
+    fn mul(self, other: &Matrix<T>) -> Matrix<T> {
+        assert_eq!(self.ncols, other.nrows, "dimensions of matrices dont match");
+        let mut res = Matrix::zeros(self.nrows, other.ncols);
+        let mut handles = Vec::new();
 
         for i in 0..self.nrows {
-            for j in 0..b.ncols {
-                let mut c = T::default();
-                for k in 0..self.ncols {
-                    let r = self[(i, k)].clone() * b[(k, j)].clone();
-                    c = c + r;
-                }
-                data.push(c);
+            for j in 0..other.ncols {
+                let row = self.row(i);
+                let col = other.col(j);
+                let handle = thread::spawn(move || row * col);
+                handles.push(handle);
             }
         }
 
-        Matrix {
-            data,
-            nrows: self.nrows,
-            ncols: b.ncols,
+        for h in handles {
+            let (i, j, v) = h.join().unwrap();
+            res[(i, j)] = v;
         }
+
+        res
     }
 }
 
@@ -112,6 +178,7 @@ impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
 mod tests {
     use crate::structure::extensor::ExTensor;
     use crate::structure::matrix::Matrix;
+    use std::time::Instant;
 
     #[test]
     fn zero() {
@@ -219,5 +286,13 @@ mod tests {
         ];
         let expect = Matrix::from_vec(2, 2, r);
         assert_eq!(power, expect, "2x2 extensor matrix to the second power");
+    }
+
+    #[test]
+    fn tmp() {
+        let d: Vec<f64> = (0..10*10).map(|v| v as f64).collect();
+        let now = Instant::now();
+        let m = Matrix::from_vec(10, 10, d).power(10);
+        println!("{}s", now.elapsed().as_secs());
     }
 }
