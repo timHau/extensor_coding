@@ -1,5 +1,5 @@
-extern crate extensor_coding as ec;
 extern crate criterion;
+extern crate extensor_coding as ec;
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use ec::{algorithm, structure::graph::Graph};

@@ -14,10 +14,10 @@ pub fn u(g: &Graph, k: usize) -> bool {
 ///
 pub fn c(g: &Graph, k: usize, eps: f64) -> f64 {
     // let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
-    let t = 100;
+    let t = 200;
 
     let mut xs = Vec::new();
-    for _j in 1..t+1 {
+    for _j in 1..t + 1 {
         let bernoulli_mapping = utils::create_bernoulli(k);
         let x_j = g.compute_walk_sum(k, bernoulli_mapping).sorted().coeffs()[0];
         xs.push(x_j);
@@ -63,5 +63,11 @@ mod tests {
         let k = 3;
         let eps = 0.2;
         let res = algorithm::c(&g, k, eps);
+        let lower_bound = (1. - eps) * res.abs();
+        let upper_bound = (1. + eps) * res.abs();
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
+        );
     }
 }

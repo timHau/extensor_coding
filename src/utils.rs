@@ -1,8 +1,6 @@
 use super::structure::extensor::ExTensor;
+use rand::distributions::{Distribution, Uniform};
 use std::{collections::HashSet, hash::Hash, u128};
-use rand::{
-    distributions::{Distribution, Uniform},
-};
 
 type F = Box<dyn Fn(usize) -> ExTensor>;
 type G = Box<dyn Fn(usize, usize) -> f64>;
@@ -61,7 +59,7 @@ pub fn create_bernoulli(k: usize) -> (F, G) {
 
 pub fn factorial(k: usize) -> u128 {
     let mut res: u128 = 1;
-    for i in 1..(k as u32 +1) {
+    for i in 1..(k as u32 + 1) {
         res *= i as u128;
     }
     res
