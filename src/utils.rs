@@ -1,6 +1,8 @@
 use super::structure::extensor::ExTensor;
-use std::{collections::HashSet, hash::Hash};
-use rand::{Rng, distributions::{Distribution, Uniform}};
+use std::{collections::HashSet, hash::Hash, u128};
+use rand::{
+    distributions::{Distribution, Uniform},
+};
 
 type F = Box<dyn Fn(usize) -> ExTensor>;
 type G = Box<dyn Fn(usize, usize) -> f64>;
@@ -36,18 +38,20 @@ pub fn create_vandermonde(k: usize) -> (F, G) {
 
 /// given k, create a lifted bernoulli coding
 pub fn create_bernoulli(k: usize) -> (F, G) {
-    let f_vert = move |v: usize| -> ExTensor {
+    let f_vert = move |_v: usize| -> ExTensor {
         let mut rng = rand::thread_rng();
         // create a uniform random variable that is either 0 or 1
-        let mut unif = Uniform::from(0..2);
-        let coeffs: Vec<f64> = (0..k).map(|i| {
-            // transform the variable to be either -1 or +1
-            let mut rand_val = unif.sample(&mut rng);
-            if rand_val == 0 {
-                rand_val = -1;
-            }
-            rand_val as f64
-        }).collect();
+        let unif = Uniform::from(0..2);
+        let coeffs: Vec<f64> = (0..k)
+            .map(|_i| {
+                // transform the variable to be either -1 or +1
+                let mut rand_val = unif.sample(&mut rng);
+                if rand_val == 0 {
+                    rand_val = -1;
+                }
+                rand_val as f64
+            })
+            .collect();
         let basis: Vec<Vec<i32>> = (0..k).map(|i| vec![i as i32]).collect();
         ExTensor::from(coeffs, basis).lifted()
     };
@@ -55,19 +59,41 @@ pub fn create_bernoulli(k: usize) -> (F, G) {
     (Box::new(f_vert), Box::new(f_edge))
 }
 
+pub fn factorial(k: usize) -> u128 {
+    let mut res: u128 = 1;
+    for i in 1..(k as u32 +1) {
+        res *= i as u128;
+    }
+    res
+}
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::create_bernoulli;
+    use crate::utils::{create_bernoulli, factorial};
 
     #[test]
     fn bernoulli() {
-        let k = 3;
+        let k = 5;
         let (f_vert, f_edge) = create_bernoulli(k);
         let vert_val = f_vert(4);
         assert_eq!(f_edge(3, 4), 1.0, "function on edge is constant 1");
         for coeff in vert_val.coeffs() {
-            assert!(coeff == 1.0 || coeff == -1.0, "coefficients are either +1 or -1");
+            assert!(
+                coeff == 1.0 || coeff == -1.0,
+                "coefficients are either +1 or -1"
+            );
         }
+    }
+
+    #[test]
+    fn facto() {
+        let r1 = factorial(3);
+        let r2 = factorial(4);
+        let r3 = factorial(7);
+        let r4 = factorial(10);
+        assert_eq!(r1, 6 as u128, "3!");
+        assert_eq!(r2, 24 as u128, "4!");
+        assert_eq!(r3, 5040 as u128, "7!");
+        assert_eq!(r4, 3628800 as u128, "10!");
     }
 }

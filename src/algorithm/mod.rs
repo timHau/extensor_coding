@@ -13,9 +13,19 @@ pub fn u(g: &Graph, k: usize) -> bool {
 /// # Algorithm C
 ///
 pub fn c(g: &Graph, k: usize, eps: f64) -> f64 {
-    let t = 100. * (k as u32).pow(3) as f64 / eps.powf(2.0);
-    // println!("{}", t);
-    0.0
+    // let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
+    let t = 100;
+
+    let mut xs = Vec::new();
+    for _j in 1..t+1 {
+        let bernoulli_mapping = utils::create_bernoulli(k);
+        let x_j = g.compute_walk_sum(k, bernoulli_mapping).sorted().coeffs()[0];
+        xs.push(x_j);
+    }
+
+    let sum: f64 = xs.iter().sum();
+    let denom = (utils::factorial(k) * t as u128) as f64;
+    sum / denom
 }
 
 #[cfg(test)]
@@ -45,5 +55,13 @@ mod tests {
         let k = 4;
         let res = algorithm::u(&g, k);
         assert_eq!(res, false, "no 4 path in a 3 path graph");
+    }
+
+    #[test]
+    fn c() {
+        let g = Graph::from_graph6("src/data/test_graphs/path3.g6");
+        let k = 3;
+        let eps = 0.2;
+        let res = algorithm::c(&g, k, eps);
     }
 }
