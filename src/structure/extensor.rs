@@ -246,11 +246,7 @@ impl Mul<f64> for ExTensor {
 impl Mul<ExTensor> for f64 {
     type Output = ExTensor;
     fn mul(self, rhs: ExTensor) -> ExTensor {
-        let mut data = IndexMap::new();
-        for val in rhs.data {
-            data.insert(val.0, self * val.1);
-        }
-        ExTensor { data }
+        rhs * self
     }
 }
 

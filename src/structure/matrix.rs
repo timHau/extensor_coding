@@ -1,9 +1,9 @@
+use super::extensor::ExTensor;
 use std::{
     cmp::PartialEq,
     ops::{Add, Index, IndexMut, Mul, Sub},
     thread,
 };
-use super::extensor::ExTensor;
 
 #[derive(Debug)]
 pub(crate) struct MatrixSlice<T> {
@@ -11,11 +11,11 @@ pub(crate) struct MatrixSlice<T> {
     index: usize,
 }
 
-/// multiply two matrix slices. 
+/// multiply two matrix slices.
 /// (x_1 ... x_n)* (y_1 ... y_n)^T
-impl<T> Mul<MatrixSlice<T>> for MatrixSlice<T> 
+impl<T> Mul<MatrixSlice<T>> for MatrixSlice<T>
 where
-    T: Default + Mul<Output = T> + Add<Output = T>
+    T: Default + Mul<Output = T> + Add<Output = T>,
 {
     type Output = (usize, usize, T);
     fn mul(self, other: MatrixSlice<T>) -> (usize, usize, T) {
@@ -66,7 +66,7 @@ where
 
     /// ## nrows
     ///
-    /// return the number of rows 
+    /// return the number of rows
     pub(crate) fn nrows(&self) -> usize {
         self.nrows
     }
@@ -109,14 +109,13 @@ where
     pub(crate) fn power(self, k: usize) -> Self {
         let mut b = Matrix::from_vec(self.nrows, self.ncols, self.data.clone());
         for _ in 0..k - 1 {
-             b = &b * &self;
+            b = &b * &self;
         }
         b
     }
 }
 
 impl Matrix<f64> {
-
     /// ## ones
     ///
     /// returns a `n x m` Matrix of ones
@@ -124,7 +123,6 @@ impl Matrix<f64> {
         let data: Vec<f64> = (0..nrows * ncols).map(|_| 1.).collect();
         Matrix { data, nrows, ncols }
     }
-
 }
 
 impl<T> Mul<&Matrix<T>> for &Matrix<T>
@@ -290,7 +288,7 @@ mod tests {
 
     #[test]
     fn tmp() {
-        let d: Vec<f64> = (0..10*10).map(|v| v as f64).collect();
+        let d: Vec<f64> = (0..10 * 10).map(|v| v as f64).collect();
         let now = Instant::now();
         let m = Matrix::from_vec(10, 10, d).power(10);
         println!("{}s", now.elapsed().as_secs());

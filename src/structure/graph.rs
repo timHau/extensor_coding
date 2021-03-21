@@ -119,10 +119,11 @@ impl Graph {
         for (i, v) in (*self.adj_mat).data().iter().enumerate() {
             if *v == 1 {
                 let from = i / n + 1;
-                let to = i % n + 1;
-                let val_edge = f_edge(from, to);
+                // let to = i % n + 1;
+                // let val_edge = f_edge(from, to);
                 let val_vert = f_vert(from);
-                a.push(val_edge * val_vert);
+                // a.push(val_edge * val_vert);
+                a.push(val_vert);
             } else {
                 a.push(ExTensor::zero());
             }
