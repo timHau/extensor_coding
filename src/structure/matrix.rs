@@ -1,4 +1,3 @@
-use super::extensor::ExTensor;
 use std::{
     cmp::PartialEq,
     ops::{Add, Index, IndexMut, Mul, Sub},

@@ -107,6 +107,7 @@ impl PartialEq for ExTensorComponent {
     }
 }
 
+// need empty impl for hashing
 impl Eq for ExTensorComponent {}
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -131,6 +132,23 @@ impl ExTensor {
         let mut data = HashSet::new();
         for i in 0..basis.len() {
             let component = ExTensorComponent::new(coeffs[i], basis[i]);
+            data.insert(component);
+        }
+        ExTensor { data }
+    }
+
+    /// ## from
+    ///
+    /// same as `new` but takes a Vec and a Vec of Vecs
+    pub(crate) fn from(coeffs: Vec<f64>, basis: Vec<Vec<i32>>) -> Self {
+        assert_eq!(
+            coeffs.len(),
+            basis.len(),
+            "coeffs and basis must be of same length"
+        );
+        let mut data = HashSet::new();
+        for i in 0..basis.len() {
+            let component = ExTensorComponent::new(coeffs[i], basis[i].as_ref());
             data.insert(component);
         }
         ExTensor { data }
