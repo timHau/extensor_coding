@@ -1,16 +1,14 @@
 use super::super::utils;
 use std::{
-    cmp::{PartialEq, Eq},
-    fmt::Display,
-    ops::{Add, Mul, Sub},
-    thread,
+    cmp::{Eq, PartialEq},
     collections::HashSet,
     hash::{Hash, Hasher},
+    ops::{Add, Mul, Sub},
+    thread,
 };
-use std::process::Output;
 
 #[derive(Debug, Clone)]
-struct ExTensorComponent{
+struct ExTensorComponent {
     basis: Vec<i32>,
     coeff: f64,
 }
@@ -21,10 +19,7 @@ impl ExTensorComponent {
         let (sign, basis) = Self::get_sign_and_sort(basis.to_vec());
         let coeff = coeff * sign;
 
-        ExTensorComponent {
-            basis,
-            coeff
-        }
+        ExTensorComponent { basis, coeff }
     }
 
     /// ## get_sign_and_sort
@@ -33,10 +28,7 @@ impl ExTensorComponent {
     /// output ∈ {-1, 1}
     fn get_sign_and_sort(v: Vec<i32>) -> (f64, Vec<i32>) {
         let perm = utils::get_permutation_to_sort(&v);
-        let basis = perm
-            .iter()
-            .map(|&i| v[i].clone())
-            .collect();
+        let basis = perm.iter().map(|&i| v[i].clone()).collect();
 
         // mark all as not visited
         // from here: https://math.stackexchange.com/questions/65923/how-does-one-compute-the-sign-of-a-permutation
@@ -59,6 +51,10 @@ impl ExTensorComponent {
 
         (sign as f64, basis)
     }
+
+    fn is_zero(&self) -> bool {
+        self.basis.len() == 0 || self.coeff == 0.0
+    }
 }
 
 impl Add<f64> for &ExTensorComponent {
@@ -75,12 +71,17 @@ impl Mul<&ExTensorComponent> for &ExTensorComponent {
     type Output = ExTensorComponent;
     fn mul(self, other: &ExTensorComponent) -> ExTensorComponent {
         let mut basis: Vec<i32> = [&self.basis[..], &other.basis[..]].concat();
+        if !utils::has_unique_elements(&basis) {
+            // if one basis appears more than once -> zero
+            return ExTensorComponent {
+                basis: Vec::new(),
+                coeff: 0.0,
+            };
+        }
+
         let (sign, basis) = ExTensorComponent::get_sign_and_sort(basis);
         let coeff = self.coeff * other.coeff * sign;
-        ExTensorComponent {
-            basis,
-            coeff,
-        }
+        ExTensorComponent { basis, coeff }
     }
 }
 
@@ -129,7 +130,7 @@ impl ExTensor {
         );
         let mut data = HashSet::new();
         for i in 0..basis.len() {
-            let component = ExTensorComponent::new( coeffs[i], basis[i]);
+            let component = ExTensorComponent::new(coeffs[i], basis[i]);
             data.insert(component);
         }
         ExTensor { data }
@@ -141,10 +142,9 @@ impl ExTensor {
     pub(crate) fn simple(coeff: f64, basis: i32) -> Self {
         let mut data = HashSet::new();
         let component = ExTensorComponent::new(coeff, &[basis]);
-        data.insert(component );
+        data.insert(component);
         ExTensor { data }
     }
-
 
     /// ## zero
     ///
@@ -160,7 +160,7 @@ impl ExTensor {
     pub(crate) fn is_zero(&self) -> bool {
         match self.data.len() {
             0 => true,
-            _ => self.data.iter().any(|comp| comp.coeff == 0.0),
+            _ => self.data.iter().any(|comp| comp.is_zero()),
         }
     }
 
@@ -181,7 +181,7 @@ impl ExTensor {
         let mut data = HashSet::new();
         let n = self.data.len() as i32;
         for comp in self.data.iter() {
-            let basis_next : Vec<_>= comp.basis.iter().map(|v| v + n).collect();
+            let basis_next: Vec<_> = comp.basis.iter().map(|v| v + n).collect();
             let component = ExTensorComponent::new(comp.coeff, &basis_next);
             data.insert(component);
         }
@@ -196,8 +196,12 @@ impl Add<&ExTensor> for &ExTensor {
 
         let joined = self.data.iter().chain(other.data.iter());
         for comp in joined {
-            println!("{:?}, {:?}, {:?}", comp, data, data.contains(comp));
-            data.insert(comp.clone());
+            if data.contains(comp) {
+                let val: ExTensorComponent = data.get(comp).unwrap() + comp.coeff;
+                data.replace(val.clone());
+            } else {
+                data.insert(comp.clone());
+            }
         }
 
         ExTensor { data }
@@ -235,16 +239,16 @@ impl Mul<&ExTensor> for &ExTensor {
             for comp_rhs in rhs.data.iter() {
                 let comp_lhs = comp_lhs.clone();
                 let comp_rhs = comp_rhs.clone();
-                let handle = thread::spawn(move || {
-                    &comp_lhs * &comp_rhs
-                });
+                let handle = thread::spawn(move || &comp_lhs * &comp_rhs);
                 handles.push(handle);
             }
         }
 
         for h in handles {
             let res = h.join().unwrap();
-            data.insert(res);
+            if !res.is_zero() {
+                data.insert(res);
+            }
         }
 
         ExTensor { data }
@@ -301,7 +305,6 @@ macro_rules! extensor {
     }};
 }
 
-
 #[cfg(test)]
 mod tests {
     use crate::structure::extensor::{ExTensor, ExTensorComponent};
@@ -319,15 +322,15 @@ mod tests {
     #[test]
     fn extensor_add() {
         let x_1 = &extensor!([3.0, 7.0], [[1, 3], [3]]);
-        let x_2 = &extensor!([1.0, 2.0], [[1], [3]]);
+        let x_2 = &extensor!([1.0, -2.0], [[1], [3]]);
         let sum = x_1 + x_2;
-        let res = extensor!([3.0, 9.0, 1.0], [[1, 3], [3], [1]]);
+        let res = extensor!([3.0, 5.0, 1.0], [[1, 3], [3], [1]]);
         assert_eq!(sum, res, "exterior sum is definined component wise");
         let sum_2 = x_2 + x_1;
+        println!("{:?}", sum_2);
         assert_eq!(sum, sum_2, "exterior sum is commutative");
     }
 
-    /*
     #[test]
     fn extensor_mul_add() {
         let x_1 = &ExTensor::simple(1.0, 1);
@@ -370,8 +373,7 @@ mod tests {
     fn extensor_vanish() {
         let x_1 = &ExTensor::simple(1.0, 1);
         let prod_1 = &(x_1 * x_1);
-        let zero_tensor = &ExTensor::zero();
-        assert_eq!(prod_1, zero_tensor, "x wedge x vanishes");
+        assert_eq!(prod_1.is_zero(), true, "x wedge x vanishes");
     }
 
     #[test]
@@ -424,5 +426,4 @@ mod tests {
         assert_eq!(x.is_zero(), true, "extensor with zero coefficients is zero");
         assert_eq!(y.is_zero(), true, "extensor with empty basis is zero");
     }
-    */
 }

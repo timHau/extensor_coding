@@ -172,7 +172,6 @@ impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
     }
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use crate::structure::extensor::ExTensor;
@@ -286,4 +285,3 @@ mod tests {
         assert_eq!(power, expect, "2x2 extensor matrix to the second power");
     }
 }
-*/
