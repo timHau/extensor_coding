@@ -115,7 +115,7 @@ impl Graph {
         let (f_vert, f_edge) = mapping;
         let n = self.adj_mat.nrows();
 
-        let mut a = Vec::new();
+        let mut a = Vec::with_capacity(n * n);
         for (i, v) in (*self.adj_mat).data().iter().enumerate() {
             if *v == 1 {
                 let from = i / n + 1;

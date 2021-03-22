@@ -13,8 +13,7 @@ pub fn u(g: &Graph, k: usize) -> bool {
 /// # Algorithm C
 ///
 pub fn c(g: &Graph, k: usize, eps: f64) -> f64 {
-    // let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
-    let t = 400;
+    let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
 
     let mut xs = Vec::new();
     for _j in 1..t + 1 {
@@ -33,6 +32,7 @@ pub fn c(g: &Graph, k: usize, eps: f64) -> f64 {
 mod tests {
     use crate::algorithm;
     use crate::structure::graph::Graph;
+    use std::time::Instant;
 
     #[test]
     fn u_3() {
@@ -63,12 +63,17 @@ mod tests {
         let g = Graph::from_graph6("src/data/test_graphs/path10.g6");
         let k = 2;
         let eps = 0.1;
+        let now = Instant::now();
         let res = algorithm::c(&g, k, eps);
+        println!("algorihm c took: {}s", now.elapsed().as_secs());
         let p = 18.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
-        println!("lower: {}, res: {}, upper: {}", lower_bound, res, upper_bound);
-        /* 
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
+        /*
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"

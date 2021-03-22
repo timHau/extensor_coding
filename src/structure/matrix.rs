@@ -57,7 +57,7 @@ where
     ///
     /// return the nrows x ncols matrix with all zeros
     pub(crate) fn zeros(nrows: usize, ncols: usize) -> Self {
-        let mut data = Vec::new();
+        let mut data = Vec::with_capacity(nrows * ncols);
         for _ in 0..(nrows * ncols) {
             data.push(T::default());
         }
@@ -75,8 +75,8 @@ where
     ///
     /// return the row at index `i`
     fn row(&self, i: usize) -> MatrixSlice<T> {
-        let mut data = Vec::new();
         let index = i * self.ncols;
+        let mut data = Vec::with_capacity(self.ncols);
         for j in index..(index + self.ncols) {
             data.push(self.data[j].clone());
         }
@@ -88,7 +88,7 @@ where
     /// return the column at index `i`
     fn col(&self, i: usize) -> MatrixSlice<T> {
         let index = i % self.nrows;
-        let mut data = Vec::new();
+        let mut data = Vec::with_capacity(self.nrows);
         for j in (index..self.nrows * self.ncols).step_by(self.ncols) {
             data.push(self.data[j].clone());
         }
@@ -133,7 +133,7 @@ where
     fn mul(self, other: &Matrix<T>) -> Matrix<T> {
         assert_eq!(self.ncols, other.nrows, "dimensions of matrices dont match");
         let mut res = Matrix::zeros(self.nrows, other.ncols);
-        let mut handles = Vec::new();
+        let mut handles = Vec::with_capacity(self.nrows * other.ncols);
 
         for i in 0..self.nrows {
             for j in 0..other.ncols {
@@ -176,7 +176,6 @@ impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
 mod tests {
     use crate::structure::extensor::ExTensor;
     use crate::structure::matrix::Matrix;
-    use std::time::Instant;
 
     #[test]
     fn zero() {
@@ -284,13 +283,5 @@ mod tests {
         ];
         let expect = Matrix::from_vec(2, 2, r);
         assert_eq!(power, expect, "2x2 extensor matrix to the second power");
-    }
-
-    #[test]
-    fn tmp() {
-        let d: Vec<f64> = (0..10 * 10).map(|v| v as f64).collect();
-        let now = Instant::now();
-        let m = Matrix::from_vec(10, 10, d).power(10);
-        println!("{}s", now.elapsed().as_secs());
     }
 }
