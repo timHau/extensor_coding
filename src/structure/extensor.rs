@@ -1,74 +1,45 @@
 use super::super::utils;
-use indexmap::IndexMap;
 use std::{
-    cmp::PartialEq,
+    cmp::{PartialEq, Eq},
     fmt::Display,
     ops::{Add, Mul, Sub},
+    thread,
+    collections::HashSet,
+    hash::{Hash, Hasher},
 };
+use std::process::Output;
 
-#[derive(Debug, Clone, Default)]
-pub struct ExTensor {
-    data: IndexMap<Vec<i32>, f64>, // basis : coeff
+#[derive(Debug, Clone)]
+struct ExTensorComponent{
+    basis: Vec<i32>,
+    coeff: f64,
 }
 
-/// # ExTensor
-///
-/// implements an Extensor, which is a mapping from a Vec<i32> (basis) to float (coefficient)
-impl ExTensor {
-    /// ## new
-    ///
-    /// create an new Extensor that does not need to be "simple"
-    /// meaning sets with cardinality > 1 are supported.
-    pub(crate) fn new(coeffs: &[f64], basis: &[&[i32]]) -> Self {
-        assert_eq!(
-            coeffs.len(),
-            basis.len(),
-            "coeffs and basis must be of same length"
-        );
-        let mut data = IndexMap::new();
-        for i in 0..basis.len() {
-            data.insert(basis[i].to_vec(), coeffs[i]);
+impl ExTensorComponent {
+    fn new(coeff: f64, basis: &[i32]) -> Self {
+        // sort the basis and apply a sign if necessary
+        let (sign, basis) = Self::get_sign_and_sort(basis.to_vec());
+        let coeff = coeff * sign;
+
+        ExTensorComponent {
+            basis,
+            coeff
         }
-        ExTensor { data }.sorted()
     }
 
-    /// ## from
+    /// ## get_sign_and_sort
     ///
-    /// given an Vec<f64> of coefficients and a Vec of Vec<i32> of basis, create a new extensor.
-    pub(crate) fn from(coeffs: Vec<f64>, basis: Vec<Vec<i32>>) -> Self {
-        assert_eq!(
-            coeffs.len(),
-            basis.len(),
-            "coeffs and basis must be of same length"
-        );
-        let mut data = IndexMap::new();
-        for i in 0..basis.len() {
-            data.insert(basis[i].to_vec(), coeffs[i]);
-        }
-        ExTensor { data }.sorted()
-    }
-
-    /// ## simple
-    ///
-    /// construct a simple exterior tensor e.g. only using a single basis set
-    pub(crate) fn simple(coeff: f64, basis: i32) -> Self {
-        let mut data = IndexMap::new();
-        data.insert(vec![basis], coeff);
-        ExTensor { data }
-    }
-
-    /// ## get_sign
-    ///
-    /// get sign of permutation that brings the basis at 'basis_index' into increasing order
+    /// get sign of permutation that brings the basis into increasing order
     /// output ∈ {-1, 1}
-    fn get_sign(&self, basis_index: usize) -> i32 {
-        // from here: https://math.stackexchange.com/questions/65923/how-does-one-compute-the-sign-of-a-permutation
-        // get the basis at basis_index
-        let v = self.data.get_index(basis_index).unwrap().0;
-        // get permutation that would sort that basis
+    fn get_sign_and_sort(v: Vec<i32>) -> (f64, Vec<i32>) {
         let perm = utils::get_permutation_to_sort(&v);
+        let basis = perm
+            .iter()
+            .map(|&i| v[i].clone())
+            .collect();
 
         // mark all as not visited
+        // from here: https://math.stackexchange.com/questions/65923/how-does-one-compute-the-sign-of-a-permutation
         let mut visited = vec![false; v.len()];
         let mut sign = 1; // initial sign
         for k in 0..v.len() {
@@ -86,29 +57,94 @@ impl ExTensor {
             }
         }
 
-        sign
+        (sign as f64, basis)
     }
+}
 
-    /// ## sorted
-    ///
-    /// sort the basis and apply sign changes if necessary
-    pub(crate) fn sorted(&self) -> Self {
-        let mut data = IndexMap::new();
-
-        for (i, (basis, coeff)) in self.data.iter().enumerate() {
-            let sign = self.get_sign(i) as f64;
-            let mut basis_next = basis.to_vec();
-            basis_next.sort_unstable();
-            if data.contains_key(&basis_next) {
-                let coeff_old = data.get(&basis_next).unwrap() + (coeff * sign);
-                data.insert(basis_next, coeff_old);
-            } else {
-                data.insert(basis_next, coeff * sign);
-            }
+impl Add<f64> for &ExTensorComponent {
+    type Output = ExTensorComponent;
+    fn add(self, c: f64) -> ExTensorComponent {
+        ExTensorComponent {
+            basis: self.basis.to_vec(),
+            coeff: self.coeff + c,
         }
+    }
+}
 
+impl Mul<&ExTensorComponent> for &ExTensorComponent {
+    type Output = ExTensorComponent;
+    fn mul(self, other: &ExTensorComponent) -> ExTensorComponent {
+        let mut basis: Vec<i32> = [&self.basis[..], &other.basis[..]].concat();
+        let (sign, basis) = ExTensorComponent::get_sign_and_sort(basis);
+        let coeff = self.coeff * other.coeff * sign;
+        ExTensorComponent {
+            basis,
+            coeff,
+        }
+    }
+}
+
+impl Mul<f64> for &ExTensorComponent {
+    type Output = ExTensorComponent;
+    fn mul(mut self, c: f64) -> ExTensorComponent {
+        ExTensorComponent {
+            basis: self.basis.to_vec(),
+            coeff: self.coeff * c,
+        }
+    }
+}
+
+impl Hash for ExTensorComponent {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.basis.hash(state);
+    }
+}
+
+impl PartialEq for ExTensorComponent {
+    fn eq(&self, other: &Self) -> bool {
+        self.basis == other.basis
+    }
+}
+
+impl Eq for ExTensorComponent {}
+
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct ExTensor {
+    data: HashSet<ExTensorComponent>,
+}
+
+/// # ExTensor
+///
+/// implements an Extensor, which is a mapping from a Vec<i32> (basis) to float (coefficient)
+impl ExTensor {
+    /// ## new
+    ///
+    /// create an new Extensor that does not need to be "simple"
+    /// meaning sets with cardinality > 1 are supported.
+    pub(crate) fn new(coeffs: &[f64], basis: &[&[i32]]) -> Self {
+        assert_eq!(
+            coeffs.len(),
+            basis.len(),
+            "coeffs and basis must be of same length"
+        );
+        let mut data = HashSet::new();
+        for i in 0..basis.len() {
+            let component = ExTensorComponent::new( coeffs[i], basis[i]);
+            data.insert(component);
+        }
         ExTensor { data }
     }
+
+    /// ## simple
+    ///
+    /// construct a simple exterior tensor e.g. only using a single basis set
+    pub(crate) fn simple(coeff: f64, basis: i32) -> Self {
+        let mut data = HashSet::new();
+        let component = ExTensorComponent::new(coeff, &[basis]);
+        data.insert(component );
+        ExTensor { data }
+    }
+
 
     /// ## zero
     ///
@@ -124,7 +160,7 @@ impl ExTensor {
     pub(crate) fn is_zero(&self) -> bool {
         match self.data.len() {
             0 => true,
-            _ => self.sorted().data.iter().any(|(_, coeff)| *coeff == 0.0),
+            _ => self.data.iter().any(|comp| comp.coeff == 0.0),
         }
     }
 
@@ -132,18 +168,22 @@ impl ExTensor {
     ///
     /// returns only the coefficients of the extensor
     pub(crate) fn coeffs(&self) -> Vec<f64> {
-        self.data.iter().map(|d| *d.1).collect::<Vec<f64>>()
+        self.data
+            .iter()
+            .map(|comp| comp.coeff)
+            .collect::<Vec<f64>>()
     }
 
     /// ## lifted
     ///
     /// calculate the lifted version
     pub(crate) fn lifted(&self) -> Self {
-        let mut data = IndexMap::new();
+        let mut data = HashSet::new();
         let n = self.data.len() as i32;
-        for (basis, coeff) in self.data.iter() {
-            let basis_next: Vec<i32> = basis.iter().map(|v| v + n).collect();
-            data.insert(basis_next, coeff.clone());
+        for comp in self.data.iter() {
+            let basis_next : Vec<_>= comp.basis.iter().map(|v| v + n).collect();
+            let component = ExTensorComponent::new(comp.coeff, &basis_next);
+            data.insert(component);
         }
         self * &ExTensor { data }
     }
@@ -151,19 +191,13 @@ impl ExTensor {
 
 impl Add<&ExTensor> for &ExTensor {
     type Output = ExTensor;
-    fn add(self, rhs: &ExTensor) -> ExTensor {
-        let mut data = IndexMap::new();
+    fn add(self, other: &ExTensor) -> ExTensor {
+        let mut data = HashSet::new();
 
-        let joined_data: Vec<_> = self.data.iter().chain(rhs.data.iter()).collect();
-        for val in joined_data {
-            let basis = val.0.to_vec();
-            let coeff = *val.1;
-            if data.contains_key(&basis) {
-                let c = data.get(&basis).unwrap() + coeff;
-                data.insert(basis, c);
-            } else {
-                data.insert(basis, coeff);
-            }
+        let joined = self.data.iter().chain(other.data.iter());
+        for comp in joined {
+            println!("{:?}, {:?}, {:?}", comp, data, data.contains(comp));
+            data.insert(comp.clone());
         }
 
         ExTensor { data }
@@ -180,21 +214,7 @@ impl Add<ExTensor> for ExTensor {
 impl Sub<&ExTensor> for &ExTensor {
     type Output = ExTensor;
     fn sub(self, rhs: &ExTensor) -> ExTensor {
-        let mut data = IndexMap::new();
-
-        let joined_data: Vec<_> = self.data.iter().chain(rhs.data.iter()).collect();
-        for val in joined_data {
-            let basis = val.0.to_vec();
-            let coeff = *val.1;
-            if data.contains_key(&basis) {
-                let c = data.get(&basis).unwrap() - coeff;
-                data.insert(basis, c);
-            } else {
-                data.insert(basis, coeff);
-            }
-        }
-
-        ExTensor { data }
+        self + &((-1 as f64) * rhs)
     }
 }
 
@@ -208,17 +228,23 @@ impl Sub<ExTensor> for ExTensor {
 impl Mul<&ExTensor> for &ExTensor {
     type Output = ExTensor;
     fn mul(self, rhs: &ExTensor) -> ExTensor {
-        let mut data = IndexMap::new();
+        let mut data = HashSet::new();
+        let mut handles = Vec::with_capacity(self.data.len() * rhs.data.len());
 
-        for val_lhs in self.data.iter() {
-            for val_rhs in rhs.data.iter() {
-                let basis_next: Vec<_> = [&val_lhs.0[..], &val_rhs.0[..]].concat();
-
-                if utils::has_unique_elements(&basis_next) {
-                    let coeff_next = val_rhs.1 * val_lhs.1;
-                    data.insert(basis_next, coeff_next);
-                }
+        for comp_lhs in self.data.iter() {
+            for comp_rhs in rhs.data.iter() {
+                let comp_lhs = comp_lhs.clone();
+                let comp_rhs = comp_rhs.clone();
+                let handle = thread::spawn(move || {
+                    &comp_lhs * &comp_rhs
+                });
+                handles.push(handle);
             }
+        }
+
+        for h in handles {
+            let res = h.join().unwrap();
+            data.insert(res);
         }
 
         ExTensor { data }
@@ -232,14 +258,28 @@ impl Mul<ExTensor> for ExTensor {
     }
 }
 
+impl Mul<f64> for &ExTensor {
+    type Output = ExTensor;
+    fn mul(self, c: f64) -> ExTensor {
+        let mut data = HashSet::new();
+        for comp in self.data.iter() {
+            data.insert(comp * c);
+        }
+        ExTensor { data }
+    }
+}
+
+impl Mul<&ExTensor> for f64 {
+    type Output = ExTensor;
+    fn mul(self, rhs: &ExTensor) -> ExTensor {
+        rhs * self
+    }
+}
+
 impl Mul<f64> for ExTensor {
     type Output = ExTensor;
     fn mul(self, c: f64) -> ExTensor {
-        let mut data = IndexMap::new();
-        for val in self.data {
-            data.insert(val.0, val.1 * c);
-        }
-        ExTensor { data }
+        &self * c
     }
 }
 
@@ -247,43 +287,6 @@ impl Mul<ExTensor> for f64 {
     type Output = ExTensor;
     fn mul(self, rhs: ExTensor) -> ExTensor {
         rhs * self
-    }
-}
-
-impl PartialEq<ExTensor> for ExTensor {
-    fn eq(&self, other: &ExTensor) -> bool {
-        self.sorted().data == other.sorted().data
-    }
-}
-
-impl Display for ExTensor {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut s = String::new();
-        if self.data.is_empty() {
-            return write!(f, "0");
-        }
-
-        for (count_term, d) in self.data.iter().enumerate() {
-            if *d.1 < 0.0 {
-                s += format!("({}) ", d.1).as_str();
-            } else {
-                s += format!("{} ", d.1).as_str();
-            }
-
-            for (count_base, b) in d.0.iter().enumerate() {
-                if count_base == d.0.len() - 1 {
-                    if count_term == self.data.len() - 1 {
-                        s += format!("e_{}", b).as_str();
-                    } else {
-                        s += format!("e_{}  +  ", b).as_str();
-                    }
-                } else {
-                    s += format!("e_{} ∧ ", b).as_str();
-                }
-            }
-        }
-
-        write!(f, "{}", s)
     }
 }
 
@@ -298,21 +301,33 @@ macro_rules! extensor {
     }};
 }
 
+
 #[cfg(test)]
 mod tests {
-    use crate::structure::extensor::ExTensor;
+    use crate::structure::extensor::{ExTensor, ExTensorComponent};
+    use std::collections::HashSet;
+
+    #[test]
+    fn hash() {
+        let mut h = HashSet::new();
+        let x1 = ExTensorComponent::new(1.0, &[1]);
+        h.insert(x1);
+        let x3 = ExTensorComponent::new(4.0, &[1]);
+        assert_eq!(h.contains(&x3), true, "hashing works for ExTensorComponent");
+    }
 
     #[test]
     fn extensor_add() {
-        let x_1 = &extensor!([3.0, -7.0], [[1, 3], [3]]);
+        let x_1 = &extensor!([3.0, 7.0], [[1, 3], [3]]);
         let x_2 = &extensor!([1.0, 2.0], [[1], [3]]);
         let sum = x_1 + x_2;
-        let res = extensor!([3.0, -5.0, 1.0], [[1, 3], [3], [1]]);
+        let res = extensor!([3.0, 9.0, 1.0], [[1, 3], [3], [1]]);
         assert_eq!(sum, res, "exterior sum is definined component wise");
         let sum_2 = x_2 + x_1;
         assert_eq!(sum, sum_2, "exterior sum is commutative");
     }
 
+    /*
     #[test]
     fn extensor_mul_add() {
         let x_1 = &ExTensor::simple(1.0, 1);
@@ -409,4 +424,5 @@ mod tests {
         assert_eq!(x.is_zero(), true, "extensor with zero coefficients is zero");
         assert_eq!(y.is_zero(), true, "extensor with empty basis is zero");
     }
+    */
 }

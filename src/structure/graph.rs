@@ -222,6 +222,7 @@ mod tests {
         assert_eq!(g.adj_mat, Box::new(expect));
     }
 
+    /*
     #[test]
     fn compute_walk() {
         let path_3 = String::from("src/data/test_graphs/path3.g6");
@@ -231,4 +232,5 @@ mod tests {
         let zero = ExTensor::zero();
         assert_ne!(res, zero, "compute walk with vandermonde coding");
     }
+     */
 }
