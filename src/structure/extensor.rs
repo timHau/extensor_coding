@@ -1,14 +1,9 @@
 use super::super::utils;
 use indexmap::IndexMap;
-use std::{
-    cmp::PartialEq,
-    fmt::Display,
-    ops::{Add, Mul, Sub},
-};
 
 #[derive(Debug, Clone, Default)]
 pub struct ExTensor {
-    data: IndexMap<Vec<i32>, f64>, // basis : coeff
+    data: IndexMap<Vec<u32>, f64>, // basis : coeff
 }
 
 /// # ExTensor
@@ -19,7 +14,7 @@ impl ExTensor {
     ///
     /// create an new Extensor that does not need to be "simple"
     /// meaning sets with cardinality > 1 are supported.
-    pub(crate) fn new(coeffs: &[f64], basis: &[&[i32]]) -> Self {
+    pub(crate) fn new(coeffs: &[f64], basis: &[&[u32]]) -> Self {
         assert_eq!(
             coeffs.len(),
             basis.len(),
@@ -35,7 +30,7 @@ impl ExTensor {
     /// ## from
     ///
     /// given an Vec<f64> of coefficients and a Vec of Vec<i32> of basis, create a new extensor.
-    pub(crate) fn from(coeffs: Vec<f64>, basis: Vec<Vec<i32>>) -> Self {
+    pub(crate) fn from(coeffs: Vec<f64>, basis: Vec<Vec<u32>>) -> Self {
         assert_eq!(
             coeffs.len(),
             basis.len(),
@@ -51,7 +46,7 @@ impl ExTensor {
     /// ## simple
     ///
     /// construct a simple exterior tensor e.g. only using a single basis set
-    pub(crate) fn simple(coeff: f64, basis: i32) -> Self {
+    pub(crate) fn simple(coeff: f64, basis: u32) -> Self {
         let mut data = IndexMap::new();
         data.insert(vec![basis], coeff);
         ExTensor { data }
@@ -140,16 +135,16 @@ impl ExTensor {
     /// calculate the lifted version
     pub(crate) fn lifted(&self) -> Self {
         let mut data = IndexMap::new();
-        let n = self.data.len() as i32;
+        let n = self.data.len() as u32;
         for (basis, coeff) in self.data.iter() {
-            let basis_next: Vec<i32> = basis.iter().map(|v| v + n).collect();
+            let basis_next: Vec<_> = basis.iter().map(|v| v + n).collect();
             data.insert(basis_next, coeff.clone());
         }
         self * &ExTensor { data }
     }
 }
 
-impl Add<&ExTensor> for &ExTensor {
+impl std::ops::Add for &ExTensor {
     type Output = ExTensor;
     fn add(self, rhs: &ExTensor) -> ExTensor {
         let mut data = IndexMap::new();
@@ -170,14 +165,14 @@ impl Add<&ExTensor> for &ExTensor {
     }
 }
 
-impl Add<ExTensor> for ExTensor {
+impl std::ops::Add for ExTensor {
     type Output = ExTensor;
     fn add(self, rhs: ExTensor) -> ExTensor {
         &self + &rhs
     }
 }
 
-impl Sub<&ExTensor> for &ExTensor {
+impl std::ops::Sub for &ExTensor {
     type Output = ExTensor;
     fn sub(self, rhs: &ExTensor) -> ExTensor {
         let mut data = IndexMap::new();
@@ -198,14 +193,14 @@ impl Sub<&ExTensor> for &ExTensor {
     }
 }
 
-impl Sub<ExTensor> for ExTensor {
+impl std::ops::Sub for ExTensor {
     type Output = ExTensor;
     fn sub(self, rhs: ExTensor) -> ExTensor {
         &self - &rhs
     }
 }
 
-impl Mul<&ExTensor> for &ExTensor {
+impl std::ops::Mul for &ExTensor {
     type Output = ExTensor;
     fn mul(self, rhs: &ExTensor) -> ExTensor {
         let mut data = IndexMap::new();
@@ -225,14 +220,14 @@ impl Mul<&ExTensor> for &ExTensor {
     }
 }
 
-impl Mul<ExTensor> for ExTensor {
+impl std::ops::Mul for ExTensor {
     type Output = ExTensor;
     fn mul(self, rhs: ExTensor) -> ExTensor {
         &self * &rhs
     }
 }
 
-impl Mul<f64> for ExTensor {
+impl std::ops::Mul<f64> for ExTensor {
     type Output = ExTensor;
     fn mul(self, c: f64) -> ExTensor {
         let mut data = IndexMap::new();
@@ -243,20 +238,20 @@ impl Mul<f64> for ExTensor {
     }
 }
 
-impl Mul<ExTensor> for f64 {
+impl std::ops::Mul<ExTensor> for f64 {
     type Output = ExTensor;
     fn mul(self, rhs: ExTensor) -> ExTensor {
         rhs * self
     }
 }
 
-impl PartialEq<ExTensor> for ExTensor {
+impl std::cmp::PartialEq for ExTensor {
     fn eq(&self, other: &ExTensor) -> bool {
         self.sorted().data == other.sorted().data
     }
 }
 
-impl Display for ExTensor {
+impl std::fmt::Display for ExTensor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut s = String::new();
         if self.data.is_empty() {
