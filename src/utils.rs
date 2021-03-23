@@ -23,6 +23,7 @@ where
     iter.into_iter().all(move |x| uniq.insert(x))
 }
 
+/*
 /// given k, create a lifted vandermonde coding that takes v as input
 pub fn create_vandermonde(k: usize) -> (F, G) {
     let f_vert = move |v: usize| -> ExTensor {
@@ -56,6 +57,7 @@ pub fn create_bernoulli(k: usize) -> (F, G) {
     let f_edge = |_v: usize, _w: usize| 1.0;
     (Box::new(f_vert), Box::new(f_edge))
 }
+*/
 
 pub fn factorial(k: usize) -> u128 {
     let mut res: u128 = 1;
@@ -65,6 +67,7 @@ pub fn factorial(k: usize) -> u128 {
     res
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use crate::utils::{create_bernoulli, factorial};
@@ -95,3 +98,4 @@ mod tests {
         assert_eq!(r4, 3628800 as u128, "10!");
     }
 }
+*/

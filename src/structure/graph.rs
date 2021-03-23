@@ -98,6 +98,7 @@ impl Graph {
         }
     }
 
+    /*
     /// ## compute_walk_sum
     ///
     /// given an usize `k` and an extensor mapping compute its walk sum.
@@ -138,8 +139,10 @@ impl Graph {
 
         res
     }
+    */
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use crate::structure::extensor::ExTensor;
@@ -234,3 +237,4 @@ mod tests {
     }
      */
 }
+*/
