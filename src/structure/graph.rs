@@ -112,7 +112,7 @@ impl Graph {
         F: Fn(usize) -> ExTensor,
         G: Fn(usize, usize) -> f64,
     {
-        let (f_vert, f_edge) = mapping;
+        let (f_vert, _f_edge) = mapping;
         let n = self.adj_mat.nrows();
 
         let mut a = Vec::with_capacity(n * n);
