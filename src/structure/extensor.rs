@@ -39,7 +39,6 @@ impl ExTensor {
         let mut c = a.clone();
         c.shift_right(1);
         while c.any() {
-            println!("c: {}, b: {}", c, b);
             sum += (c.clone() & b.clone()).count_ones();
             c.shift_right(1);
         }
@@ -49,6 +48,16 @@ impl ExTensor {
         } else {
             -1.0
         }
+    }
+
+    pub(crate) fn zero() -> Self {
+        ExTensor {
+            data: HashMap::new(),
+        }
+    }
+
+    pub(crate) fn is_zero(&self) -> bool {
+        self.data.len() == 0
     }
 }
 
@@ -71,6 +80,13 @@ impl std::ops::Add for &ExTensor {
     }
 }
 
+impl std::ops::Add for ExTensor {
+    type Output = ExTensor;
+    fn add(self, other: ExTensor) -> ExTensor {
+        &self + &other
+    }
+}
+
 impl std::ops::Mul for &ExTensor {
     type Output = ExTensor;
     fn mul(self, other: &ExTensor) -> ExTensor {
@@ -80,20 +96,44 @@ impl std::ops::Mul for &ExTensor {
             for (base_b, coeff_b) in other.data.iter() {
                 // check if the base is independent. Intersection test can be done via bitwise and
                 // only if they are independent (no common basis element) will we continue.
-                let intersections = base_a.clone() | base_b.clone();
-                if intersections.any() {
+                let intersections = base_a.clone() & base_b.clone();
+                if !intersections.any() {
                     // calculate the next basis bit vec, which can be done via bitwise or
-                    let next_base = base_a.clone() | base_b.clone();
+                    let next_base = base_a.clone() ^ base_b.clone();
                     // compute sign and multiply coefficients
                     let sign = ExTensor::get_sign(base_b, base_a);
-                    println!("sign: {}", sign);
                     let next_coeff: f64 = sign * coeff_a * coeff_b;
-                    data.insert(next_base, next_coeff);
+                    
+                    if data.contains_key(&next_base) {
+                        let old_coeff = data.get(&next_base).unwrap();
+                        data.insert(next_base, old_coeff + next_coeff);
+                    } else {
+                        data.insert(next_base, next_coeff);
+                    }
                 }
             }
         }
 
         ExTensor { data }
+    }
+}
+
+impl std::ops::Mul<f64> for ExTensor {
+    type Output = ExTensor;
+    fn mul(self, c: f64) -> ExTensor {
+        let data = self
+            .data
+            .into_iter()
+            .map(|(base, coeff)| (base, coeff * c))
+            .collect();
+        ExTensor { data }
+    }
+}
+
+impl std::ops::Mul<ExTensor> for f64 {
+    type Output = ExTensor;
+    fn mul(self, t: ExTensor) -> ExTensor {
+        t * self
     }
 }
 
@@ -120,17 +160,11 @@ impl std::fmt::Display for ExTensor {
 #[macro_export]
 macro_rules! extensor {
 
-    ($coeff: expr, [$b:expr]) => {{
-        let mut basis = Vec::new();
-        basis.push([$b].to_vec());
-        ExTensor::new($coeff.as_ref(), &basis)
-    }};
-
-    ($coeffs:expr, [$($b: expr),+] ) => {{
+    ($coeffs:expr, [$($b: expr),*] ) => {{
         let mut basis = Vec::new();
         $(
            basis.push($b.to_vec());
-        )+
+        )*
         ExTensor::new($coeffs.as_ref(), &basis)
     }};
 
@@ -155,49 +189,52 @@ mod tests {
     fn wedge_prod() {
         let x_1 = &extensor!([2.0, 3.0], [[1, 2], [3, 4]]);
         let x_2 = &extensor!([4.0, 5.0], [[6, 2], [7, 4]]);
-        //    let res = &extensor!([12.0, 10.0], [])
-        let x_3 = &extensor!([1.0], [2]);
-        let x_4 = &extensor!([1.0], [1]);
-        println!("{}", x_3 * x_4);
+        let res_1 = &extensor!([12.0, 10.0], [[2, 3, 4, 6], [1, 2, 4, 7]]);
+        assert_eq!(&(x_1 * x_2), res_1, "wedge product");
+        let x_3 = &extensor!([1.0], [[2]]);
+        let x_4 = &extensor!([1.0], [[1]]);
+        let res_2 = &extensor!([-1.0], [[1, 2]]);
+        assert_eq!(
+            &(x_3 * x_4),
+            res_2,
+            "sign changes when base has to be reorderd"
+        );
     }
 
+    #[test]
+    fn extensor_mul_add() {
+        let x_1 = &extensor!([1.0], [[1]]);
+        let x_2 = &extensor!([2.0], [[1]]);
+        let x_3 = &extensor!([1.0], [[2]]);
+        let x_4 = &extensor!([2.0], [[2]]);
+        let a = x_1 * x_4 + x_2 * x_1;
+        let expect_a = extensor!([2.0], [[1, 2]]);
+        let b = x_1 * x_3 + x_2 * x_4;
+        let expect_b = extensor!([5.0], [[1, 2]]);
+        let c = x_3 * x_4 + x_4 * x_1;
+        let expect_c = extensor!([-2.0], [[1, 2]]);
+        let d = x_3 * x_3 + x_4 * x_4;
+        let expect_d = ExTensor::zero();
 
-    /*
-        #[test]
-        fn extensor_mul_add() {
-            let x_1 = &ExTensor::simple(1.0, 1);
-            let x_2 = &ExTensor::simple(2.0, 1);
-            let x_3 = &ExTensor::simple(1.0, 2);
-            let x_4 = &ExTensor::simple(2.0, 2);
-            let a = x_1 * x_4 + x_2 * x_1;
-            let expect_a = extensor!([2.0], [[1, 2]]);
-            let b = x_1 * x_3 + x_2 * x_4;
-            let expect_b = extensor!([5.0], [[1, 2]]);
-            let c = x_3 * x_4 + x_4 * x_1;
-            let expect_c = extensor!([-2.0], [[1, 2]]);
-            let d = x_3 * x_3 + x_4 * x_4;
-            let expect_d = ExTensor::zero();
+        assert_eq!(a, expect_a, "multiplying and then adding (inner product)");
+        assert_eq!(b, expect_b, "multiplying and then adding (inner product)");
+        assert_eq!(c, expect_c, "multiplying and then adding (inner product)");
+        assert_eq!(d, expect_d, "multiplying and then adding (inner product)");
+    }
 
-            assert_eq!(a, expect_a, "multiplying and then adding (inner product)");
-            assert_eq!(b, expect_b, "multiplying and then adding (inner product)");
-            assert_eq!(c, expect_c, "multiplying and then adding (inner product)");
-            assert_eq!(d, expect_d, "multiplying and then adding (inner product)");
-        }
-
-        #[test]
-        fn extensor_scalar_mul() {
-            let x_1 = extensor!([3.0, 2.0], [[1, 2], [3, 4]]) * 2.0;
-            let x_2 = 2.0 * extensor!([3.0, 2.0], [[1, 2], [3, 4]]);
-            let res = extensor!([6.0, 4.0], [[1, 2], [3, 4]]);
-            assert_eq!(x_1, res, "scalar multiplication is right commutative");
-            assert_eq!(x_2, res, "scalar multiplication is left commutative");
-            assert_eq!(x_1, x_2, "scalar multiplication is commutative");
-        }
-
+    #[test]
+    fn extensor_scalar_mul() {
+        let x_1 = extensor!([3.0, 2.0], [[1, 2], [3, 4]]) * 2.0;
+        let x_2 = 2.0 * extensor!([3.0, 2.0], [[1, 2], [3, 4]]);
+        let res = extensor!([6.0, 4.0], [[1, 2], [3, 4]]);
+        assert_eq!(x_1, res, "scalar multiplication is right commutative");
+        assert_eq!(x_2, res, "scalar multiplication is left commutative");
+        assert_eq!(x_1, x_2, "scalar multiplication is commutative");
+    }
 
         #[test]
         fn extensor_vanish() {
-            let x_1 = &ExTensor::simple(1.0, 1);
+            let x_1 = &extensor!([1.0], [[1]]);
             let prod_1 = &(x_1 * x_1);
             assert_eq!(prod_1.is_zero(), true, "x wedge x vanishes");
         }
@@ -205,8 +242,8 @@ mod tests {
         #[test]
         fn extensor_anti_comm() {
             // test anti-commutativity
-            let x_3 = &ExTensor::simple(2.0, 1);
-            let x_4 = &ExTensor::simple(4.0, 3);
+            let x_3 = &extensor!([2.0], [[1]]);
+            let x_4 = &extensor!([4.0], [[3]]);
             let prod_4 = x_3 * x_4;
             let res_1 = extensor!([8.0], [[1, 3]]);
             let prod_5 = x_4 * x_3;
@@ -237,6 +274,7 @@ mod tests {
             assert_eq!(prod_7, det, "Wedge Product exhibits determinant on F^3x3");
         }
 
+    /*
         #[test]
         fn lifted() {
             let x = extensor!([2.0, 3.0], [[1], [2]]);
