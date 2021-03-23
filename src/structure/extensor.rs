@@ -73,6 +73,14 @@ impl ExTensor {
     pub(crate) fn is_zero(&self) -> bool {
         self.data.len() == 0
     }
+
+    pub(crate) fn coeffs(&self) -> Vec<f64> {
+        self
+        .data
+        .iter()
+        .map(|(base, coeff)| coeff.clone())
+        .collect()
+    }
 }
 
 impl std::ops::Add for &ExTensor {
@@ -117,7 +125,7 @@ impl std::ops::Mul for &ExTensor {
                     // compute sign and multiply coefficients
                     let sign = ExTensor::get_sign(base_b, base_a);
                     let next_coeff: f64 = sign * coeff_a * coeff_b;
-                    
+
                     if data.contains_key(&next_base) {
                         let old_coeff = data.get(&next_base).unwrap();
                         data.insert(next_base, old_coeff + next_coeff);
@@ -132,7 +140,7 @@ impl std::ops::Mul for &ExTensor {
     }
 }
 
-impl std::ops::Mul for ExTensor{
+impl std::ops::Mul for ExTensor {
     type Output = ExTensor;
     fn mul(self, other: ExTensor) -> ExTensor {
         &self * &other
@@ -267,55 +275,55 @@ mod tests {
         assert_eq!(x_1, x_2, "scalar multiplication is commutative");
     }
 
-        #[test]
-        fn extensor_vanish() {
-            let x_1 = &extensor!([1.0], [[1]]);
-            let prod_1 = &(x_1 * x_1);
-            assert_eq!(prod_1.is_zero(), true, "x wedge x vanishes");
-        }
+    #[test]
+    fn extensor_vanish() {
+        let x_1 = &extensor!([1.0], [[1]]);
+        let prod_1 = &(x_1 * x_1);
+        assert_eq!(prod_1.is_zero(), true, "x wedge x vanishes");
+    }
 
-        #[test]
-        fn extensor_anti_comm() {
-            // test anti-commutativity
-            let x_3 = &extensor!([2.0], [[1]]);
-            let x_4 = &extensor!([4.0], [[3]]);
-            let prod_4 = x_3 * x_4;
-            let res_1 = extensor!([8.0], [[1, 3]]);
-            let prod_5 = x_4 * x_3;
-            let res_anti = extensor!([-8.0], [[1, 3]]);
-            assert_eq!(prod_4, res_1, "wedge product on simple extensors");
-            assert_eq!(
-                prod_5, res_anti,
-                "wedge product on simple extensors is anti communative"
-            );
-        }
+    #[test]
+    fn extensor_anti_comm() {
+        // test anti-commutativity
+        let x_3 = &extensor!([2.0], [[1]]);
+        let x_4 = &extensor!([4.0], [[3]]);
+        let prod_4 = x_3 * x_4;
+        let res_1 = extensor!([8.0], [[1, 3]]);
+        let prod_5 = x_4 * x_3;
+        let res_anti = extensor!([-8.0], [[1, 3]]);
+        assert_eq!(prod_4, res_1, "wedge product on simple extensors");
+        assert_eq!(
+            prod_5, res_anti,
+            "wedge product on simple extensors is anti communative"
+        );
+    }
 
-        #[test]
-        fn det_f2() {
-            let x_5 = &extensor!([2.0, 3.0], [[1], [2]]);
-            let x_6 = &extensor!([4.0, 5.0], [[1], [2]]);
-            let prod_6 = &(x_5 * x_6);
-            let det = &extensor!([-2.0], [[1, 2]]);
-            assert_eq!(prod_6, det, "Wedge Product exhibits determinant on F^2x2");
-        }
+    #[test]
+    fn det_f2() {
+        let x_5 = &extensor!([2.0, 3.0], [[1], [2]]);
+        let x_6 = &extensor!([4.0, 5.0], [[1], [2]]);
+        let prod_6 = &(x_5 * x_6);
+        let det = &extensor!([-2.0], [[1, 2]]);
+        assert_eq!(prod_6, det, "Wedge Product exhibits determinant on F^2x2");
+    }
 
-        #[test]
-        fn det_f3() {
-            let x_7 = &extensor!([2.0, 3.0, 4.0], [[1], [2], [3]]);
-            let x_8 = &extensor!([5.0, 6.0, 7.0], [[1], [2], [3]]);
-            let x_9 = &extensor!([8.0, 9.0, 10.0], [[1], [2], [3]]);
-            let prod_7 = &(&(x_7 * x_8) * x_9);
-            let det = &extensor!([0.0], [[1, 2, 3]]);
-            assert_eq!(prod_7, det, "Wedge Product exhibits determinant on F^3x3");
-        }
+    #[test]
+    fn det_f3() {
+        let x_7 = &extensor!([2.0, 3.0, 4.0], [[1], [2], [3]]);
+        let x_8 = &extensor!([5.0, 6.0, 7.0], [[1], [2], [3]]);
+        let x_9 = &extensor!([8.0, 9.0, 10.0], [[1], [2], [3]]);
+        let prod_7 = &(&(x_7 * x_8) * x_9);
+        let det = &extensor!([0.0], [[1, 2, 3]]);
+        assert_eq!(prod_7, det, "Wedge Product exhibits determinant on F^3x3");
+    }
 
-        #[test]
-        fn lifted() {
-            let x = &extensor!([2.0, 3.0], [[1], [2]]);
-            let l = x.lift();
-            let a = &extensor!([2.0, 3.0], [[3], [4]]);
-            assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
-        }
+    #[test]
+    fn lifted() {
+        let x = &extensor!([2.0, 3.0], [[1], [2]]);
+        let l = x.lift();
+        let a = &extensor!([2.0, 3.0], [[3], [4]]);
+        assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
+    }
 
     /*
         #[test]
