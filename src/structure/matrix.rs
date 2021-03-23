@@ -171,11 +171,12 @@ impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
     }
 }
 
-/*
 #[cfg(test)]
 mod tests {
-    use crate::structure::extensor::ExTensor;
-    use crate::structure::matrix::Matrix;
+    use crate::structure::{
+        extensor::ExTensor,
+        matrix::Matrix,
+    };
 
     #[test]
     fn zero() {
@@ -211,17 +212,17 @@ mod tests {
     #[test]
     fn extensor_mat() {
         let v = vec![
-            ExTensor::simple(1.0, 1),
-            ExTensor::simple(2.0, 1),
-            ExTensor::simple(1.0, 2),
-            ExTensor::simple(2.0, 2),
+            crate::extensor!([1.0], [[1]]),
+            crate::extensor!([2.0], [[1]]),
+            crate::extensor!([1.0], [[2]]),
+            crate::extensor!([2.0], [[2]]),
         ];
         let t = Matrix::from_vec(2, 2, v);
         let w = vec![
-            ExTensor::simple(2.0, 2),
-            ExTensor::simple(1.0, 2),
-            ExTensor::simple(1.0, 1),
-            ExTensor::simple(2.0, 1),
+            crate::extensor!([2.0], [[2]]),
+            crate::extensor!([1.0], [[2]]),
+            crate::extensor!([1.0], [[1]]),
+            crate::extensor!([2.0], [[1]]),
         ];
         let d = Matrix::from_vec(2, 2, w);
         let prod = &t * &d;
@@ -269,10 +270,10 @@ mod tests {
     #[test]
     fn mat_extensor_power() {
         let v = vec![
-            ExTensor::simple(1.0, 1),
-            ExTensor::simple(2.0, 1),
-            ExTensor::simple(1.0, 2),
-            ExTensor::simple(2.0, 2),
+            crate::extensor!([1.0], [[1]]),
+            crate::extensor!([2.0], [[1]]),
+            crate::extensor!([1.0], [[2]]),
+            crate::extensor!([2.0], [[2]]),
         ];
         let power = Matrix::from_vec(2, 2, v).power(2);
         let r = vec![
@@ -285,4 +286,3 @@ mod tests {
         assert_eq!(power, expect, "2x2 extensor matrix to the second power");
     }
 }
-*/

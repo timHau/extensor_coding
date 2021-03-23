@@ -1,7 +1,7 @@
 use bitvec::prelude::{bitvec, BitVec};
 use std::collections::HashMap;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default, Clone)]
 pub struct ExTensor {
     data: HashMap<BitVec, f64>,
 }
@@ -48,6 +48,20 @@ impl ExTensor {
         } else {
             -1.0
         }
+    }
+
+    pub(crate) fn lift(&self) -> Self {
+        let k = self.data.len();
+        let data = self
+            .data
+            .clone()
+            .into_iter()
+            .map(|(mut base, coeff)| {
+                base.shift_right(k);
+                (base, coeff)
+            })
+            .collect();
+        self * &ExTensor { data }
     }
 
     pub(crate) fn zero() -> Self {
@@ -118,22 +132,43 @@ impl std::ops::Mul for &ExTensor {
     }
 }
 
-impl std::ops::Mul<f64> for ExTensor {
+impl std::ops::Mul for ExTensor{
+    type Output = ExTensor;
+    fn mul(self, other: ExTensor) -> ExTensor {
+        &self * &other
+    }
+}
+
+impl std::ops::Mul<f64> for &ExTensor {
     type Output = ExTensor;
     fn mul(self, c: f64) -> ExTensor {
         let data = self
             .data
-            .into_iter()
-            .map(|(base, coeff)| (base, coeff * c))
+            .iter()
+            .map(|(base, coeff)| (base.clone(), coeff.clone() * c))
             .collect();
         ExTensor { data }
     }
 }
 
-impl std::ops::Mul<ExTensor> for f64 {
+impl std::ops::Mul<&ExTensor> for f64 {
     type Output = ExTensor;
-    fn mul(self, t: ExTensor) -> ExTensor {
+    fn mul(self, t: &ExTensor) -> ExTensor {
         t * self
+    }
+}
+
+impl std::ops::Sub for &ExTensor {
+    type Output = ExTensor;
+    fn sub(self, other: &ExTensor) -> ExTensor {
+        self + &(-1.0 * other)
+    }
+}
+
+impl std::ops::Sub for ExTensor {
+    type Output = ExTensor;
+    fn sub(self, other: ExTensor) -> ExTensor {
+        &self - &other
     }
 }
 
@@ -224,8 +259,8 @@ mod tests {
 
     #[test]
     fn extensor_scalar_mul() {
-        let x_1 = extensor!([3.0, 2.0], [[1, 2], [3, 4]]) * 2.0;
-        let x_2 = 2.0 * extensor!([3.0, 2.0], [[1, 2], [3, 4]]);
+        let x_1 = &extensor!([3.0, 2.0], [[1, 2], [3, 4]]) * 2.0;
+        let x_2 = 2.0 * &extensor!([3.0, 2.0], [[1, 2], [3, 4]]);
         let res = extensor!([6.0, 4.0], [[1, 2], [3, 4]]);
         assert_eq!(x_1, res, "scalar multiplication is right commutative");
         assert_eq!(x_2, res, "scalar multiplication is left commutative");
@@ -274,15 +309,15 @@ mod tests {
             assert_eq!(prod_7, det, "Wedge Product exhibits determinant on F^3x3");
         }
 
-    /*
         #[test]
         fn lifted() {
-            let x = extensor!([2.0, 3.0], [[1], [2]]);
-            let l = x.lifted();
-            let a = extensor!([2.0, 3.0], [[3], [4]]);
+            let x = &extensor!([2.0, 3.0], [[1], [2]]);
+            let l = x.lift();
+            let a = &extensor!([2.0, 3.0], [[3], [4]]);
             assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
         }
 
+    /*
         #[test]
         fn is_zero() {
             let x = extensor!([0.0, 0.0], [[1, 2, 3], [4, 5, 6]]);
