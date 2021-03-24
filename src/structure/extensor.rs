@@ -74,7 +74,7 @@ impl ExTensor {
     pub(crate) fn sorted(&self) -> Self {
         let mut data = HashMap::with_capacity(self.data.len());
 
-        for (i, (basis, coeff)) in self.data.iter().enumerate() {
+        for (_, (basis, coeff)) in self.data.iter().enumerate() {
             let sign = self.get_sign(basis) as f64;
 
             let mut basis_next = basis.to_vec();
@@ -120,10 +120,10 @@ impl ExTensor {
     ///
     /// calculate the lifted version
     pub(crate) fn lifted(&self) -> Self {
-        let n = self.data.len() as u32;
+        let n = self.data.len();
         let mut data = HashMap::with_capacity(n);
         for (basis, coeff) in self.data.iter() {
-            let basis_next: Vec<_> = basis.iter().map(|v| v + n).collect();
+            let basis_next: Vec<_> = basis.iter().map(|v| v + n as u32).collect();
             data.insert(basis_next, coeff.clone());
         }
         self * &ExTensor { data }

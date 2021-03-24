@@ -118,7 +118,7 @@ impl Matrix<f64> {
     /// ## ones
     ///
     /// returns a `n x m` Matrix of ones
-    fn ones(nrows: usize, ncols: usize) -> Matrix<f64> {
+    fn _ones(nrows: usize, ncols: usize) -> Matrix<f64> {
         let data: Vec<f64> = (0..nrows * ncols).map(|_| 1.).collect();
         Matrix { data, nrows, ncols }
     }

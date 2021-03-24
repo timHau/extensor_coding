@@ -14,7 +14,7 @@ pub fn u(g: &Graph, k: usize) -> bool {
 
 /// # Algorithm C
 ///
-pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
+pub fn c(g: Graph, k: usize, _eps: f64) -> f64 {
     // let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
     let t = 1000;
 
