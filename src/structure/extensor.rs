@@ -34,13 +34,22 @@ impl ExTensor {
     }
 
     pub(crate) fn get_sign(a: &BitVec, b: &BitVec) -> f64 {
-        let mut sum = 0;
+        let mut sum: u32 = 0;
 
-        let mut c = a.clone();
-        c.shift_right(1);
-        while c.any() {
-            sum += (c.clone() & b.clone()).count_ones();
-            c.shift_right(1);
+        let mut handles = Vec::with_capacity(a.len());
+        for i in 1..a.len() - 1  {
+            let mut b = b.clone();
+            let mut a = a.clone();
+            a.shift_right(i);
+            let handle = std::thread::spawn(move || {
+                (a & b).count_ones() as u32
+            });
+            handles.push(handle);
+        }
+
+        for h in handles {
+            let num_ones = h.join().unwrap();
+            sum += num_ones;
         }
 
         if sum % 2 == 0 {
@@ -109,42 +118,26 @@ impl std::ops::Mul for &ExTensor {
     type Output = ExTensor;
     fn mul(self, other: &ExTensor) -> ExTensor {
         let mut data = HashMap::with_capacity(self.data.len() * other.data.len());
-        let mut handles = Vec::new();
 
         for (base_a, coeff_a) in self.data.iter() {
-            let base_a = base_a.clone();
-            let coeff_a = coeff_a.clone();
-            let other = other.clone();
-            let handle = std::thread::spawn(move || {
-                let mut res = Vec::new();
-                for (base_b, coeff_b) in other.data.iter() {
-                    // check if the base is independent. Intersection test can be done via bitwise and
-                    // only if they are independent (no common basis element) will we continue.
-                    let intersections = base_a.clone() & base_b.clone();
+            for (base_b, coeff_b) in other.data.iter() {
+                // check if the base is independent. Intersection test can be done via bitwise and
+                // only if they are independent (no common basis element) will we continue.
+                let intersections = base_a.clone() & base_b.clone();
+                if !intersections.any() {
                     // calculate the next basis bit vec, which can be done via bitwise or
                     let next_base = base_a.clone() ^ base_b.clone();
                     // compute sign and multiply coefficients
-                    let sign = ExTensor::get_sign(&base_b, &base_a);
+                    let sign = ExTensor::get_sign(base_b, base_a);
                     let next_coeff: f64 = sign * coeff_a * coeff_b;
 
-                    if !intersections.any() {
-                        res.push((next_base, next_coeff))
+                    if data.contains_key(&next_base) {
+                        let old_coeff = data.get(&next_base).unwrap();
+                        let next_coeff = old_coeff + next_coeff;
+                        data.insert(next_base, next_coeff);
+                    } else {
+                        data.insert(next_base, next_coeff);
                     }
-                }
-                res
-            });
-            handles.push(handle);
-        }
-
-        for h in handles {
-            let res = h.join().unwrap();
-            for (next_base, next_coeff) in res {
-                if data.contains_key(&next_base) {
-                    let old_coeff = data.get(&next_base).unwrap();
-                    let next_coeff = old_coeff + next_coeff;
-                    data.insert(next_base, next_coeff);
-                } else {
-                    data.insert(next_base, next_coeff);
                 }
             }
         }

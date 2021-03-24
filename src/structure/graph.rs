@@ -1,4 +1,5 @@
 use super::{extensor::ExTensor, matrix::Matrix};
+use std::time::Instant;
 
 #[derive(Debug)]
 pub struct Graph {
@@ -116,6 +117,7 @@ impl Graph {
         let n = self.adj_mat.nrows();
 
         let mut a = Vec::with_capacity(n * n);
+        let now_loop = Instant::now();
         for (i, v) in (*self.adj_mat).data().iter().enumerate() {
             if *v == 1 {
                 let from = i / n + 1;
@@ -128,13 +130,26 @@ impl Graph {
                 a.push(ExTensor::zero());
             }
         }
-        let a = Matrix::from_vec(n, n, a).power(k - 1);
-        let b = Matrix::from_vec(n, 1, (1..(n + 1)).map(|i| f_vert(i)).collect::<Vec<_>>());
+        println!("now_loop: {}", now_loop.elapsed().as_millis());
 
+        let now_pow = Instant::now();
+        let a = Matrix::from_vec(n, n, a).power(k - 1);
+        println!("now_pow: {}", now_pow.elapsed().as_millis());
+
+        let now_b = Instant::now();
+        let b = Matrix::from_vec(n, 1, (1..(n + 1)).map(|i| f_vert(i)).collect::<Vec<_>>());
+        println!("now_b: {}", now_b.elapsed().as_millis());
+
+        let now_p = Instant::now();
+        let prod = &a * &b;
+        println!("now_p: {}", now_p.elapsed().as_millis());
+
+        let now_l = Instant::now();
         let mut res = ExTensor::zero();
-        for v in (&a * &b).data().iter() {
+        for v in prod.data().iter() {
             res = &res + v;
         }
+        println!("now_l: {}", now_l.elapsed().as_millis());
 
         res
     }

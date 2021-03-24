@@ -1,4 +1,5 @@
 use super::{structure::graph::Graph, utils};
+use std::time::Instant;
 
 /// # Algorithm U
 ///
@@ -15,13 +16,15 @@ pub fn u(g: &Graph, k: usize) -> bool {
 pub fn c(g: &Graph, k: usize, eps: f64) -> f64 {
     let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
 
+    let now = Instant::now();
     let mut xs = Vec::new();
-    for _j in 1..t + 1 {
+    for _j in 0..t {
         let bernoulli_mapping = utils::create_bernoulli(k);
         let x_j = g.compute_walk_sum(k, bernoulli_mapping).coeffs()[0];
         println!("{}/{}", _j, t);
         xs.push(x_j);
     }
+    println!("in c: {}", now.elapsed().as_millis());
 
     let sum: f64 = xs.iter().sum();
     let denom = (utils::factorial(k) * t as u128) as f64;
@@ -60,9 +63,9 @@ mod tests {
 
     #[test]
     fn c() {
-        let g = Graph::from_graph6("src/data/test_graphs/path10.g6");
-        let k = 2;
-        let eps = 0.1;
+        let g = Graph::from_graph6("src/data/test_graphs/path4.g6");
+        let k = 3;
+        let eps = 0.5;
         let now = Instant::now();
         let res = algorithm::c(&g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
