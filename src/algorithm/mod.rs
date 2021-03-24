@@ -90,12 +90,12 @@ mod tests {
 
     #[test]
     fn c() {
-        let g = Graph::from_graph6("src/data/test_graphs/path3.g6");
+        let g = Graph::from_graph6("src/data/test_graphs/path10.g6");
         let k = 3;
         let eps = 0.4;
 
         let now = Instant::now();
-        let res = algorithm::c(g, k, eps);
+//        let res = algorithm::c(g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
 
         /* 

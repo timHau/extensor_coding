@@ -1,9 +1,9 @@
 use super::super::utils;
-use indexmap::IndexMap;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Default)]
 pub struct ExTensor {
-    data: IndexMap<Vec<u32>, f64>, // basis : coeff
+    data: HashMap<Vec<u32>, f64>, // basis : coeff
 }
 
 /// # ExTensor
@@ -15,13 +15,14 @@ impl ExTensor {
     /// create an new Extensor that does not need to be "simple"
     /// meaning sets with cardinality > 1 are supported.
     pub(crate) fn new(coeffs: &[f64], basis: &[&[u32]]) -> Self {
+        let n = basis.len();
         assert_eq!(
             coeffs.len(),
-            basis.len(),
+            n,
             "coeffs and basis must be of same length"
         );
-        let mut data = IndexMap::new();
-        for i in 0..basis.len() {
+        let mut data = HashMap::with_capacity(n);
+        for i in 0..n {
             data.insert(basis[i].to_vec(), coeffs[i]);
         }
         ExTensor { data }.sorted()
@@ -31,13 +32,13 @@ impl ExTensor {
     ///
     /// given an Vec<f64> of coefficients and a Vec of Vec<i32> of basis, create a new extensor.
     pub(crate) fn from(coeffs: Vec<f64>, basis: Vec<Vec<u32>>) -> Self {
+        let n = basis.len();
         assert_eq!(
-            coeffs.len(),
-            basis.len(),
+            coeffs.len(), n,
             "coeffs and basis must be of same length"
         );
-        let mut data = IndexMap::new();
-        for i in 0..basis.len() {
+        let mut data = HashMap::with_capacity(n);
+        for i in 0..n {
             data.insert(basis[i].to_vec(), coeffs[i]);
         }
         ExTensor { data }.sorted()
@@ -47,7 +48,7 @@ impl ExTensor {
     ///
     /// construct a simple exterior tensor e.g. only using a single basis set
     pub(crate) fn simple(coeff: f64, basis: u32) -> Self {
-        let mut data = IndexMap::new();
+        let mut data = HashMap::new();
         data.insert(vec![basis], coeff);
         ExTensor { data }
     }
@@ -56,17 +57,16 @@ impl ExTensor {
     ///
     /// get sign of permutation that brings the basis at 'basis_index' into increasing order
     /// output ∈ {-1, 1}
-    fn get_sign(&self, basis_index: usize) -> i32 {
+    fn get_sign(&self, basis: &Vec<u32>) -> i32 {
         // from here: https://math.stackexchange.com/questions/65923/how-does-one-compute-the-sign-of-a-permutation
-        // get the basis at basis_index
-        let v = self.data.get_index(basis_index).unwrap().0;
         // get permutation that would sort that basis
-        let perm = utils::get_permutation_to_sort(&v);
+        let perm = utils::get_permutation_to_sort(basis);
 
+        let n = basis.len();
         // mark all as not visited
-        let mut visited = vec![false; v.len()];
+        let mut visited = vec![false; n];
         let mut sign = 1; // initial sign
-        for k in 0..v.len() {
+        for k in 0..n {
             if !visited[k] {
                 let mut next = k;
                 let mut l = 0;
@@ -88,10 +88,10 @@ impl ExTensor {
     ///
     /// sort the basis and apply sign changes if necessary
     pub(crate) fn sorted(&self) -> Self {
-        let mut data = IndexMap::new();
+        let mut data = HashMap::new();
 
         for (i, (basis, coeff)) in self.data.iter().enumerate() {
-            let sign = self.get_sign(i) as f64;
+            let sign = self.get_sign(basis) as f64;
             let mut basis_next = basis.to_vec();
             basis_next.sort_unstable();
             if data.contains_key(&basis_next) {
@@ -134,7 +134,7 @@ impl ExTensor {
     ///
     /// calculate the lifted version
     pub(crate) fn lifted(&self) -> Self {
-        let mut data = IndexMap::new();
+        let mut data = HashMap::new();
         let n = self.data.len() as u32;
         for (basis, coeff) in self.data.iter() {
             let basis_next: Vec<_> = basis.iter().map(|v| v + n).collect();
@@ -147,7 +147,7 @@ impl ExTensor {
 impl std::ops::Add for &ExTensor {
     type Output = ExTensor;
     fn add(self, rhs: &ExTensor) -> ExTensor {
-        let mut data = IndexMap::new();
+        let mut data = HashMap::new();
 
         let joined_data: Vec<_> = self.data.iter().chain(rhs.data.iter()).collect();
         for val in joined_data {
@@ -175,7 +175,7 @@ impl std::ops::Add for ExTensor {
 impl std::ops::Sub for &ExTensor {
     type Output = ExTensor;
     fn sub(self, rhs: &ExTensor) -> ExTensor {
-        let mut data = IndexMap::new();
+        let mut data = HashMap::new();
 
         let joined_data: Vec<_> = self.data.iter().chain(rhs.data.iter()).collect();
         for val in joined_data {
@@ -203,7 +203,7 @@ impl std::ops::Sub for ExTensor {
 impl std::ops::Mul for &ExTensor {
     type Output = ExTensor;
     fn mul(self, rhs: &ExTensor) -> ExTensor {
-        let mut data = IndexMap::new();
+        let mut data = HashMap::new();
 
         for val_lhs in self.data.iter() {
             for val_rhs in rhs.data.iter() {
@@ -230,7 +230,7 @@ impl std::ops::Mul for ExTensor {
 impl std::ops::Mul<f64> for ExTensor {
     type Output = ExTensor;
     fn mul(self, c: f64) -> ExTensor {
-        let mut data = IndexMap::new();
+        let mut data = HashMap::new();
         for val in self.data {
             data.insert(val.0, val.1 * c);
         }
