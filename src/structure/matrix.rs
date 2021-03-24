@@ -1,6 +1,7 @@
 use std::{
     cmp::PartialEq,
     ops::{Add, Index, IndexMut, Mul, Sub},
+    sync::{Arc, Mutex},
     thread,
 };
 
@@ -26,7 +27,7 @@ where
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Matrix<T> {
     data: Vec<T>,
     nrows: usize,
@@ -106,11 +107,28 @@ where
     /// naive implementation of a matrix power
     /// can be optimised by first diagonalizing and then taking the eigenvalues to a power
     pub(crate) fn power(self, k: usize) -> Self {
-        let mut b = Matrix::from_vec(self.nrows, self.ncols, self.data.clone());
+        let b = Arc::new(Mutex::new(Matrix::from_vec(
+            self.nrows,
+            self.ncols,
+            self.data.clone(),
+        )));
+
+        let mut handles = Vec::new();
         for _ in 0..k - 1 {
-            b = &b * &self;
+            let b = Arc::clone(&b);
+            let handle = thread::spawn(move || {
+                let mut b_lock = b.lock().unwrap();
+                *b_lock = &(*b_lock) * &(*b_lock);
+            });
+            handles.push(handle);
         }
-        b
+
+        for handle in handles {
+            handle.join().unwrap();
+        }
+
+        let res = b.lock().unwrap().clone();
+        res
     }
 }
 
@@ -246,7 +264,7 @@ mod tests {
     #[test]
     fn mat_power_big() {
         let power: Matrix<u128> = Matrix::from_vec(3, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]).power(11);
-        let expect = Matrix::from_vec(
+        let expect: Matrix<u128> = Matrix::from_vec(
             3,
             3,
             vec![

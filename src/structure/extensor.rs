@@ -37,13 +37,11 @@ impl ExTensor {
         let mut sum: u32 = 0;
 
         let mut handles = Vec::with_capacity(a.len());
-        for i in 1..a.len() - 1  {
+        for i in 1..a.len() - 1 {
             let mut b = b.clone();
             let mut a = a.clone();
             a.shift_right(i);
-            let handle = std::thread::spawn(move || {
-                (a & b).count_ones() as u32
-            });
+            let handle = std::thread::spawn(move || (a & b).count_ones() as u32);
             handles.push(handle);
         }
 
