@@ -1,6 +1,6 @@
 use super::{structure::graph::Graph, utils};
-use std::thread;
 use std::sync::Arc;
+use std::thread;
 
 /// # Algorithm U
 ///
@@ -24,7 +24,10 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
         let g_loc = Arc::clone(&g_arc);
         let handle = thread::spawn(move || {
             let bernoulli_mapping = utils::create_bernoulli(k);
-            g_loc.compute_walk_sum(k, bernoulli_mapping).sorted().coeffs()[0]
+            g_loc
+                .compute_walk_sum(k, bernoulli_mapping)
+                .sorted()
+                .coeffs()[0]
         });
         println!("{}/{}", _j, t);
         handles.push(handle);
@@ -40,7 +43,6 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
     let denom = (utils::factorial(k) * t as u128) as f64;
     (sum / denom).abs()
 }
-
 
 pub fn c_sync(g: Graph, k: usize, eps: f64) -> f64 {
     let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
@@ -91,21 +93,20 @@ mod tests {
     #[test]
     fn c() {
         let g = Graph::from_graph6("src/data/test_graphs/path10.g6");
-        let k = 3;
-        let eps = 0.4;
+        let k = 2;
+        let eps = 0.1;
 
         let now = Instant::now();
-//        let res = algorithm::c(g, k, eps);
+        let res = algorithm::c(g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
 
-        /* 
+        /*
         let g2 = Graph::from_graph6("src/data/test_graphs/path10.g6");
         let now2 = Instant::now();
         let res2 = algorithm::c_sync(g2, k, eps);
         println!("algorihm c_sync took: {}s", now2.elapsed().as_secs());
         */
 
-        /*
         let p = 18.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
@@ -113,6 +114,7 @@ mod tests {
             "lower: {}, res: {}, upper: {}",
             lower_bound, res, upper_bound
         );
+        /*
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
