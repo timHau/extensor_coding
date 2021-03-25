@@ -1,7 +1,6 @@
 use std::{
     cmp::PartialEq,
     ops::{Add, Index, IndexMut, Mul, Sub},
-    thread,
 };
 
 #[derive(Debug)]
@@ -12,21 +11,21 @@ pub(crate) struct MatrixSlice<T> {
 
 /// multiply two matrix slices.
 /// (x_1 ... x_n)* (y_1 ... y_n)^T
-impl<T> Mul<MatrixSlice<T>> for MatrixSlice<T>
+impl<T> Mul for MatrixSlice<T>
 where
     T: Default + Mul<Output = T> + Add<Output = T>,
 {
-    type Output = (usize, usize, T);
-    fn mul(self, other: MatrixSlice<T>) -> (usize, usize, T) {
+    type Output =  T;
+    fn mul(self, other: MatrixSlice<T>) -> T {
         let mut res = T::default();
         for (a, b) in self.data.into_iter().zip(other.data.into_iter()) {
             res = res + (a * b);
         }
-        (self.index, other.index, res)
+        res
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Matrix<T> {
     data: Vec<T>,
     nrows: usize,
@@ -38,7 +37,7 @@ pub(crate) struct Matrix<T> {
 /// Implementation of a matrix, which is just a flat Vec
 impl<T> Matrix<T>
 where
-    T: Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Send + 'static,
+    T: Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T> ,
 {
     /// ## from_vec
     ///
@@ -105,12 +104,18 @@ where
     ///
     /// naive implementation of a matrix power
     /// can be optimised by first diagonalizing and then taking the eigenvalues to a power
-    pub(crate) fn power(self, k: usize) -> Self {
-        let mut b = Matrix::from_vec(self.nrows, self.ncols, self.data.clone());
+    pub(crate) fn power(&self, k: usize) -> Self {
+        let mut res = Matrix::from_vec(
+            self.nrows,
+            self.ncols,
+            self.data.clone(),
+        );
+
         for _ in 0..k - 1 {
-            b = &b * &self;
+            res = &res * self;
         }
-        b
+
+        res
     }
 }
 
@@ -126,26 +131,19 @@ impl Matrix<f64> {
 
 impl<T> Mul<&Matrix<T>> for &Matrix<T>
 where
-    T: Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Send + 'static,
+    T: Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T>,
 {
     type Output = Matrix<T>;
     fn mul(self, other: &Matrix<T>) -> Matrix<T> {
         assert_eq!(self.ncols, other.nrows, "dimensions of matrices dont match");
         let mut res = Matrix::zeros(self.nrows, other.ncols);
-        let mut handles = Vec::with_capacity(self.nrows * other.ncols);
 
         for i in 0..self.nrows {
             for j in 0..other.ncols {
                 let row = self.row(i);
                 let col = other.col(j);
-                let handle = thread::spawn(move || row * col);
-                handles.push(handle);
+                res[(i, j)] = row * col;
             }
-        }
-
-        for h in handles {
-            let (i, j, v) = h.join().unwrap();
-            res[(i, j)] = v;
         }
 
         res
@@ -173,8 +171,7 @@ impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::structure::extensor::ExTensor;
-    use crate::structure::matrix::Matrix;
+    use crate::structure::{extensor::ExTensor, matrix::Matrix};
 
     #[test]
     fn zero() {
@@ -247,7 +244,7 @@ mod tests {
     #[test]
     fn mat_power_big() {
         let power: Matrix<u128> = Matrix::from_vec(3, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]).power(11);
-        let expect = Matrix::from_vec(
+        let expect: Matrix<u128> = Matrix::from_vec(
             3,
             3,
             vec![
