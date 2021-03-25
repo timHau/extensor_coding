@@ -1,4 +1,5 @@
 use bitvec::prelude::{bitvec, BitVec};
+use num_traits::{One, Zero};
 use std::collections::HashMap;
 
 #[derive(Debug, PartialEq, Default, Clone)]
@@ -64,21 +65,29 @@ impl ExTensor {
         self * &ExTensor { data }
     }
 
-    pub(crate) fn zero() -> Self {
+    pub(crate) fn coeffs(&self) -> Vec<f64> {
+        self.data.iter().map(|(_, coeff)| coeff.clone()).collect()
+    }
+}
+
+impl Zero for ExTensor {
+    fn zero() -> Self {
         ExTensor {
             data: HashMap::new(),
         }
     }
 
-    pub(crate) fn is_zero(&self) -> bool {
+    fn is_zero(&self) -> bool {
         match self.data.len() {
             0 => true,
             _ => self.data.iter().all(|(_, &coeff)| coeff == 0.0),
         }
     }
+}
 
-    pub(crate) fn coeffs(&self) -> Vec<f64> {
-        self.data.iter().map(|(_, coeff)| coeff.clone()).collect()
+impl One for ExTensor {
+    fn one() -> Self {
+        ExTensor::new(&[1.0], &[vec![0]])
     }
 }
 
@@ -216,6 +225,7 @@ macro_rules! extensor {
 #[cfg(test)]
 mod tests {
     use crate::structure::extensor::ExTensor;
+    use num_traits::Zero;
 
     #[test]
     fn extensor_add() {

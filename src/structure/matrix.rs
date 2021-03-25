@@ -1,6 +1,8 @@
+use num_traits::identities::{One, Zero};
 use std::{
     cmp::PartialEq,
     ops::{Add, Index, IndexMut, Mul, Sub},
+    thread,
 };
 
 #[derive(Debug)]
@@ -15,13 +17,13 @@ impl<T> Mul for MatrixSlice<T>
 where
     T: Default + Mul<Output = T> + Add<Output = T>,
 {
-    type Output = T;
-    fn mul(self, other: MatrixSlice<T>) -> T {
+    type Output = (usize, usize, T);
+    fn mul(self, other: MatrixSlice<T>) -> (usize, usize, T) {
         let mut res = T::default();
         for (a, b) in self.data.into_iter().zip(other.data.into_iter()) {
             res = res + (a * b);
         }
-        res
+        (self.index, other.index, res)
     }
 }
 
@@ -37,7 +39,15 @@ pub(crate) struct Matrix<T> {
 /// Implementation of a matrix, which is just a flat Vec
 impl<T> Matrix<T>
 where
-    T: Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T>,
+    T: Default
+        + One
+        + Zero
+        + Clone
+        + Add<Output = T>
+        + Sub<Output = T>
+        + Mul<Output = T>
+        + Send
+        + 'static,
 {
     /// ## from_vec
     ///
@@ -115,31 +125,36 @@ where
     }
 }
 
-impl Matrix<f64> {
-    /// ## ones
-    ///
-    /// returns a `n x m` Matrix of ones
-    fn _ones(nrows: usize, ncols: usize) -> Matrix<f64> {
-        let data: Vec<f64> = (0..nrows * ncols).map(|_| 1.).collect();
-        Matrix { data, nrows, ncols }
-    }
-}
-
 impl<T> Mul<&Matrix<T>> for &Matrix<T>
 where
-    T: Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T>,
+    T: Default
+        + One
+        + Zero
+        + Clone
+        + Add<Output = T>
+        + Sub<Output = T>
+        + Mul<Output = T>
+        + Send
+        + 'static,
 {
     type Output = Matrix<T>;
     fn mul(self, other: &Matrix<T>) -> Matrix<T> {
         assert_eq!(self.ncols, other.nrows, "dimensions of matrices dont match");
         let mut res = Matrix::zeros(self.nrows, other.ncols);
 
+        let mut handles = vec![];
         for i in 0..self.nrows {
             for j in 0..other.ncols {
                 let row = self.row(i);
                 let col = other.col(j);
-                res[(i, j)] = row * col;
+                let handle = thread::spawn(move || row * col);
+                handles.push(handle);
             }
+        }
+
+        for handle in handles {
+            let (i, j, v) = handle.join().unwrap();
+            res[(i, j)] = v;
         }
 
         res

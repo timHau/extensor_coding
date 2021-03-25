@@ -1,4 +1,5 @@
 use super::{structure::graph::Graph, utils};
+use num_traits::Zero;
 use std::time::Instant;
 
 /// # Algorithm U
