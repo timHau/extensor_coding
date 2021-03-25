@@ -36,18 +36,11 @@ impl ExTensor {
     pub(crate) fn get_sign(a: &BitVec, b: &BitVec) -> f64 {
         let mut sum: u32 = 0;
 
-        let mut handles = Vec::with_capacity(a.len());
         for i in 1..a.len() - 1 {
-            let mut b = b.clone();
+            let b = b.clone();
             let mut a = a.clone();
             a.shift_right(i);
-            let handle = std::thread::spawn(move || (a & b).count_ones() as u32);
-            handles.push(handle);
-        }
-
-        for h in handles {
-            let num_ones = h.join().unwrap();
-            sum += num_ones;
+            sum += (a & b).count_ones() as u32;
         }
 
         if sum % 2 == 0 {

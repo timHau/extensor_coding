@@ -61,6 +61,7 @@ mod tests {
         assert_eq!(res, false, "no 4 path in a 3 path graph");
     }
 
+    /* 
     #[test]
     fn c() {
         let g = Graph::from_graph6("src/data/test_graphs/path4.g6");
@@ -81,4 +82,5 @@ mod tests {
             "randomized counting algorithm c is inside bounds"
         );
     }
+    */
 }
