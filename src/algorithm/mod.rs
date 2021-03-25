@@ -35,7 +35,6 @@ pub fn c(g: &Graph, k: usize, eps: f64) -> f64 {
 mod tests {
     use crate::algorithm;
     use crate::structure::graph::Graph;
-    use std::time::Instant;
 
     #[test]
     fn u_3() {

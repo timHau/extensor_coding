@@ -71,7 +71,10 @@ impl ExTensor {
     }
 
     pub(crate) fn is_zero(&self) -> bool {
-        self.data.len() == 0
+        match self.data.len() {
+            0 => true,
+            _ => self.data.iter().all(|(_, &coeff)| coeff == 0.0),
+        }
     }
 
     pub(crate) fn coeffs(&self) -> Vec<f64> {

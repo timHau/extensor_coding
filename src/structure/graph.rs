@@ -157,10 +157,8 @@ impl Graph {
 
 #[cfg(test)]
 mod tests {
-    use crate::structure::extensor::ExTensor;
     use crate::structure::graph::Graph;
     use crate::structure::matrix::Matrix;
-    use crate::utils;
 
     /*
     #[test]
