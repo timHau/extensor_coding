@@ -60,22 +60,14 @@ mod tests {
         assert_eq!(res, false, "no 4 path in a 3 path graph");
     }
 
-    /* 
     #[test]
     fn c() {
         let g = Graph::from_graph6("src/data/test_graphs/path4.g6");
         let k = 3;
-        let eps = 0.5;
-        let now = Instant::now();
+        let eps = 0.9;
+        let now = std::time::Instant::now();
         let res = algorithm::c(g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
-
-        /*
-        let g2 = Graph::from_graph6("src/data/test_graphs/path10.g6");
-        let now2 = Instant::now();
-        let res2 = algorithm::c_sync(g2, k, eps);
-        println!("algorihm c_sync took: {}s", now2.elapsed().as_secs());
-        */
 
         let p = 18.;
         let lower_bound = (1. - eps) * p;
@@ -89,5 +81,4 @@ mod tests {
             "randomized counting algorithm c is inside bounds"
         );
     }
-    */
 }

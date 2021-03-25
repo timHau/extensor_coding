@@ -15,7 +15,7 @@ impl<T> Mul for MatrixSlice<T>
 where
     T: Default + Mul<Output = T> + Add<Output = T>,
 {
-    type Output =  T;
+    type Output = T;
     fn mul(self, other: MatrixSlice<T>) -> T {
         let mut res = T::default();
         for (a, b) in self.data.into_iter().zip(other.data.into_iter()) {
@@ -37,7 +37,7 @@ pub(crate) struct Matrix<T> {
 /// Implementation of a matrix, which is just a flat Vec
 impl<T> Matrix<T>
 where
-    T: Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T> ,
+    T: Default + Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T>,
 {
     /// ## from_vec
     ///
@@ -105,11 +105,7 @@ where
     /// naive implementation of a matrix power
     /// can be optimised by first diagonalizing and then taking the eigenvalues to a power
     pub(crate) fn power(&self, k: usize) -> Self {
-        let mut res = Matrix::from_vec(
-            self.nrows,
-            self.ncols,
-            self.data.clone(),
-        );
+        let mut res = Matrix::from_vec(self.nrows, self.ncols, self.data.clone());
 
         for _ in 0..k - 1 {
             res = &res * self;

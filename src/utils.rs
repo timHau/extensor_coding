@@ -1,6 +1,6 @@
 use super::structure::extensor::ExTensor;
 use rand::distributions::{Distribution, Uniform};
-use std::{u128};
+use std::u128;
 
 type F = Box<dyn Fn(usize) -> ExTensor>;
 type G = Box<dyn Fn(usize, usize) -> f64>;
