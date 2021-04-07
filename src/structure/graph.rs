@@ -1,6 +1,6 @@
-use super::{extensor::ExTensor, matrix_naive::Matrix};
+use super::{extensor::ExTensor, matrix::Matrix};
 use num_traits::Zero;
-use std::time::Instant;
+use std::{collections::HashMap, hash::Hash};
 
 #[derive(Debug)]
 pub struct Graph {
@@ -74,16 +74,17 @@ impl Graph {
             }
         });
 
-        let mut adj_mat = Matrix::zeros(n, n);
+        let mut adj_mat = vec![0; n * n];
         let mut buffer_iter = buffer.iter();
         for i in 1..n {
             for j in 0..i {
                 if *(buffer_iter.next().unwrap()) == 1 {
-                    adj_mat[(i, j)] = 1;
-                    adj_mat[(j, i)] = 1;
+                    adj_mat[i * n + j] = 1;
+                    adj_mat[j * n + i] = 1;
                 }
             }
         }
+        let adj_mat = Matrix::new(n, n, adj_mat);
 
         Graph {
             adj_mat: Box::new(adj_mat),
@@ -96,7 +97,7 @@ impl Graph {
         println!("TODO {}", n);
 
         Graph {
-            adj_mat: Box::new(Matrix::zeros(10, 10)),
+            adj_mat: Box::new(Matrix::new(0, 0, vec![])),
         }
     }
 
@@ -117,39 +118,25 @@ impl Graph {
         let (f_vert, _f_edge) = mapping;
         let n = self.adj_mat.nrows();
 
-        let mut a = Vec::with_capacity(n * n);
-        let now_loop = Instant::now();
-        for (i, v) in (*self.adj_mat).data().iter().enumerate() {
-            if *v == 1 {
-                let from = i / n + 1;
-                let val_vert = f_vert(from);
-                a.push(val_vert);
-            } else {
-                a.push(ExTensor::zero());
-            }
+        // add extensor coding to vertices and transform back to a matrix
+        let mut map = HashMap::new();
+        for (from, v) in (*self.adj_mat).data().iter() {
+            let v: Vec<_> = v.into_iter()
+                .map(|(to, _)| (*to, f_vert(*from)))
+                .collect();
+            map.insert(*from, v);
         }
-        println!("now_loop: {}", now_loop.elapsed().as_millis());
+        let a = Matrix::from(n, n, map);
 
-        let now_pow = Instant::now();
-        let a = Matrix::new(n, n, a).power(k - 1);
-        println!("now_pow: {}", now_pow.elapsed().as_millis());
+        let b = (1..(n + 1)).map(|i| f_vert(i)).collect::<Vec<_>>();
 
-        let now_b = Instant::now();
-        let b = Matrix::new(n, 1, (1..(n + 1)).map(|i| f_vert(i)).collect::<Vec<_>>());
-        println!("now_b: {}", now_b.elapsed().as_millis());
-
-        let now_p = Instant::now();
-        let prod = &a * &b;
-        println!("now_p: {}", now_p.elapsed().as_millis());
-
-        let now_l = Instant::now();
-        let mut res = ExTensor::zero();
-        for v in prod.data().iter() {
-            res = &res + v;
+        let mut res = &a * b;
+        for _ in 1..k-1 {
+            res = &a * res;
         }
-        println!("now_l: {}", now_l.elapsed().as_millis());
 
-        res
+        res.into_iter()
+           .fold(ExTensor::zero(), |acc, v| acc + v)
     }
 }
 
@@ -157,6 +144,9 @@ impl Graph {
 mod tests {
     use crate::structure::graph::Graph;
     use crate::structure::matrix_naive::Matrix;
+    use crate::structure::extensor::ExTensor;
+    use crate::utils;
+    use num_traits::Zero;
 
     /*
     #[test]
@@ -167,6 +157,7 @@ mod tests {
     }
      */
 
+     /*
     /// returns the adjacency matrix of the n path graph
     fn get_n_path_graph_adj_mat(n: usize) -> Matrix<u8> {
         let mut res: Matrix<u8> = Matrix::zeros(n, n);
@@ -232,8 +223,8 @@ mod tests {
         let expect = get_n_path_graph_adj_mat(100);
         assert_eq!(g.adj_mat, Box::new(expect));
     }
+    */
 
-    /*
     #[test]
     fn compute_walk() {
         let path_3 = String::from("src/data/test_graphs/path3.g6");
@@ -243,5 +234,4 @@ mod tests {
         let zero = ExTensor::zero();
         assert_ne!(res, zero, "compute walk with vandermonde coding");
     }
-     */
 }

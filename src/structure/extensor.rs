@@ -93,6 +93,7 @@ impl One for ExTensor {
 
 impl std::ops::Add for &ExTensor {
     type Output = ExTensor;
+
     fn add(self, other: &ExTensor) -> ExTensor {
         let joined_data = self.data.iter().chain(other.data.iter());
 
@@ -112,6 +113,7 @@ impl std::ops::Add for &ExTensor {
 
 impl std::ops::Add for ExTensor {
     type Output = ExTensor;
+
     fn add(self, other: ExTensor) -> ExTensor {
         &self + &other
     }
@@ -119,6 +121,7 @@ impl std::ops::Add for ExTensor {
 
 impl std::ops::Mul for &ExTensor {
     type Output = ExTensor;
+
     fn mul(self, other: &ExTensor) -> ExTensor {
         let mut data = HashMap::with_capacity(self.data.len() * other.data.len());
 
@@ -151,6 +154,7 @@ impl std::ops::Mul for &ExTensor {
 
 impl std::ops::Mul for ExTensor {
     type Output = ExTensor;
+
     fn mul(self, other: ExTensor) -> ExTensor {
         &self * &other
     }
@@ -158,6 +162,7 @@ impl std::ops::Mul for ExTensor {
 
 impl std::ops::Mul<f64> for &ExTensor {
     type Output = ExTensor;
+
     fn mul(self, c: f64) -> ExTensor {
         let data = self
             .data
@@ -170,6 +175,7 @@ impl std::ops::Mul<f64> for &ExTensor {
 
 impl std::ops::Mul<&ExTensor> for f64 {
     type Output = ExTensor;
+
     fn mul(self, t: &ExTensor) -> ExTensor {
         t * self
     }
@@ -177,6 +183,7 @@ impl std::ops::Mul<&ExTensor> for f64 {
 
 impl std::ops::Sub for &ExTensor {
     type Output = ExTensor;
+
     fn sub(self, other: &ExTensor) -> ExTensor {
         self + &(-1.0 * other)
     }
@@ -184,6 +191,7 @@ impl std::ops::Sub for &ExTensor {
 
 impl std::ops::Sub for ExTensor {
     type Output = ExTensor;
+
     fn sub(self, other: ExTensor) -> ExTensor {
         &self - &other
     }
