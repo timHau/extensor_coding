@@ -1,4 +1,4 @@
-use super::{extensor::ExTensor, matrix::Matrix};
+use super::{extensor::ExTensor, matrix_naive::Matrix};
 use num_traits::Zero;
 use std::time::Instant;
 
@@ -156,7 +156,7 @@ impl Graph {
 #[cfg(test)]
 mod tests {
     use crate::structure::graph::Graph;
-    use crate::structure::matrix::Matrix;
+    use crate::structure::matrix_naive::Matrix;
 
     /*
     #[test]

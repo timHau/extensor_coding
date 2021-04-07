@@ -1,182 +1,62 @@
 use num_traits::identities::{One, Zero};
-use std::{
-    cmp::PartialEq,
-    ops::{Add, Index, IndexMut, Mul, Sub},
-    thread,
-};
+use std::collections::HashMap;
 
 #[derive(Debug)]
-pub(crate) struct MatrixSlice<T> {
-    data: Vec<T>,
-    index: usize,
-}
-
-/// multiply two matrix slices.
-/// (x_1 ... x_n)* (y_1 ... y_n)^T
-impl<T> Mul for MatrixSlice<T>
-where
-    T: Default + Mul<Output = T> + Add<Output = T>,
-{
-    type Output = (usize, usize, T);
-    fn mul(self, other: MatrixSlice<T>) -> (usize, usize, T) {
-        let mut res = T::default();
-        for (a, b) in self.data.into_iter().zip(other.data.into_iter()) {
-            res = res + (a * b);
-        }
-        (self.index, other.index, res)
-    }
-}
-
-#[derive(Debug, Clone)]
 pub(crate) struct Matrix<T> {
-    data: Vec<T>,
     nrows: usize,
     ncols: usize,
+    data: HashMap<usize, Vec<(usize, T)>>,
 }
 
-/// # Matrix
-///
-/// Implementation of a matrix, which is just a flat Vec
 impl<T> Matrix<T>
 where
-    T: Default
-        + One
-        + Zero
-        + Clone
-        + Add<Output = T>
-        + Sub<Output = T>
-        + Mul<Output = T>
-        + Send
-        + 'static,
+    T: Clone + One + Zero,
 {
-    /// ## from_vec
-    ///
-    /// create a nrows x ncols matrix from the values inside vec
-    pub(crate) fn from_vec(nrows: usize, ncols: usize, data: Vec<T>) -> Self {
+    pub(crate) fn new(nrows: usize, ncols: usize, values: Vec<T>) -> Self {
         assert_eq!(
+            values.len(),
             nrows * ncols,
-            data.len(),
-            "dimensions of vec does not match"
+            "dimensons of values does not match"
         );
-        Matrix { data, nrows, ncols }
-    }
 
-    /// ## zeros
-    ///
-    /// return the nrows x ncols matrix with all zeros
-    pub(crate) fn zeros(nrows: usize, ncols: usize) -> Self {
-        let mut data = Vec::with_capacity(nrows * ncols);
-        for _ in 0..(nrows * ncols) {
-            data.push(T::default());
-        }
-        Matrix { data, nrows, ncols }
-    }
+        let mut data = HashMap::new();
 
-    /// ## nrows
-    ///
-    /// return the number of rows
-    pub(crate) fn nrows(&self) -> usize {
-        self.nrows
-    }
+        for (i, val) in values.into_iter().enumerate() {
+            if !val.is_zero() {
+                let row_index = i / ncols;
+                let col_index = i % nrows;
 
-    /// ## row
-    ///
-    /// return the row at index `i`
-    fn row(&self, i: usize) -> MatrixSlice<T> {
-        let index = i * self.ncols;
-        let mut data = Vec::with_capacity(self.ncols);
-        for j in index..(index + self.ncols) {
-            data.push(self.data[j].clone());
-        }
-        MatrixSlice { data, index: i }
-    }
-
-    /// ## col
-    ///
-    /// return the column at index `i`
-    fn col(&self, i: usize) -> MatrixSlice<T> {
-        let index = i % self.nrows;
-        let mut data = Vec::with_capacity(self.nrows);
-        for j in (index..self.nrows * self.ncols).step_by(self.ncols) {
-            data.push(self.data[j].clone());
-        }
-        MatrixSlice { data, index: i }
-    }
-
-    /// ## data
-    ///
-    /// return the components
-    pub(crate) fn data(&self) -> &Vec<T> {
-        &self.data
-    }
-
-    /// ## power
-    ///
-    /// naive implementation of a matrix power
-    /// can be optimised by first diagonalizing and then taking the eigenvalues to a power
-    pub(crate) fn power(&self, k: usize) -> Self {
-        let mut res = Matrix::from_vec(self.nrows, self.ncols, self.data.clone());
-
-        for _ in 0..k - 1 {
-            res = &res * self;
-        }
-
-        res
-    }
-}
-
-impl<T> Mul<&Matrix<T>> for &Matrix<T>
-where
-    T: Default
-        + One
-        + Zero
-        + Clone
-        + Add<Output = T>
-        + Sub<Output = T>
-        + Mul<Output = T>
-        + Send
-        + 'static,
-{
-    type Output = Matrix<T>;
-    fn mul(self, other: &Matrix<T>) -> Matrix<T> {
-        assert_eq!(self.ncols, other.nrows, "dimensions of matrices dont match");
-        let mut res = Matrix::zeros(self.nrows, other.ncols);
-
-        let mut handles = vec![];
-        for i in 0..self.nrows {
-            for j in 0..other.ncols {
-                let row = self.row(i);
-                let col = other.col(j);
-                let handle = thread::spawn(move || row * col);
-                handles.push(handle);
+                let row_vals = data.entry(row_index).or_insert(Vec::new());
+                row_vals.push((col_index, val));
             }
         }
 
-        for handle in handles {
-            let (i, j, v) = handle.join().unwrap();
-            res[(i, j)] = v;
+        Matrix { nrows, ncols, data }
+    }
+}
+
+impl<T> std::ops::Mul<Vec<T>> for Matrix<T>
+where
+    T: Zero + Clone + std::ops::Mul<Output = T>,
+{
+    type Output = Vec<T>;
+
+    fn mul(self, other: Vec<T>) -> Vec<T> {
+        assert_eq!(
+            self.ncols,
+            other.len(),
+            "dimensions of vector and matrix do not match"
+        );
+        let mut res = vec![T::zero(); self.nrows];
+
+        for (x, v) in self.data.into_iter() {
+            let val = v
+                .into_iter()
+                .fold(T::zero(), |acc, (y, val)| acc + val * other[y].clone());
+            res[x] = val;
         }
 
         res
-    }
-}
-
-impl<T> Index<(usize, usize)> for Matrix<T> {
-    type Output = T;
-    fn index(&self, index: (usize, usize)) -> &T {
-        self.data.get(index.0 * self.ncols + index.1).unwrap()
-    }
-}
-
-impl<T> IndexMut<(usize, usize)> for Matrix<T> {
-    fn index_mut(&mut self, index: (usize, usize)) -> &mut T {
-        &mut self.data[index.0 * self.ncols + index.1]
-    }
-}
-
-impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
-    fn eq(&self, other: &Matrix<T>) -> bool {
-        self.data == other.data
     }
 }
 
@@ -184,6 +64,15 @@ impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
 mod tests {
     use crate::structure::{extensor::ExTensor, matrix::Matrix};
 
+    #[test]
+    fn tmp() {
+        let m = Matrix::new(2, 2, vec![1, 2, 0, 1]);
+        let v = vec![1, 1];
+        let r = m * v;
+        println!("{:?}", r);
+    }
+
+    /*
     #[test]
     fn zero() {
         let z: Matrix<u8> = Matrix::zeros(2, 2);
@@ -291,4 +180,5 @@ mod tests {
         let expect = Matrix::from_vec(2, 2, r);
         assert_eq!(power, expect, "2x2 extensor matrix to the second power");
     }
+    */
 }
