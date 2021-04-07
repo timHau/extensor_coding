@@ -1,6 +1,7 @@
 use super::{extensor::ExTensor, matrix::Matrix};
 use num_traits::Zero;
-use std::{collections::HashMap, hash::Hash};
+use std::collections::HashMap;
+use std::time::Instant;
 
 #[derive(Debug)]
 pub struct Graph {
@@ -118,6 +119,7 @@ impl Graph {
         let (f_vert, _f_edge) = mapping;
         let n = self.adj_mat.nrows();
 
+        let transform_start = Instant::now();
         // add extensor coding to vertices and transform back to a matrix
         let mut map = HashMap::new();
         for (from, v) in (*self.adj_mat).data().iter() {
@@ -127,13 +129,18 @@ impl Graph {
             map.insert(*from, v);
         }
         let a = Matrix::from(n, n, map);
+        println!("transform took: {} ms", transform_start.elapsed().as_millis());
 
+        let b_start = Instant::now();
         let b = (1..(n + 1)).map(|i| f_vert(i)).collect::<Vec<_>>();
+        println!("b took: {} ms", b_start.elapsed().as_millis());
 
+        let pow_start = Instant::now();
         let mut res = &a * b;
         for _ in 1..k-1 {
             res = &a * res;
         }
+        println!("power took: {} ms", pow_start.elapsed().as_millis());
 
         res.into_iter()
            .fold(ExTensor::zero(), |acc, v| acc + v)
@@ -227,8 +234,8 @@ mod tests {
 
     #[test]
     fn compute_walk() {
-        let path_3 = String::from("src/data/test_graphs/path3.g6");
-        let g = Graph::from_graph6(&path_3);
+        let path_10 = String::from("src/data/test_graphs/path10.g6");
+        let g = Graph::from_graph6(&path_10);
         let k = 3;
         let res = g.compute_walk_sum(k, utils::create_vandermonde(k));
         let zero = ExTensor::zero();

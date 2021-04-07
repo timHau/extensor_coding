@@ -63,7 +63,7 @@ where
 
         for (x, v) in self.data.iter() {
             let val = v
-                .into_iter()
+                .iter()
                 .fold(T::zero(), |acc, (y, val)| {
                     acc + val.clone() * other[*y].clone()
                 });
