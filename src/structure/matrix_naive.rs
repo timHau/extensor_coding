@@ -49,10 +49,10 @@ where
         + Send
         + 'static,
 {
-    /// ## from_vec
+    /// ## new
     ///
     /// create a nrows x ncols matrix from the values inside vec
-    pub(crate) fn from_vec(nrows: usize, ncols: usize, data: Vec<T>) -> Self {
+    pub(crate) fn new(nrows: usize, ncols: usize, data: Vec<T>) -> Self {
         assert_eq!(
             nrows * ncols,
             data.len(),
@@ -115,7 +115,7 @@ where
     /// naive implementation of a matrix power
     /// can be optimised by first diagonalizing and then taking the eigenvalues to a power
     pub(crate) fn power(&self, k: usize) -> Self {
-        let mut res = Matrix::from_vec(self.nrows, self.ncols, self.data.clone());
+        let mut res = Matrix::new(self.nrows, self.ncols, self.data.clone());
 
         for _ in 0..k - 1 {
             res = &res * self;
@@ -195,10 +195,10 @@ mod tests {
 
     #[test]
     fn mul() {
-        let a = Matrix::from_vec(2, 2, vec![0.0, 1.0, 2.0, 3.0]);
-        let b = Matrix::from_vec(2, 2, vec![3.0, 2.0, 1.0, 0.0]);
+        let a = Matrix::new(2, 2, vec![0.0, 1.0, 2.0, 3.0]);
+        let b = Matrix::new(2, 2, vec![3.0, 2.0, 1.0, 0.0]);
         let c = &a * &b;
-        let expect = Matrix::from_vec(2, 2, vec![1.0, 0.0, 9.0, 4.0]);
+        let expect = Matrix::new(2, 2, vec![1.0, 0.0, 9.0, 4.0]);
         assert_eq!(c.nrows, 2, "rows of product match");
         assert_eq!(c.ncols, 2, "columns of product match");
         assert_eq!(c, expect, "square matrix multiplication");
@@ -206,10 +206,10 @@ mod tests {
 
     #[test]
     fn mul_non_square() {
-        let a = Matrix::from_vec(4, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-        let b = Matrix::from_vec(3, 2, vec![1, 2, 3, 4, 5, 6]);
+        let a = Matrix::new(4, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+        let b = Matrix::new(3, 2, vec![1, 2, 3, 4, 5, 6]);
         let c = &a * &b;
-        let expect = Matrix::from_vec(4, 2, vec![22, 28, 49, 64, 76, 100, 103, 136]);
+        let expect = Matrix::new(4, 2, vec![22, 28, 49, 64, 76, 100, 103, 136]);
         assert_eq!(c.nrows, 4, "rows of product match");
         assert_eq!(c.ncols, 2, "columns of product match");
         assert_eq!(c, expect, "non square matrix multiplication");
@@ -223,14 +223,14 @@ mod tests {
             crate::extensor!([1.0], [[2]]),
             crate::extensor!([2.0], [[2]]),
         ];
-        let t = Matrix::from_vec(2, 2, v);
+        let t = Matrix::new(2, 2, v);
         let w = vec![
             crate::extensor!([2.0], [[2]]),
             crate::extensor!([1.0], [[2]]),
             crate::extensor!([1.0], [[1]]),
             crate::extensor!([2.0], [[1]]),
         ];
-        let d = Matrix::from_vec(2, 2, w);
+        let d = Matrix::new(2, 2, w);
         let prod = &t * &d;
         let r = vec![
             crate::extensor!([2.0], [[1, 2]]),
@@ -238,7 +238,7 @@ mod tests {
             crate::extensor!([-2.0], [[1, 2]]),
             crate::extensor!([-4.0], [[1, 2]]),
         ];
-        let expect = Matrix::from_vec(2, 2, r);
+        let expect = Matrix::new(2, 2, r);
         assert_eq!(
             prod, expect,
             "matrix multiplication with extensor components"
@@ -247,15 +247,15 @@ mod tests {
 
     #[test]
     fn mat_power() {
-        let power = Matrix::from_vec(3, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]).power(2);
-        let expect = Matrix::from_vec(3, 3, vec![30, 36, 42, 66, 81, 96, 102, 126, 150]);
+        let power = Matrix::new(3, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]).power(2);
+        let expect = Matrix::new(3, 3, vec![30, 36, 42, 66, 81, 96, 102, 126, 150]);
         assert_eq!(power, expect, "3x3 matrix to the second power");
     }
 
     #[test]
     fn mat_power_big() {
-        let power: Matrix<u128> = Matrix::from_vec(3, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]).power(11);
-        let expect: Matrix<u128> = Matrix::from_vec(
+        let power: Matrix<u128> = Matrix::new(3, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]).power(11);
+        let expect: Matrix<u128> = Matrix::new(
             3,
             3,
             vec![
@@ -281,14 +281,14 @@ mod tests {
             crate::extensor!([1.0], [[2]]),
             crate::extensor!([2.0], [[2]]),
         ];
-        let power = Matrix::from_vec(2, 2, v).power(2);
+        let power = Matrix::new(2, 2, v).power(2);
         let r = vec![
             crate::extensor!([2.0], [[1, 2]]),
             crate::extensor!([4.0], [[1, 2]]),
             crate::extensor!([-1.0], [[1, 2]]),
             crate::extensor!([-2.0], [[1, 2]]),
         ];
-        let expect = Matrix::from_vec(2, 2, r);
+        let expect = Matrix::new(2, 2, r);
         assert_eq!(power, expect, "2x2 extensor matrix to the second power");
     }
 }

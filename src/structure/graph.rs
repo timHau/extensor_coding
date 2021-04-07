@@ -131,11 +131,11 @@ impl Graph {
         println!("now_loop: {}", now_loop.elapsed().as_millis());
 
         let now_pow = Instant::now();
-        let a = Matrix::from_vec(n, n, a).power(k - 1);
+        let a = Matrix::new(n, n, a).power(k - 1);
         println!("now_pow: {}", now_pow.elapsed().as_millis());
 
         let now_b = Instant::now();
-        let b = Matrix::from_vec(n, 1, (1..(n + 1)).map(|i| f_vert(i)).collect::<Vec<_>>());
+        let b = Matrix::new(n, 1, (1..(n + 1)).map(|i| f_vert(i)).collect::<Vec<_>>());
         println!("now_b: {}", now_b.elapsed().as_millis());
 
         let now_p = Instant::now();
@@ -205,7 +205,7 @@ mod tests {
             .map(|c| c.parse::<u8>().unwrap())
             .collect::<Vec<u8>>();
 
-        let t_mat = Matrix::from_vec(46, 46, tutte_mat);
+        let t_mat = Matrix::new(46, 46, tutte_mat);
         assert_eq!(g.adj_mat, Box::new(t_mat));
     }
 
