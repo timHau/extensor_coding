@@ -62,11 +62,9 @@ where
         let mut res = vec![T::zero(); self.nrows];
 
         for (x, v) in self.data.iter() {
-            let val = v
-                .iter()
-                .fold(T::zero(), |acc, (y, val)| {
-                    acc + val.clone() * other[*y].clone()
-                });
+            let val = v.iter().fold(T::zero(), |acc, (y, val)| {
+                acc + val.clone() * other[*y].clone()
+            });
             res[*x] = val;
         }
 

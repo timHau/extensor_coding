@@ -123,13 +123,14 @@ impl Graph {
         // add extensor coding to vertices and transform back to a matrix
         let mut map = HashMap::new();
         for (from, v) in (*self.adj_mat).data().iter() {
-            let v: Vec<_> = v.into_iter()
-                .map(|(to, _)| (*to, f_vert(*from)))
-                .collect();
+            let v: Vec<_> = v.into_iter().map(|(to, _)| (*to, f_vert(*from))).collect();
             map.insert(*from, v);
         }
         let a = Matrix::from(n, n, map);
-        println!("transform took: {} ms", transform_start.elapsed().as_millis());
+        println!(
+            "transform took: {} ms",
+            transform_start.elapsed().as_millis()
+        );
 
         let b_start = Instant::now();
         let b = (1..(n + 1)).map(|i| f_vert(i)).collect::<Vec<_>>();
@@ -137,21 +138,20 @@ impl Graph {
 
         let pow_start = Instant::now();
         let mut res = &a * b;
-        for _ in 1..k-1 {
+        for _ in 1..k - 1 {
             res = &a * res;
         }
         println!("power took: {} ms", pow_start.elapsed().as_millis());
 
-        res.into_iter()
-           .fold(ExTensor::zero(), |acc, v| acc + v)
+        res.into_iter().fold(ExTensor::zero(), |acc, v| acc + v)
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::structure::extensor::ExTensor;
     use crate::structure::graph::Graph;
     use crate::structure::matrix_naive::Matrix;
-    use crate::structure::extensor::ExTensor;
     use crate::utils;
     use num_traits::Zero;
 
@@ -164,7 +164,7 @@ mod tests {
     }
      */
 
-     /*
+    /*
     /// returns the adjacency matrix of the n path graph
     fn get_n_path_graph_adj_mat(n: usize) -> Matrix<u8> {
         let mut res: Matrix<u8> = Matrix::zeros(n, n);

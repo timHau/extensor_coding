@@ -11,6 +11,18 @@ pub(crate) struct MatrixSlice<T> {
     index: usize,
 }
 
+impl<T> MatrixSlice<T>
+where
+    T: Clone,
+{
+    fn new(data: &Vec<T>) -> Self {
+        MatrixSlice {
+            data: data.to_vec(),
+            index: 0,
+        }
+    }
+}
+
 /// multiply two matrix slices.
 /// (x_1 ... x_n)* (y_1 ... y_n)^T
 impl<T> Mul for MatrixSlice<T>
@@ -109,23 +121,9 @@ where
     pub(crate) fn data(&self) -> &Vec<T> {
         &self.data
     }
-
-    /// ## power
-    ///
-    /// naive implementation of a matrix power
-    /// can be optimised by first diagonalizing and then taking the eigenvalues to a power
-    pub(crate) fn power(&self, k: usize) -> Self {
-        let mut res = Matrix::new(self.nrows, self.ncols, self.data.clone());
-
-        for _ in 0..k - 1 {
-            res = &res * self;
-        }
-
-        res
-    }
 }
 
-impl<T> Mul<&Matrix<T>> for &Matrix<T>
+impl<T> Mul<Vec<T>> for &Matrix<T>
 where
     T: Default
         + One
@@ -137,24 +135,24 @@ where
         + Send
         + 'static,
 {
-    type Output = Matrix<T>;
-    fn mul(self, other: &Matrix<T>) -> Matrix<T> {
-        assert_eq!(self.ncols, other.nrows, "dimensions of matrices dont match");
-        let mut res = Matrix::zeros(self.nrows, other.ncols);
+    type Output = Vec<T>;
+    fn mul(self, other: Vec<T>) -> Vec<T> {
+        assert_eq!(self.ncols, other.len(), "dimensions of matrices dont match");
+        let mut res = vec![T::zero(); self.nrows];
 
         let mut handles = vec![];
         for i in 0..self.nrows {
-            for j in 0..other.ncols {
+            for j in 0..other.len() {
                 let row = self.row(i);
-                let col = other.col(j);
+                let col = MatrixSlice::new(&other);
                 let handle = thread::spawn(move || row * col);
                 handles.push(handle);
             }
         }
 
         for handle in handles {
-            let (i, j, v) = handle.join().unwrap();
-            res[(i, j)] = v;
+            let (i, _j, v) = handle.join().unwrap();
+            res[i] = v
         }
 
         res
@@ -182,7 +180,7 @@ impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::structure::{extensor::ExTensor, matrix_naive::Matrix};
+    use crate::structure::{matrix_naive::Matrix};
 
     #[test]
     fn zero() {
@@ -195,100 +193,9 @@ mod tests {
 
     #[test]
     fn mul() {
-        let a = Matrix::new(2, 2, vec![0.0, 1.0, 2.0, 3.0]);
-        let b = Matrix::new(2, 2, vec![3.0, 2.0, 1.0, 0.0]);
-        let c = &a * &b;
-        let expect = Matrix::new(2, 2, vec![1.0, 0.0, 9.0, 4.0]);
-        assert_eq!(c.nrows, 2, "rows of product match");
-        assert_eq!(c.ncols, 2, "columns of product match");
-        assert_eq!(c, expect, "square matrix multiplication");
-    }
-
-    #[test]
-    fn mul_non_square() {
-        let a = Matrix::new(4, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-        let b = Matrix::new(3, 2, vec![1, 2, 3, 4, 5, 6]);
-        let c = &a * &b;
-        let expect = Matrix::new(4, 2, vec![22, 28, 49, 64, 76, 100, 103, 136]);
-        assert_eq!(c.nrows, 4, "rows of product match");
-        assert_eq!(c.ncols, 2, "columns of product match");
-        assert_eq!(c, expect, "non square matrix multiplication");
-    }
-
-    #[test]
-    fn extensor_mat() {
-        let v = vec![
-            crate::extensor!([1.0], [[1]]),
-            crate::extensor!([2.0], [[1]]),
-            crate::extensor!([1.0], [[2]]),
-            crate::extensor!([2.0], [[2]]),
-        ];
-        let t = Matrix::new(2, 2, v);
-        let w = vec![
-            crate::extensor!([2.0], [[2]]),
-            crate::extensor!([1.0], [[2]]),
-            crate::extensor!([1.0], [[1]]),
-            crate::extensor!([2.0], [[1]]),
-        ];
-        let d = Matrix::new(2, 2, w);
-        let prod = &t * &d;
-        let r = vec![
-            crate::extensor!([2.0], [[1, 2]]),
-            crate::extensor!([1.0], [[1, 2]]),
-            crate::extensor!([-2.0], [[1, 2]]),
-            crate::extensor!([-4.0], [[1, 2]]),
-        ];
-        let expect = Matrix::new(2, 2, r);
-        assert_eq!(
-            prod, expect,
-            "matrix multiplication with extensor components"
-        );
-    }
-
-    #[test]
-    fn mat_power() {
-        let power = Matrix::new(3, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]).power(2);
-        let expect = Matrix::new(3, 3, vec![30, 36, 42, 66, 81, 96, 102, 126, 150]);
-        assert_eq!(power, expect, "3x3 matrix to the second power");
-    }
-
-    #[test]
-    fn mat_power_big() {
-        let power: Matrix<u128> = Matrix::new(3, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]).power(11);
-        let expect: Matrix<u128> = Matrix::new(
-            3,
-            3,
-            vec![
-                2135095631568,
-                2623420941336,
-                3111746251104,
-                4835149302222,
-                5941013482665,
-                7046877663108,
-                7535202972876,
-                9258606023994,
-                10982009075112,
-            ],
-        );
-        assert_eq!(power, expect, "3x3 matrix to the 11th power");
-    }
-
-    #[test]
-    fn mat_extensor_power() {
-        let v = vec![
-            crate::extensor!([1.0], [[1]]),
-            crate::extensor!([2.0], [[1]]),
-            crate::extensor!([1.0], [[2]]),
-            crate::extensor!([2.0], [[2]]),
-        ];
-        let power = Matrix::new(2, 2, v).power(2);
-        let r = vec![
-            crate::extensor!([2.0], [[1, 2]]),
-            crate::extensor!([4.0], [[1, 2]]),
-            crate::extensor!([-1.0], [[1, 2]]),
-            crate::extensor!([-2.0], [[1, 2]]),
-        ];
-        let expect = Matrix::new(2, 2, r);
-        assert_eq!(power, expect, "2x2 extensor matrix to the second power");
+        let m = Matrix::new(2, 2, vec![1, 2, 0, 1]);
+        let v = vec![1, 1];
+        let r = &m * v;
+        assert_eq!(r, vec![3, 1], "simple Matrix Vector multiplication");
     }
 }

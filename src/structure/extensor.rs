@@ -18,7 +18,7 @@ impl ExTensor {
             "Number of coefficients and basis blades must match"
         );
 
-        let max_len = 32;
+        let max_len = 16;
         let mut data = HashMap::with_capacity(basis.len());
         for (i, b) in basis.iter().enumerate() {
             let mut base = bitvec![0; max_len];
