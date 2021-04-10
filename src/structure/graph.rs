@@ -1,6 +1,5 @@
-use super::{extensor::ExTensor, matrix::Matrix};
+use super::{extensor::ExTensor, matrix_naive::Matrix};
 use num_traits::Zero;
-use std::collections::HashMap;
 use std::time::Instant;
 
 #[derive(Debug)]

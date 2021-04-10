@@ -85,11 +85,11 @@ where
         Matrix { data, nrows, ncols }
     }
 
-    /// ## nrows
+    /// ## ncols
     ///
-    /// return the number of rows
-    pub(crate) fn nrows(&self) -> usize {
-        self.nrows
+    /// return the number of cols
+    pub(crate) fn ncols(&self) -> usize {
+        self.ncols
     }
 
     /// ## row
