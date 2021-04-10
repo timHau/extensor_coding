@@ -5,33 +5,41 @@ use std::collections::HashMap;
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct ExTensor {
     data: HashMap<BitVec, f64>,
+    max_basis_len: usize,
 }
 
 /// # ExTensor
 ///
 /// implements an Extensor
 impl ExTensor {
-    pub(crate) fn new(coeffs: &[f64], basis: &[Vec<u32>]) -> Self {
+    pub(crate) fn new(coeffs: &[f64], basis: &[Vec<u32>], max_basis_len: usize) -> Self {
         assert_eq!(
             basis.len(),
             coeffs.len(),
             "Number of coefficients and basis blades must match"
         );
 
-        let max_len = 16;
         let mut data = HashMap::with_capacity(basis.len());
         for (i, b) in basis.iter().enumerate() {
-            let mut base = bitvec![0; max_len];
+            let mut base = bitvec![0; max_basis_len];
             for bv in b {
-                if bv <= &(max_len as u32) {
+                if bv <= &(max_basis_len as u32) {
                     base.set((*bv) as usize, true);
+                } else {
+                    panic!(
+                        "To many basis elements for extensor, max_len is {}",
+                        max_basis_len
+                    );
                 }
             }
 
             data.insert(base, coeffs[i]);
         }
 
-        ExTensor { data }
+        ExTensor {
+            data,
+            max_basis_len,
+        }
     }
 
     pub(crate) fn get_sign(a: &BitVec, b: &BitVec) -> f64 {
@@ -62,7 +70,10 @@ impl ExTensor {
                 (base, coeff)
             })
             .collect();
-        self * &ExTensor { data }
+        self * &ExTensor {
+            data,
+            max_basis_len: self.max_basis_len,
+        }
     }
 
     pub(crate) fn coeffs(&self) -> Vec<f64> {
@@ -74,6 +85,7 @@ impl Zero for ExTensor {
     fn zero() -> Self {
         ExTensor {
             data: HashMap::new(),
+            max_basis_len: 8,
         }
     }
 
@@ -87,7 +99,7 @@ impl Zero for ExTensor {
 
 impl One for ExTensor {
     fn one() -> Self {
-        ExTensor::new(&[1.0], &[vec![0]])
+        ExTensor::new(&[1.0], &[vec![0]], 8)
     }
 }
 
@@ -107,7 +119,10 @@ impl std::ops::Add for &ExTensor {
             }
         }
 
-        ExTensor { data }
+        ExTensor {
+            data,
+            max_basis_len: self.max_basis_len,
+        }
     }
 }
 
@@ -148,7 +163,10 @@ impl std::ops::Mul for &ExTensor {
             }
         }
 
-        ExTensor { data }
+        ExTensor {
+            data,
+            max_basis_len: self.max_basis_len,
+        }
     }
 }
 
@@ -169,7 +187,10 @@ impl std::ops::Mul<f64> for &ExTensor {
             .iter()
             .map(|(base, coeff)| (base.clone(), coeff.clone() * c))
             .collect();
-        ExTensor { data }
+        ExTensor {
+            data,
+            max_basis_len: self.max_basis_len,
+        }
     }
 }
 
@@ -220,12 +241,20 @@ impl std::fmt::Display for ExTensor {
 #[macro_export]
 macro_rules! extensor {
 
-    ($coeffs:expr, [$($b: expr),*] ) => {{
+    ($coeffs: expr, [$($b: expr),*] ) => {{
         let mut basis = Vec::new();
         $(
            basis.push($b.to_vec());
         )*
-        ExTensor::new($coeffs.as_ref(), &basis)
+        ExTensor::new($coeffs.as_ref(), &basis, 8)
+    }};
+
+    ($coeffs: expr, [$($b: expr),*], $max_basis_len: expr) => {{
+        let mut basis = Vec::new();
+        $(
+           basis.push($b.to_vec());
+        )*
+        ExTensor::new($coeffs.as_ref(), &basis, $max_basis_len)
     }};
 
 }
@@ -237,10 +266,10 @@ mod tests {
 
     #[test]
     fn extensor_add() {
-        let x_1 = &extensor!([2.0, 5.0], [[1, 3], [3, 9]]);
-        let x_2 = &extensor!([1.0, 1.0], [[1, 2], [3, 9]]);
+        let x_1 = &extensor!([2.0, 5.0], [[1, 3], [3, 9]], 10);
+        let x_2 = &extensor!([1.0, 1.0], [[1, 2], [3, 9]], 10);
         let sum = x_1 + x_2;
-        let res = &extensor!([2.0, 1.0, 6.0], [[1, 3], [1, 2], [3, 9]]);
+        let res = &extensor!([2.0, 1.0, 6.0], [[1, 3], [1, 2], [3, 9]], 10);
         assert_eq!(&sum, res, "exterior sum is definined component wise");
         let sum_2 = x_2 + x_1;
         assert_eq!(&sum, &sum_2, "exterior sum is commutative");

@@ -222,7 +222,6 @@ mod tests {
         assert_eq!(r, vec![3, 1], "simple Matrix Vector multiplication");
     }
 
-
     #[test]
     fn coding() {
         let k = 2;

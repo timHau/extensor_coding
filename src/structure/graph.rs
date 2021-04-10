@@ -1,4 +1,4 @@
-use super::{extensor::ExTensor, matrix_naive::Matrix};
+use super::{extensor::ExTensor, matrix::Matrix};
 use num_traits::Zero;
 use std::time::Instant;
 
