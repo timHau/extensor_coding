@@ -1,3 +1,4 @@
+use crate::structure::extensor::ExTensor;
 use num_traits::identities::{One, Zero};
 use std::{
     cmp::PartialEq,
@@ -123,6 +124,27 @@ where
     }
 }
 
+impl Matrix<u8> {
+    pub(crate) fn add_coding<F>(&self, coding: &F) -> Matrix<ExTensor>
+    where
+        F: Fn(usize) -> ExTensor,
+    {
+        let n = self.nrows;
+        let mut data = Vec::with_capacity(n * n);
+
+        for (i, v) in self.data.iter().enumerate() {
+            if *v == 1 {
+                let val = coding(i / n + 1);
+                data.push(val);
+            } else {
+                data.push(ExTensor::zero());
+            }
+        }
+
+        Matrix::new(n, n, data)
+    }
+}
+
 impl<T> Mul<Vec<T>> for &Matrix<T>
 where
     T: Default
@@ -180,7 +202,8 @@ impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::structure::{matrix_naive::Matrix};
+    use crate::structure::matrix_naive::Matrix;
+    use crate::utils;
 
     #[test]
     fn zero() {
@@ -197,5 +220,15 @@ mod tests {
         let v = vec![1, 1];
         let r = &m * v;
         assert_eq!(r, vec![3, 1], "simple Matrix Vector multiplication");
+    }
+
+
+    #[test]
+    fn coding() {
+        let k = 2;
+        let (f_vert, _) = utils::create_vandermonde(k);
+        let m: Matrix<u8> = Matrix::new(2, 2, vec![1, 1, 0, 1]);
+        let n = m.add_coding(&f_vert);
+        println!("{:?}", n);
     }
 }

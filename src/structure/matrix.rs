@@ -1,3 +1,4 @@
+use crate::structure::extensor::ExTensor;
 use num_traits::identities::{One, Zero};
 use std::collections::HashMap;
 
@@ -38,12 +39,27 @@ where
         Matrix { nrows, ncols, data }
     }
 
-    pub(crate) fn nrows(&self) -> usize {
-        self.nrows
-    }
-
     pub(crate) fn data(&self) -> &HashMap<usize, Vec<(usize, T)>> {
         &self.data
+    }
+
+    pub(crate) fn ncols(&self) -> usize {
+        self.ncols
+    }
+
+    pub(crate) fn add_coding<F>(&self, coding: &F) -> Matrix<ExTensor>
+    where
+        F: Fn(usize) -> ExTensor,
+    {
+        let n = self.nrows;
+        let mut data = HashMap::new();
+
+        for (from, v) in self.data().iter() {
+            let v: Vec<_> = v.into_iter().map(|(to, _)| (*to, coding(*from))).collect();
+            data.insert(*from, v);
+        }
+
+        Matrix::from(n, n, data)
     }
 }
 
@@ -75,6 +91,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::structure::matrix::Matrix;
+    use crate::utils;
 
     #[test]
     fn mat_vec_mul() {
@@ -82,5 +99,14 @@ mod tests {
         let v = vec![1, 1];
         let r = &m * v;
         assert_eq!(r, vec![3, 1], "simple Matrix Vector multiplication");
+    }
+
+    #[test]
+    fn coding() {
+        let k = 2;
+        let (f_vert, _) = utils::create_vandermonde(k);
+        let m = Matrix::new(2, 2, vec![1, 1, 0, 1]);
+        let n = m.add_coding(&f_vert);
+        println!("{:?}", n);
     }
 }

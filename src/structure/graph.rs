@@ -117,23 +117,17 @@ impl Graph {
         G: Fn(usize, usize) -> f64,
     {
         let (f_vert, _f_edge) = mapping;
-        let n = self.adj_mat.nrows();
 
         let transform_start = Instant::now();
         // add extensor coding to vertices and transform back to a matrix
-        let mut map = HashMap::new();
-        for (from, v) in (*self.adj_mat).data().iter() {
-            let v: Vec<_> = v.into_iter().map(|(to, _)| (*to, f_vert(*from))).collect();
-            map.insert(*from, v);
-        }
-        let a = Matrix::from(n, n, map);
+        let a = (*self.adj_mat).add_coding(&f_vert);
         println!(
             "transform took: {} ms",
             transform_start.elapsed().as_millis()
         );
 
         let b_start = Instant::now();
-        let b = (1..(n + 1)).map(|i| f_vert(i)).collect::<Vec<_>>();
+        let b = (1..(a.ncols() + 1)).map(|i| f_vert(i)).collect::<Vec<_>>();
         println!("b took: {} ms", b_start.elapsed().as_millis());
 
         let pow_start = Instant::now();
