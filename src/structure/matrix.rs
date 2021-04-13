@@ -2,7 +2,7 @@ use crate::structure::extensor::ExTensor;
 use num_traits::identities::{One, Zero};
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Matrix<T> {
     nrows: usize,
     ncols: usize,
@@ -47,6 +47,10 @@ where
         self.ncols
     }
 
+}
+
+impl Matrix<u8> {
+
     pub(crate) fn add_coding<F>(&self, coding: &F) -> Matrix<ExTensor>
     where
         F: Fn(usize) -> ExTensor,
@@ -55,12 +59,16 @@ where
         let mut data = HashMap::new();
 
         for (from, v) in self.data().iter() {
-            let v: Vec<_> = v.into_iter().map(|(to, _)| (*to, coding(*from))).collect();
+            let v: Vec<_> = v
+                .into_iter()
+                .map(|(to, _)| (*to, coding(*from as usize)))
+                .collect();
             data.insert(*from, v);
         }
 
         Matrix::from(n, n, data)
     }
+
 }
 
 impl<T> std::ops::Mul<Vec<T>> for &Matrix<T>
@@ -102,11 +110,26 @@ mod tests {
     }
 
     #[test]
+    fn mat_vec_mul_2() {
+        let m = Matrix::new(2, 3, vec![1, 2, 3, 4, 5, 6]);
+        let v = vec![1, 1, 1];
+        let r = &m * v;
+        assert_eq!(r, vec![6, 15], "simple Matrix Vector multiplication");
+    }
+
+    #[test]
     fn coding() {
         let k = 2;
         let (f_vert, _) = utils::create_vandermonde(k);
-        let m = Matrix::new(2, 2, vec![1, 1, 0, 1]);
+        let m: Matrix<u8> = Matrix::new(2, 2, vec![1, 1, 0, 1]);
         let n = m.add_coding(&f_vert);
-        println!("{:?}", n);
+
+        println!("n");
+        for (x, v) in n.data() {
+            for (_, ext) in v.iter() {
+                println!("{}", ext);
+            }
+        }
+
     }
 }

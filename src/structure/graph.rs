@@ -131,12 +131,20 @@ impl Graph {
 
         let pow_start = Instant::now();
         let mut res = &a * b;
-        for _ in 1..k - 1 {
+        for _ in 1..(k - 1) {
             res = &a * res;
         }
         println!("power took: {} ms", pow_start.elapsed().as_millis());
 
         res.into_iter().fold(ExTensor::zero(), |acc, v| acc + v)
+    }
+}
+
+impl std::clone::Clone for Graph {
+    fn clone(&self) -> Self {
+        Graph {
+            adj_mat: Box::new(*self.adj_mat.clone()),
+        }
     }
 }
 

@@ -223,14 +223,16 @@ impl std::fmt::Display for ExTensor {
         let mut res = String::from("");
 
         for (i, (base, coeff)) in self.data.iter().enumerate() {
-            res += &format!("{}", coeff);
-            for (j, b) in base.iter().enumerate() {
-                if *b {
-                    res += &format!("e_{} ∧ ", j);
+            if coeff != &0.0 {
+                res += &format!("{} ", coeff);
+                for (j, b) in base.iter().enumerate() {
+                    if *b {
+                        res += &format!("e_{} ∧ ", j);
+                    }
                 }
-            }
-            if i < self.data.len() - 1 {
-                res += " + ";
+                if i < self.data.len() - 1 {
+                    res += " + ";
+                }
             }
         }
 
