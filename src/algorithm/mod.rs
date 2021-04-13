@@ -93,7 +93,7 @@ mod tests {
     fn c() {
         let g = Graph::from_graph6("src/data/test_graphs/path10.g6");
         let k = 3;
-        let eps = 0.9;
+        let eps = 0.2;
         let now = std::time::Instant::now();
         let res = algorithm::c_parallel(g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());

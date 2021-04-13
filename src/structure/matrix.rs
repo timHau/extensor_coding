@@ -46,11 +46,9 @@ where
     pub(crate) fn ncols(&self) -> usize {
         self.ncols
     }
-
 }
 
 impl Matrix<u8> {
-
     pub(crate) fn add_coding<F>(&self, coding: &F) -> Matrix<ExTensor>
     where
         F: Fn(usize) -> ExTensor,
@@ -68,7 +66,6 @@ impl Matrix<u8> {
 
         Matrix::from(n, n, data)
     }
-
 }
 
 impl<T> std::ops::Mul<Vec<T>> for &Matrix<T>
@@ -130,6 +127,5 @@ mod tests {
                 println!("{}", ext);
             }
         }
-
     }
 }

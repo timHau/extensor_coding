@@ -10,7 +10,20 @@ pub struct ExTensor {
 
 /// # ExTensor
 ///
-/// implements an Extensor
+/// Given an array of f64 coefficients `coeffs` and a slice of vectors `basis` construct an extensor.
+/// An ExTensor is represented as an hash map from bitvec (basis) to f64 (coefficient).
+/// The bit coding in the basis is as follows
+///
+/// |  binary  |       basis     |
+/// |----------|-----------------|
+/// | 10000000 |               1 |
+/// | 01000000 |             e_1 |
+/// | 01100000 |       e_1 ∧ e_2 |
+/// | 00010000 |             e_3 |
+/// | 01010000 |       e_1 ∧ e_3 |
+/// | 01110000 | e_1 ∧ e_2 ∧ e_3 |
+///
+/// `max_basis_len` is the number of bits in the binary representation
 impl ExTensor {
     pub(crate) fn new(coeffs: &[f64], basis: &[Vec<u32>], max_basis_len: usize) -> Self {
         assert_eq!(
