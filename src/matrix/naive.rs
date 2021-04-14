@@ -1,42 +1,28 @@
 use crate::extensor::ExTensor;
 use num_traits::identities::{One, Zero};
-use std::borrow::BorrowMut;
 
 #[derive(Debug, Clone)]
 pub(crate) struct Matrix<T> {
     nrows: usize,
     ncols: usize,
-    data: Vec<(usize, usize, T)>,
+    data: Vec<T>,
 }
 
 impl<T> Matrix<T>
 where
     T: Clone + One + Zero,
 {
-    pub(crate) fn new(nrows: usize, ncols: usize, values: Vec<T>) -> Self {
+    pub(crate) fn new(nrows: usize, ncols: usize, data: Vec<T>) -> Self {
         assert_eq!(
-            values.len(),
+            data.len(),
             nrows * ncols,
             "dimensons of values does not match"
         );
 
-        let num_elems = nrows * ncols;
-        let mut data = Vec::with_capacity(num_elems);
-        data.reserve(num_elems);
-
-        for (i, val) in values.into_iter().enumerate() {
-            if !val.is_zero() {
-                let row_index = i / ncols;
-                let col_index = i % nrows;
-
-                data.push((row_index, col_index, val));
-            }
-        }
-
         Matrix { nrows, ncols, data }
     }
 
-    pub(crate) fn data(&self) -> &Vec<(usize, usize, T)> {
+    pub(crate) fn data(&self) -> &Vec<T> {
         &self.data
     }
 
@@ -50,14 +36,19 @@ impl Matrix<u8> {
     where
         F: Fn(usize) -> ExTensor,
     {
-        let n = self.nrows;
         let num_elems = self.nrows * self.ncols;
         let mut data = Vec::with_capacity(num_elems);
         data.reserve(num_elems);
 
-        for (i, (x, y, _v)) in self.data.iter().enumerate() {
-            let val = coding(i / n);
-            data.push((*x, *y, val));
+        for (i, v) in self.data.iter().enumerate() {
+            let row_index = i / self.ncols;
+            let col_index = i % self.nrows;
+            let index = row_index * self.ncols + col_index;
+            if *v == 0 {
+                data[index] = ExTensor::zero();
+            } else {
+                data[index] = coding(row_index);
+            }
         }
 
         Matrix {
@@ -83,8 +74,12 @@ where
 
         let mut res = vec![T::zero(); self.nrows];
 
-        for (x, y, v) in self.data.iter() {
-            res[*x] = res[*x].clone() + v.clone() * other[*y].clone();
+        for i in 0..self.nrows {
+            let mut v = T::zero();
+            for j in 0..self.ncols {
+                v = self.data[i * self.nrows + j].clone() * other[j].clone();
+            }
+            res[i] = v;
         }
 
         res
@@ -95,32 +90,13 @@ impl<T> std::ops::Index<(usize, usize)> for Matrix<T> {
     type Output = T;
 
     fn index(&self, index: (usize, usize)) -> &T {
-        let (i, j) = index;
-
-        let res = self
-            .data
-            .iter()
-            .filter(|(x, y, _v)| *x == i && *y == j)
-            .collect::<Vec<_>>()[0];
-        let res = Some(&res.2);
-
-        res.unwrap()
+        self.data.get(index.0 * self.ncols + index.1).unwrap()
     }
 }
 
 impl<T> std::ops::IndexMut<(usize, usize)> for Matrix<T> {
     fn index_mut(&mut self, index: (usize, usize)) -> &mut T {
-        let (i, j) = index;
-
-        let mut index = 0;
-        for (k, (x, y, _v)) in self.data.iter().enumerate() {
-            if *x == i && *y == j {
-                index = k;
-            }
-        }
-
-        let (_x, _y, v) = self.data[index].borrow_mut();
-        v
+        &mut self.data[index.0 * self.ncols + index.1]
     }
 }
 
