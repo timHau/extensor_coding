@@ -1,3 +1,5 @@
+use std::borrow::BorrowMut;
+
 use crate::extensor::ExTensor;
 use num_traits::identities::{One, Zero};
 
@@ -90,10 +92,65 @@ where
     }
 }
 
+impl<T> std::ops::Index<(usize, usize)> for Matrix<T> {
+    type Output = T;
+
+    fn index(&self, index: (usize, usize)) -> &T {
+        let (i, j) = index;
+
+        let res = self
+            .data
+            .iter()
+            .filter(|(x, y, _v)| *x == i && *y == j)
+            .collect::<Vec<_>>()[0];
+        let res = Some(&res.2);
+
+        res.unwrap()
+    }
+}
+
+impl<T> std::ops::IndexMut<(usize, usize)> for Matrix<T> {
+    fn index_mut(&mut self, index: (usize, usize)) -> &mut T {
+        let (i, j) = index;
+
+        let mut index = 0;
+        for (k, (x, y, _v)) in self.data.iter().enumerate() {
+            if *x == i && *y == j {
+                index = k;
+            }
+        }
+
+        let (_x, _y, v) = self.data[index].borrow_mut();
+        v
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::matrix::sparse_triples::Matrix;
     use crate::utils;
+
+    #[test]
+    fn index() {
+        let m = Matrix::new(2, 2, vec![1, 2, 3, 4]);
+        assert_eq!(m[(0, 0)], 1, "index (0, 0)");
+        assert_eq!(m[(0, 1)], 2, "index (0, 1)");
+        assert_eq!(m[(1, 0)], 3, "index (1, 0)");
+        assert_eq!(m[(1, 1)], 4, "index (1, 1)");
+    }
+
+    #[test]
+    fn index_mut() {
+        let mut m = Matrix::new(2, 2, vec![1, 2, 3, 4]);
+        m[(0, 0)] = 9;
+        m[(0, 1)] = 8;
+        m[(1, 0)] = 7;
+        m[(1, 1)] = 6;
+        assert_eq!(m[(0, 0)], 9, "mut index (0, 0)");
+        assert_eq!(m[(0, 1)], 8, "mut index (0, 1)");
+        assert_eq!(m[(1, 0)], 7, "mut index (1, 0)");
+        assert_eq!(m[(1, 1)], 6, "mut index (1, 1)");
+    }
 
     #[test]
     fn mat_vec_mul() {

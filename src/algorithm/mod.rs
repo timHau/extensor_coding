@@ -17,7 +17,8 @@ pub fn u(g: &Graph, k: usize) -> bool {
 /// # Algorithm C
 ///
 pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
-    let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
+    // let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
+    let t = (2. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
 
     let now = Instant::now();
     let mut xs = Vec::new();
@@ -35,9 +36,10 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
 }
 
 pub fn c_parallel(g: Graph, k: usize, eps: f64) -> f64 {
-    let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
+    // let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
+    let t = (2. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
 
-    let n_workers = 20;
+    let n_workers = 10;
     let pool = ThreadPool::new(n_workers);
     let (sender, receiver) = mpsc::channel();
 
@@ -98,7 +100,7 @@ mod tests {
         let res = algorithm::c_parallel(g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
 
-        let p = 16.;
+        let p = 8.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
         println!(

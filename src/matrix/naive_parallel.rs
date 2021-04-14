@@ -184,6 +184,7 @@ where
 
 impl<T> Index<(usize, usize)> for Matrix<T> {
     type Output = T;
+
     fn index(&self, index: (usize, usize)) -> &T {
         self.data.get(index.0 * self.ncols + index.1).unwrap()
     }
@@ -205,6 +206,28 @@ impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
 mod tests {
     use crate::matrix::naive_parallel::Matrix;
     use crate::utils;
+
+    #[test]
+    fn index() {
+        let m = Matrix::new(2, 2, vec![1, 2, 3, 4]);
+        assert_eq!(m[(0, 0)], 1, "index (0, 0)");
+        assert_eq!(m[(0, 1)], 2, "index (0, 1)");
+        assert_eq!(m[(1, 0)], 3, "index (1, 0)");
+        assert_eq!(m[(1, 1)], 4, "index (1, 1)");
+    }
+
+    #[test]
+    fn index_mut() {
+        let mut m = Matrix::new(2, 2, vec![1, 2, 3, 4]);
+        m[(0, 0)] = 9;
+        m[(0, 1)] = 8;
+        m[(1, 0)] = 7;
+        m[(1, 1)] = 6;
+        assert_eq!(m[(0, 0)], 9, "mut index (0, 0)");
+        assert_eq!(m[(0, 1)], 8, "mut index (0, 1)");
+        assert_eq!(m[(1, 0)], 7, "mut index (1, 0)");
+        assert_eq!(m[(1, 1)], 6, "mut index (1, 1)");
+    }
 
     #[test]
     fn zero() {

@@ -165,7 +165,6 @@ mod tests {
     }
      */
 
-    /*
     /// returns the adjacency matrix of the n path graph
     fn get_n_path_graph_adj_mat(n: usize) -> Matrix<u8> {
         let mut res: Matrix<u8> = Matrix::zeros(n, n);
@@ -181,6 +180,14 @@ mod tests {
         res
     }
 
+    #[test]
+    fn tmp() {
+        let graph_with_header = String::from("src/data/test_graphs/path3.g6");
+        let g = Graph::from_graph6(&graph_with_header);
+        println!("{:?}", g.adj_mat);
+    }
+
+    /*
     #[test]
     fn graph6_header() {
         let graph_with_header = String::from("src/data/test_graphs/path10_with_header.g6");
