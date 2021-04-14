@@ -1,12 +1,11 @@
 use crate::extensor::ExTensor;
 use num_traits::identities::{One, Zero};
-use std::collections::HashMap;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub(crate) struct Matrix<T> {
     nrows: usize,
     ncols: usize,
-    data: HashMap<usize, Vec<(usize, T)>>,
+    data: Vec<(usize, usize, T)>,
 }
 
 impl<T> Matrix<T>
@@ -20,26 +19,23 @@ where
             "dimensons of values does not match"
         );
 
-        let mut data = HashMap::new();
+        let num_elems = nrows * ncols;
+        let mut data = Vec::with_capacity(num_elems);
+        data.reserve(num_elems);
 
         for (i, val) in values.into_iter().enumerate() {
             if !val.is_zero() {
                 let row_index = i / ncols;
                 let col_index = i % nrows;
 
-                let row_vals = data.entry(row_index).or_insert(Vec::new());
-                row_vals.push((col_index, val));
+                data.push((row_index, col_index, val));
             }
         }
 
         Matrix { nrows, ncols, data }
     }
 
-    pub(crate) fn from(nrows: usize, ncols: usize, data: HashMap<usize, Vec<(usize, T)>>) -> Self {
-        Matrix { nrows, ncols, data }
-    }
-
-    pub(crate) fn data(&self) -> &HashMap<usize, Vec<(usize, T)>> {
+    pub(crate) fn data(&self) -> &Vec<(usize, usize, T)> {
         &self.data
     }
 
@@ -54,17 +50,20 @@ impl Matrix<u8> {
         F: Fn(usize) -> ExTensor,
     {
         let n = self.nrows;
-        let mut data = HashMap::with_capacity(self.nrows * self.ncols);
+        let num_elems = self.nrows * self.ncols;
+        let mut data = Vec::with_capacity(num_elems);
+        data.reserve(num_elems);
 
-        for (from, v) in self.data().iter() {
-            let v: Vec<_> = v
-                .into_iter()
-                .map(|(to, _)| (*to, coding(*from as usize)))
-                .collect();
-            data.insert(*from, v);
+        for (i, (x, y, _v)) in self.data.iter().enumerate() {
+            let val = coding(i / n);
+            data.push((*x, *y, val));
         }
 
-        Matrix::from(n, n, data)
+        Matrix {
+            nrows: self.nrows,
+            ncols: self.ncols,
+            data,
+        }
     }
 }
 
@@ -83,11 +82,8 @@ where
 
         let mut res = vec![T::zero(); self.nrows];
 
-        for (x, v) in self.data.iter() {
-            let val = v.iter().fold(T::zero(), |acc, (y, val)| {
-                acc + val.clone() * other[*y].clone()
-            });
-            res[*x] = val;
+        for (x, y, v) in self.data.iter() {
+            res[*x] = res[*x].clone() + v.clone() * other[*y].clone();
         }
 
         res
@@ -96,7 +92,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::matrix::sparse_hash::Matrix;
+    use crate::matrix::sparse_triples::Matrix;
     use crate::utils;
 
     #[test]
@@ -123,10 +119,8 @@ mod tests {
         let n = m.add_coding(&f_vert);
 
         println!("n");
-        for (x, v) in n.data() {
-            for (_, ext) in v.iter() {
-                println!("{}", ext);
-            }
+        for (x, y, ext) in n.data() {
+            println!("{}", ext);
         }
     }
 }

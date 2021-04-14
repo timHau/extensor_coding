@@ -131,6 +131,7 @@ impl Matrix<u8> {
     {
         let n = self.nrows;
         let mut data = Vec::with_capacity(n * n);
+        data.reserve(n * n);
 
         for (i, v) in self.data.iter().enumerate() {
             if *v == 1 {

@@ -1,4 +1,4 @@
-use crate::{extensor::ExTensor, matrix::sparse_hash::Matrix};
+use crate::{extensor::ExTensor, matrix::sparse_triples::Matrix};
 use num_traits::Zero;
 use std::time::Instant;
 
