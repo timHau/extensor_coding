@@ -1,5 +1,7 @@
 pub mod algorithm;
-pub mod structure;
+mod extensor;
+mod graph;
+mod matrix;
 mod utils;
 
 fn main() {}

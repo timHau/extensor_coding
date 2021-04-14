@@ -1,4 +1,4 @@
-use super::structure::extensor::ExTensor;
+use crate::extensor::ExTensor;
 use rand::distributions::{Distribution, Uniform};
 use std::u128;
 

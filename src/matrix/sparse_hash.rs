@@ -1,4 +1,4 @@
-use crate::structure::extensor::ExTensor;
+use crate::extensor::ExTensor;
 use num_traits::identities::{One, Zero};
 use std::collections::HashMap;
 
@@ -95,7 +95,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::structure::matrix::Matrix;
+    use crate::matrix::sparse_hash::Matrix;
     use crate::utils;
 
     #[test]

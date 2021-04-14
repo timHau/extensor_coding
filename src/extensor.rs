@@ -276,7 +276,7 @@ macro_rules! extensor {
 
 #[cfg(test)]
 mod tests {
-    use crate::structure::extensor::ExTensor;
+    use crate::extensor::ExTensor;
     use num_traits::Zero;
 
     #[test]

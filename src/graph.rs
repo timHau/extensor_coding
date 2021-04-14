@@ -1,4 +1,4 @@
-use super::{extensor::ExTensor, matrix::Matrix};
+use crate::{extensor::ExTensor, matrix::sparse_hash::Matrix};
 use num_traits::Zero;
 use std::time::Instant;
 
@@ -150,9 +150,9 @@ impl std::clone::Clone for Graph {
 
 #[cfg(test)]
 mod tests {
-    use crate::structure::extensor::ExTensor;
-    use crate::structure::graph::Graph;
-    use crate::structure::matrix_naive::Matrix;
+    use crate::extensor::ExTensor;
+    use crate::graph::Graph;
+    use crate::matrix::naive_parallel::Matrix;
     use crate::utils;
     use num_traits::Zero;
 

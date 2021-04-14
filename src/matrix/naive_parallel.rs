@@ -1,4 +1,4 @@
-use crate::structure::extensor::ExTensor;
+use crate::extensor::ExTensor;
 use num_traits::identities::{One, Zero};
 use std::{
     cmp::PartialEq,
@@ -202,7 +202,7 @@ impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::structure::matrix_naive::Matrix;
+    use crate::matrix::naive_parallel::Matrix;
     use crate::utils;
 
     #[test]

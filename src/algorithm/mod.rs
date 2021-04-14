@@ -1,4 +1,4 @@
-use super::{structure::graph::Graph, utils};
+use crate::{graph::Graph, utils};
 use num_traits::Zero;
 use std::sync::mpsc;
 use std::time::Instant;
@@ -63,7 +63,7 @@ pub fn c_parallel(g: Graph, k: usize, eps: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use crate::algorithm;
-    use crate::structure::graph::Graph;
+    use crate::graph::Graph;
 
     #[test]
     fn u_3() {
