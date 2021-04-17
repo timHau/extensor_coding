@@ -1,4 +1,4 @@
-use crate::extensor::ExTensor;
+use crate::extensor::bitvec::ExTensor;
 use rand::distributions::{Distribution, Uniform};
 use std::u128;
 

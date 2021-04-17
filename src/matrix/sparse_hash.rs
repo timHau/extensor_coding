@@ -1,6 +1,6 @@
-use crate::extensor::ExTensor;
+use crate::extensor::bitvec::ExTensor;
 use num_traits::identities::{One, Zero};
-use std::{borrow::BorrowMut, collections::HashMap};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Matrix<T> {

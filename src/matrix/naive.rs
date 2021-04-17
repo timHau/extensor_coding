@@ -1,4 +1,4 @@
-use crate::extensor::ExTensor;
+use crate::extensor::bitvec::ExTensor;
 use num_traits::identities::{One, Zero};
 
 #[derive(Debug, Clone)]

@@ -276,7 +276,7 @@ macro_rules! extensor {
 
 #[cfg(test)]
 mod tests {
-    use crate::extensor::ExTensor;
+    use crate::extensor::bitvec::ExTensor;
     use num_traits::Zero;
 
     #[test]
