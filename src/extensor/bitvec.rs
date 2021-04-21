@@ -72,8 +72,7 @@ impl ExTensor {
         }
     }
 
-    pub(crate) fn lift(&self) -> Self {
-        let k = self.data.len();
+    pub(crate) fn lift(&self, k: usize) -> Self {
         let data = self
             .data
             .clone()
@@ -398,7 +397,7 @@ mod tests {
     #[test]
     fn lifted() {
         let x = &extensor!([2.0, 3.0], [[1], [2]]);
-        let l = x.lift();
+        let l = x.lift(2);
         let a = &extensor!([2.0, 3.0], [[3], [4]]);
         assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
     }

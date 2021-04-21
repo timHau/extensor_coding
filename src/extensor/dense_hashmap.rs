@@ -53,6 +53,20 @@ impl ExTensor {
 
         (sign, ord_basis)
     }
+
+    pub(crate) fn lift(&self, k: usize) -> Self {
+        let data = self
+            .data
+            .clone()
+            .into_iter()
+            .map(|(base, coeff)| {
+                let shifted: Vec<u32> = base.iter().map(|b| b + k as u32).collect();
+                (shifted, coeff)
+            })
+            .collect();
+
+        self * &ExTensor { data }
+    }
 }
 
 impl std::ops::Mul for &ExTensor {
@@ -134,5 +148,13 @@ mod tests {
         let x_2 = ExTensor::new(&[4.0, 5.0], &[vec![2, 6], vec![4, 7]]);
         let res = ExTensor::new(&[12.0, 10.0], &[vec![2, 3, 4, 6], vec![1, 2, 4, 7]]);
         assert_eq!(&x_1 * &x_2, res, "wedge product should match");
+    }
+
+    #[test]
+    fn lifted() {
+        let x = &ExTensor::new(&[2.0, 3.0], &[vec![1], vec![2]]);
+        let l = x.lift(2);
+        let a = &ExTensor::new(&[2.0, 3.0], &[vec![3], vec![4]]);
+        assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
     }
 }
