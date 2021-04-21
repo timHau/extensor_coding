@@ -151,7 +151,9 @@ impl std::ops::Mul for &ExTensor {
     type Output = ExTensor;
 
     fn mul(self, other: &ExTensor) -> ExTensor {
-        let mut data = HashMap::with_capacity(self.data.len() * other.data.len());
+        let num_elems = self.data.len() * other.data.len();
+        let mut data = HashMap::with_capacity(num_elems);
+        data.reserve(num_elems);
 
         for (base_a, coeff_a) in self.data.iter() {
             for (base_b, coeff_b) in other.data.iter() {
@@ -277,6 +279,7 @@ macro_rules! extensor {
 #[cfg(test)]
 mod tests {
     use crate::extensor::bitvec::ExTensor;
+    use bitvec::prelude::{bitvec, Lsb0};
     use num_traits::Zero;
 
     #[test]
@@ -304,6 +307,19 @@ mod tests {
             res_2,
             "sign changes when base has to be reorderd"
         );
+    }
+
+    #[test]
+    fn get_sign() {
+        let x_1 = bitvec![0, 1, 0, 0, 0];
+        let x_2 = bitvec![0, 1, 0, 0, 0];
+        assert_eq!(ExTensor::get_sign(&x_1, &x_2), 1.0);
+        let x_3 = bitvec![0, 0, 1, 0, 0];
+        assert_eq!(ExTensor::get_sign(&x_1, &x_3), -1.0);
+        let x_4 = bitvec![0, 0, 1, 1, 0];
+        assert_eq!(ExTensor::get_sign(&x_1, &x_4), 1.0);
+        let x_5 = bitvec![0, 0, 1, 1, 1];
+        assert_eq!(ExTensor::get_sign(&x_1, &x_5), -1.0);
     }
 
     #[test]
@@ -387,13 +403,11 @@ mod tests {
         assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
     }
 
-    /*
-        #[test]
-        fn is_zero() {
-            let x = extensor!([0.0, 0.0], [[1, 2, 3], [4, 5, 6]]);
-            let y = ExTensor::zero();
-            assert_eq!(x.is_zero(), true, "extensor with zero coefficients is zero");
-            assert_eq!(y.is_zero(), true, "extensor with empty basis is zero");
-        }
-    */
+    #[test]
+    fn is_zero() {
+        let x = extensor!([0.0, 0.0], [[1, 2, 3], [4, 5, 6]]);
+        let y = ExTensor::zero();
+        assert_eq!(x.is_zero(), true, "extensor with zero coefficients is zero");
+        assert_eq!(y.is_zero(), true, "extensor with empty basis is zero");
+    }
 }
