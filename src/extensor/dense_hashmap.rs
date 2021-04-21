@@ -1,4 +1,5 @@
 use array_tool::vec::{Intersect, Union};
+use num_traits::{One, Zero};
 use std::collections::HashMap;
 
 #[derive(Debug, PartialEq)]
@@ -69,6 +70,55 @@ impl ExTensor {
     }
 }
 
+impl Zero for ExTensor {
+    fn zero() -> Self {
+        ExTensor {
+            data: HashMap::new(),
+        }
+    }
+
+    fn is_zero(&self) -> bool {
+        match self.data.len() {
+            0 => true,
+            _ => self.data.iter().all(|(_, &coeff)| coeff == 0.0),
+        }
+    }
+}
+
+impl One for ExTensor {
+    fn one() -> Self {
+        ExTensor::new(&[1.0], &[vec![0]])
+    }
+}
+
+impl std::ops::Add for &ExTensor {
+    type Output = ExTensor;
+
+    fn add(self, other: &ExTensor) -> ExTensor {
+        let joined_data = self.data.iter().chain(other.data.iter());
+
+        let mut data = HashMap::with_capacity(self.data.len() + other.data.len());
+        for (base, coeff) in joined_data {
+            if data.contains_key(base) {
+                let next_coeff: f64 = data.get(base).unwrap() + coeff;
+                data.insert(base.clone(), next_coeff);
+            } else {
+                data.insert(base.clone(), *coeff);
+            }
+        }
+
+        ExTensor { data }
+    }
+}
+
+impl std::ops::Add for ExTensor {
+    type Output = ExTensor;
+
+    fn add(self, other: ExTensor) -> ExTensor {
+        &self + &other
+    }
+}
+
 impl std::ops::Mul for &ExTensor {
     type Output = ExTensor;
 
@@ -99,9 +149,29 @@ impl std::ops::Mul for &ExTensor {
     }
 }
 
+impl std::ops::Mul for ExTensor {
+    type Output = ExTensor;
+
+    fn mul(self, other: ExTensor) -> ExTensor {
+        &self * &other
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::extensor::dense_hashmap::ExTensor;
+    use num_traits::Zero;
+
+    #[test]
+    fn extensor_add() {
+        let x_1 = &ExTensor::new(&[2.0, 5.0], &[vec![1, 3], vec![3, 9]]);
+        let x_2 = &ExTensor::new(&[1.0, 1.0], &[vec![1, 2], vec![3, 9]]);
+        let sum = x_1 + x_2;
+        let res = ExTensor::new(&[2.0, 1.0, 6.0], &[vec![1, 3], vec![1, 2], vec![3, 9]]);
+        assert_eq!(&sum, &res, "exterior sum is definined component wise");
+        let sum_2 = x_2 + x_1;
+        assert_eq!(&sum, &sum_2, "exterior sum is commutative");
+    }
 
     #[test]
     fn get_sign_ord() {
@@ -156,5 +226,46 @@ mod tests {
         let l = x.lift(2);
         let a = &ExTensor::new(&[2.0, 3.0], &[vec![3], vec![4]]);
         assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
+    }
+
+    #[test]
+    fn extensor_vanish() {
+        let x_1 = &ExTensor::new(&[1.0], &[vec![1]]);
+        let prod_1 = &(x_1 * x_1);
+        assert_eq!(prod_1.is_zero(), true, "x wedge x vanishes");
+    }
+
+    #[test]
+    fn extensor_anti_comm() {
+        let x_3 = &ExTensor::new(&[2.0], &[vec![1]]);
+        let x_4 = &ExTensor::new(&[4.0], &[vec![3]]);
+        let prod_4 = x_3 * x_4;
+        let res_1 = ExTensor::new(&[8.0], &[vec![1, 3]]);
+        let prod_5 = x_4 * x_3;
+        let res_anti = ExTensor::new(&[-8.0], &[vec![1, 3]]);
+        assert_eq!(prod_4, res_1, "wedge product on simple extensors");
+        assert_eq!(
+            prod_5, res_anti,
+            "wedge product on simple extensors is anti communative"
+        );
+    }
+
+    #[test]
+    fn det_f2() {
+        let x_5 = &ExTensor::new(&[2.0, 3.0], &[vec![1], vec![2]]);
+        let x_6 = &ExTensor::new(&[4.0, 5.0], &[vec![1], vec![2]]);
+        let prod_6 = x_5 * x_6;
+        let det = ExTensor::new(&[-2.0], &[vec![1, 2]]);
+        assert_eq!(prod_6, det, "Wedge Product exhibits determinant on F^2x2");
+    }
+
+    #[test]
+    fn det_f3() {
+        let x_7 = &ExTensor::new(&[2.0, 3.0, 4.0], &[vec![1], vec![2], vec![3]]);
+        let x_8 = &ExTensor::new(&[5.0, 6.0, 7.0], &[vec![1], vec![2], vec![3]]);
+        let x_9 = &ExTensor::new(&[8.0, 9.0, 10.0], &[vec![1], vec![2], vec![3]]);
+        let prod_7 = &(&(x_7 * x_8) * x_9);
+        let det = &ExTensor::new(&[0.0], &[vec![1, 2, 3]]);
+        assert_eq!(prod_7, det, "Wedge Product exhibits determinant on F^3x3");
     }
 }
