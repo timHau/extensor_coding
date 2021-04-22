@@ -97,10 +97,10 @@ mod tests {
         let k = 3;
         let eps = 0.2;
         let now = std::time::Instant::now();
-        let res = algorithm::c_parallel(g, k, eps);
+        let res = algorithm::c(g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
 
-        let p = 8.;
+        let p = 16.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
         println!(

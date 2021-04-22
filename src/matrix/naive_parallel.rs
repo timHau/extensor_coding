@@ -135,7 +135,7 @@ impl Matrix<u8> {
 
         for (i, v) in self.data.iter().enumerate() {
             if *v == 1 {
-                let val = coding(i / n);
+                let val = coding(i / self.ncols);
                 data.push(val);
             } else {
                 data.push(ExTensor::zero());
@@ -253,10 +253,8 @@ mod tests {
         let m: Matrix<u8> = Matrix::new(2, 2, vec![1, 1, 0, 1]);
         let n = m.add_coding(&f_vert);
 
-        /*
         for ext in n.data() {
-            println!("{}", ext);
+            println!("{:?}", ext);
         }
-        */
     }
 }

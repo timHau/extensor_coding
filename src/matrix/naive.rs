@@ -40,14 +40,13 @@ impl Matrix<u8> {
         let mut data = Vec::with_capacity(num_elems);
         data.reserve(num_elems);
 
+        println!("nrows: {}, ncols: {}", self.nrows, self.ncols);
         for (i, v) in self.data.iter().enumerate() {
             let row_index = i / self.ncols;
-            let col_index = i % self.nrows;
-            let index = row_index * self.ncols + col_index;
             if *v == 0 {
-                data[index] = ExTensor::zero();
+                data.push(ExTensor::zero());
             } else {
-                data[index] = coding(row_index);
+                data.push(coding(row_index));
             }
         }
 
