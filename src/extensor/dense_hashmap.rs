@@ -2,7 +2,7 @@ use array_tool::vec::{Intersect, Union};
 use num_traits::{One, Zero};
 use std::collections::HashMap;
 
-#[derive(Debug, PartialEq)]
+#[derive(Default, Debug, Clone, PartialEq)]
 pub struct ExTensor {
     data: HashMap<Vec<u32>, f64>,
 }
@@ -67,6 +67,10 @@ impl ExTensor {
             .collect();
 
         self * &ExTensor { data }
+    }
+
+    pub(crate) fn coeffs(&self) -> Vec<f64> {
+        self.data.iter().map(|(_, coeff)| coeff.clone()).collect()
     }
 }
 
@@ -154,6 +158,43 @@ impl std::ops::Mul for ExTensor {
 
     fn mul(self, other: ExTensor) -> ExTensor {
         &self * &other
+    }
+}
+
+impl std::ops::Mul<f64> for &ExTensor {
+    type Output = ExTensor;
+
+    fn mul(self, c: f64) -> ExTensor {
+        let data = self
+            .data
+            .iter()
+            .map(|(base, coeff)| (base.clone(), coeff.clone() * c))
+            .collect();
+        ExTensor { data }
+    }
+}
+
+impl std::ops::Mul<&ExTensor> for f64 {
+    type Output = ExTensor;
+
+    fn mul(self, t: &ExTensor) -> ExTensor {
+        t * self
+    }
+}
+
+impl std::ops::Sub for &ExTensor {
+    type Output = ExTensor;
+
+    fn sub(self, other: &ExTensor) -> ExTensor {
+        self + &(-1.0 * other)
+    }
+}
+
+impl std::ops::Sub for ExTensor {
+    type Output = ExTensor;
+
+    fn sub(self, other: ExTensor) -> ExTensor {
+        &self - &other
     }
 }
 

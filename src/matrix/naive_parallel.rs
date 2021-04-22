@@ -1,4 +1,4 @@
-use crate::extensor::bitvec::ExTensor;
+use crate::extensor::dense_hashmap::ExTensor;
 use num_traits::identities::{One, Zero};
 use std::{
     cmp::PartialEq,
@@ -253,8 +253,10 @@ mod tests {
         let m: Matrix<u8> = Matrix::new(2, 2, vec![1, 1, 0, 1]);
         let n = m.add_coding(&f_vert);
 
+        /*
         for ext in n.data() {
             println!("{}", ext);
         }
+        */
     }
 }

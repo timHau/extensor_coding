@@ -1,4 +1,4 @@
-use crate::extensor::bitvec::ExTensor;
+use crate::extensor::dense_hashmap::ExTensor;
 use num_traits::identities::{One, Zero};
 use std::collections::HashMap;
 
@@ -125,7 +125,7 @@ mod tests {
         println!("n");
         for (x, v) in n.data() {
             for (_, ext) in v.iter() {
-                println!("{}", ext);
+                println!("{:?}", ext);
             }
         }
     }

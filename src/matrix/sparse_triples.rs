@@ -1,4 +1,4 @@
-use crate::extensor::bitvec::ExTensor;
+use crate::extensor::dense_hashmap::ExTensor;
 use num_traits::identities::{One, Zero};
 use std::borrow::BorrowMut;
 
@@ -176,7 +176,7 @@ mod tests {
 
         println!("n");
         for (x, y, ext) in n.data() {
-            println!("{}", ext);
+            println!("{:?}", ext);
         }
     }
 }

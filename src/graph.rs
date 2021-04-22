@@ -1,4 +1,4 @@
-use crate::{extensor::bitvec::ExTensor, matrix::sparse_triples::Matrix};
+use crate::{extensor::dense_hashmap::ExTensor, matrix::sparse_triples::Matrix};
 use num_traits::Zero;
 use std::time::Instant;
 
@@ -150,7 +150,7 @@ impl std::clone::Clone for Graph {
 
 #[cfg(test)]
 mod tests {
-    use crate::extensor::bitvec::ExTensor;
+    use crate::extensor::dense_hashmap::ExTensor;
     use crate::graph::Graph;
     use crate::matrix::naive_parallel::Matrix;
     use crate::utils;

@@ -1,4 +1,4 @@
-use crate::extensor::bitvec::ExTensor;
+use crate::extensor::dense_hashmap::ExTensor;
 use rand::distributions::{Distribution, Uniform};
 use std::u128;
 
@@ -10,7 +10,7 @@ pub fn create_vandermonde(k: usize) -> (F, G) {
     let f_vert = move |v: usize| -> ExTensor {
         let coeffs: Vec<f64> = (0..k).map(|i| v.pow(i as u32) as f64).collect();
         let basis: Vec<Vec<u32>> = (1..=k).map(|i| vec![i as u32]).collect();
-        ExTensor::new(&coeffs, &basis, 2 * k).lift(k)
+        ExTensor::new(&coeffs, &basis).lift(k)
     };
     let f_edge = |_v: usize, _w: usize| 1.0;
     (Box::new(f_vert), Box::new(f_edge))
@@ -33,7 +33,7 @@ pub fn create_bernoulli(k: usize) -> (F, G) {
             })
             .collect();
         let basis: Vec<Vec<u32>> = (1..=k).map(|i| vec![i as u32]).collect();
-        ExTensor::new(&coeffs, &basis, 2 * k).lift(k)
+        ExTensor::new(&coeffs, &basis).lift(k)
     };
     let f_edge = |_v: usize, _w: usize| 1.0;
     (Box::new(f_vert), Box::new(f_edge))
