@@ -49,7 +49,23 @@ pub fn factorial(k: usize) -> u128 {
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::{create_bernoulli, factorial};
+    use crate::extensor::dense_hashmap::ExTensor;
+    use crate::utils::{create_bernoulli, create_vandermonde, factorial};
+
+    #[test]
+    fn vandermonde() {
+        let k = 5;
+        let (f_vert, f_edge) = create_vandermonde(k);
+        assert_eq!(f_edge(3, 4), 1.0, "function on edge is constant 1");
+        let vert_val_1 = f_vert(1);
+        let vert_val_2 = f_vert(2);
+        let vert_val_3 = f_vert(3);
+        let vert_val_4 = f_vert(4);
+        let vert_val_5 = f_vert(5);
+        let prod = vert_val_1 * vert_val_2 * vert_val_3 * vert_val_4 * vert_val_5;
+        let res = ExTensor::new(&[82944.0], &[vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]]);
+        assert_eq!(prod, res, "lifted vandermonde");
+    }
 
     #[test]
     fn bernoulli() {
