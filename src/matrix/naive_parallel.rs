@@ -135,7 +135,7 @@ impl Matrix<u8> {
 
         for (i, v) in self.data.iter().enumerate() {
             if *v == 1 {
-                let val = coding(i / self.ncols);
+                let val = coding((i / self.nrows) + 1);
                 data.push(val);
             } else {
                 data.push(ExTensor::zero());

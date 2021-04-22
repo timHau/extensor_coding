@@ -59,7 +59,7 @@ impl Matrix<u8> {
         for (from, v) in self.data().iter() {
             let v: Vec<_> = v
                 .into_iter()
-                .map(|(to, _)| (*to, coding(*from as usize)))
+                .map(|(to, _)| (*to, coding((*from + 1) as usize)))
                 .collect();
             data.insert(*from, v);
         }

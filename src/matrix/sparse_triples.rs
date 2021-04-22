@@ -56,7 +56,7 @@ impl Matrix<u8> {
         data.reserve(num_elems);
 
         for (i, (x, y, _v)) in self.data.iter().enumerate() {
-            let val = coding(i / n);
+            let val = coding((i / n) + 1);
             data.push((*x, *y, val));
         }
 

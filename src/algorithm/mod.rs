@@ -27,6 +27,12 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
         let x_j = g.compute_walk_sum(k, bernoulli_mapping).coeffs()[0];
         println!("{}/{}", _j, t);
         xs.push(x_j);
+
+        // tmp
+        let sum: f64 = xs.iter().sum();
+        let denom = (utils::factorial(k) * t as u128) as f64;
+        let tmp = (sum / denom).abs();
+        println!("tmp: {}", tmp);
     }
     println!("in c: {}", now.elapsed().as_millis());
 
@@ -36,8 +42,8 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
 }
 
 pub fn c_parallel(g: Graph, k: usize, eps: f64) -> f64 {
-    // let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
-    let t = (2. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
+    let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
+    //let t = (2. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
 
     let n_workers = 10;
     let pool = ThreadPool::new(n_workers);
@@ -94,13 +100,13 @@ mod tests {
     #[test]
     fn c() {
         let g = Graph::from_graph6("src/data/test_graphs/path10.g6");
-        let k = 3;
+        let k = 2;
         let eps = 0.2;
         let now = std::time::Instant::now();
         let res = algorithm::c(g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
 
-        let p = 16.;
+        let p = 18.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
         println!(

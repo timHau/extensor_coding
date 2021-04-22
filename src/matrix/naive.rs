@@ -46,7 +46,7 @@ impl Matrix<u8> {
             if *v == 0 {
                 data.push(ExTensor::zero());
             } else {
-                data.push(coding(row_index));
+                data.push(coding(row_index + 1));
             }
         }
 
