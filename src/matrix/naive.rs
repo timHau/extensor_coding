@@ -76,7 +76,7 @@ where
         for i in 0..self.nrows {
             let mut v = T::zero();
             for j in 0..self.ncols {
-                v = self.data[i * self.nrows + j].clone() * other[j].clone();
+                v = v + self.data[i * self.ncols + j].clone() * other[j].clone();
             }
             res[i] = v;
         }
@@ -101,7 +101,7 @@ impl<T> std::ops::IndexMut<(usize, usize)> for Matrix<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::matrix::sparse_triples::Matrix;
+    use crate::matrix::naive::Matrix;
     use crate::utils;
 
     #[test]
@@ -150,7 +150,7 @@ mod tests {
         let n = m.add_coding(&f_vert);
 
         println!("n");
-        for (x, y, ext) in n.data() {
+        for ext in n.data() {
             println!("{:?}", ext);
         }
     }
