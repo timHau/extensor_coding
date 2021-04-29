@@ -55,13 +55,12 @@ impl Matrix<u8> {
     where
         F: Fn(usize) -> ExTensor,
     {
-        let n = self.nrows;
         let num_elems = self.nrows * self.ncols;
         let mut data = Vec::with_capacity(num_elems);
         data.reserve(num_elems);
 
-        for (i, (x, y, _v)) in self.data.iter().enumerate() {
-            let val = coding((i / n) + 1);
+        for (x, y, _v) in self.data.iter() {
+            let val = coding(*x + 1);
             data.push((*x, *y, val));
         }
 
@@ -189,6 +188,41 @@ mod tests {
             2,
             vec![f_vert(1), f_vert(1), ExTensor::zero(), f_vert(2)],
         );
+
+        assert_eq!(n.data(), expect.data(), "add coding should work");
+    }
+
+    #[test]
+    fn coding_2() {
+        let k = 3;
+        let (f_vert, _) = utils::create_vandermonde(k);
+        let m: Matrix<u8> = Matrix::new(3, 3, vec![0, 1, 0, 1, 0, 1, 0, 1, 0]);
+        let n = m.add_coding(&f_vert);
+        let expect = Matrix::new(
+            3,
+            3,
+            vec![
+                ExTensor::zero(),
+                f_vert(1),
+                ExTensor::zero(),
+                f_vert(2),
+                ExTensor::zero(),
+                f_vert(2),
+                ExTensor::zero(),
+                f_vert(3),
+                ExTensor::zero(),
+            ],
+        );
+
+        for e in n.data() {
+            println!("e: {:?}", e);
+        }
+
+        println!("-------");
+
+        for e in expect.data() {
+            println!("e: {:?}", e);
+        }
 
         assert_eq!(n.data(), expect.data(), "add coding should work");
     }

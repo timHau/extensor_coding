@@ -140,9 +140,9 @@ impl Matrix<u8> {
         data.reserve(n * n);
 
         for (i, v) in self.data.iter().enumerate() {
+            let row_index = i / self.ncols;
             if *v == 1 {
-                let val = coding((i / self.ncols) + 1);
-                data.push(val);
+                data.push(coding(row_index + 1));
             } else {
                 data.push(ExTensor::zero());
             }
@@ -268,6 +268,38 @@ mod tests {
             2,
             2,
             vec![f_vert(1), f_vert(1), ExTensor::zero(), f_vert(2)],
+        );
+
+        assert_eq!(n.data(), expect.data(), "add coding should work");
+    }
+
+    #[test]
+    fn tmp() {
+        let k = 2;
+        let (f_vert, _) = utils::create_vandermonde(k);
+        println!("{:?}", f_vert(2));
+    }
+
+    #[test]
+    fn coding_2() {
+        let k = 3;
+        let (f_vert, _) = utils::create_vandermonde(k);
+        let m: Matrix<u8> = Matrix::new(3, 3, vec![0, 1, 0, 1, 0, 1, 0, 1, 0]);
+        let n = m.add_coding(&f_vert);
+        let expect = Matrix::new(
+            3,
+            3,
+            vec![
+                ExTensor::zero(),
+                f_vert(1),
+                ExTensor::zero(),
+                f_vert(2),
+                ExTensor::zero(),
+                f_vert(2),
+                ExTensor::zero(),
+                f_vert(3),
+                ExTensor::zero(),
+            ],
         );
 
         assert_eq!(n.data(), expect.data(), "add coding should work");
