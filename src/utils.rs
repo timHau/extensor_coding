@@ -1,4 +1,8 @@
+#[cfg(feature = "extensor_bitvec")]
+use crate::extensor::bitvec::ExTensor;
+#[cfg(feature = "extensor_dense_hashmap")]
 use crate::extensor::dense_hashmap::ExTensor;
+
 use rand::distributions::{Distribution, Uniform};
 use std::u128;
 
@@ -49,7 +53,11 @@ pub fn factorial(k: usize) -> u128 {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "extensor_bitvec")]
+    use crate::extensor::bitvec::ExTensor;
+    #[cfg(feature = "extensor_dense_hashmap")]
     use crate::extensor::dense_hashmap::ExTensor;
+
     use crate::utils::{create_bernoulli, create_vandermonde, factorial};
 
     #[test]

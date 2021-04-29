@@ -201,7 +201,6 @@ impl std::ops::Sub for ExTensor {
 #[cfg(test)]
 mod tests {
     use crate::extensor::dense_hashmap::ExTensor;
-    use bitvec::vec;
     use num_traits::Zero;
 
     #[test]

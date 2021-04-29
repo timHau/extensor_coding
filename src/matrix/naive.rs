@@ -1,4 +1,8 @@
+#[cfg(feature = "extensor_bitvec")]
+use crate::extensor::bitvec::ExTensor;
+#[cfg(feature = "extensor_dense_hashmap")]
 use crate::extensor::dense_hashmap::ExTensor;
+
 use num_traits::identities::{One, Zero};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -101,7 +105,11 @@ impl<T> std::ops::IndexMut<(usize, usize)> for Matrix<T> {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "extensor_bitvec")]
+    use crate::extensor::bitvec::ExTensor;
+    #[cfg(feature = "extensor_dense_hashmap")]
     use crate::extensor::dense_hashmap::ExTensor;
+
     use crate::matrix::naive::Matrix;
     use crate::utils;
     use num_traits::identities::Zero;

@@ -1,4 +1,8 @@
+#[cfg(feature = "extensor_bitvec")]
+use crate::extensor::bitvec::ExTensor;
+#[cfg(feature = "extensor_dense_hashmap")]
 use crate::extensor::dense_hashmap::ExTensor;
+
 use num_traits::identities::{One, Zero};
 use std::collections::HashMap;
 
@@ -96,7 +100,11 @@ where
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "extensor_bitvec")]
+    use crate::extensor::bitvec::ExTensor;
+    #[cfg(feature = "extensor_dense_hashmap")]
     use crate::extensor::dense_hashmap::ExTensor;
+
     use crate::matrix::sparse_hash::Matrix;
     use crate::utils;
     use num_traits::identities::Zero;

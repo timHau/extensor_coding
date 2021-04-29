@@ -1,4 +1,8 @@
+#[cfg(feature = "extensor_bitvec")]
+use crate::extensor::bitvec::ExTensor;
+#[cfg(feature = "extensor_dense_hashmap")]
 use crate::extensor::dense_hashmap::ExTensor;
+
 use num_traits::identities::{One, Zero};
 use std::{
     cmp::PartialEq,
@@ -165,7 +169,7 @@ where
 
         let mut handles = vec![];
         for i in 0..self.nrows {
-            for j in 0..other.len() {
+            for _j in 0..other.len() {
                 let row = self.row(i);
                 let col = MatrixSlice::new(&other);
                 let handle = thread::spawn(move || row * col);
@@ -204,7 +208,11 @@ impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "extensor_bitvec")]
+    use crate::extensor::bitvec::ExTensor;
+    #[cfg(feature = "extensor_dense_hashmap")]
     use crate::extensor::dense_hashmap::ExTensor;
+
     use crate::matrix::naive_parallel::Matrix;
     use crate::utils;
     use num_traits::Zero;

@@ -10,3 +10,12 @@ bitvec = "0.21.1"
 num-traits = "0.2.14"
 threadpool = "1.0"
 array_tool = "1.0.3"
+
+[features]
+default = ["extensor_dense_hashmap", "matrix_sparse_hash"]
+extensor_dense_hashmap = []
+extensor_bitvec = []
+matrix_naive = []
+matrix_naive_parallel = []
+matrix_sparse_hash = []
+matrix_sparse_triples = []
