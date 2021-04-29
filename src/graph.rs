@@ -1,4 +1,17 @@
-use crate::{extensor::dense_hashmap::ExTensor, matrix::sparse_hash::Matrix};
+#[cfg(feature = "extensor_bitvec")]
+use crate::extensor::bitvec::ExTensor;
+#[cfg(feature = "extensor_dense_hashmap")]
+use crate::extensor::dense_hashmap::ExTensor;
+
+#[cfg(feature = "matrix_naive")]
+use crate::matrix::naive::Matrix;
+#[cfg(feature = "matrix_naive_parallel")]
+use crate::matrix::naive_parallel::Matrix;
+#[cfg(feature = "matrix_sparse_hash")]
+use crate::matrix::sparse_hash::Matrix;
+#[cfg(feature = "matrix_sparse_triples")]
+use crate::matrix::sparse_triples::Matrix;
+
 use num_traits::Zero;
 use std::time::Instant;
 
@@ -150,9 +163,21 @@ impl std::clone::Clone for Graph {
 
 #[cfg(test)]
 mod tests {
+
+    #[cfg(feature = "extensor_bitvec")]
+    use crate::extensor::bitvec::ExTensor;
+    #[cfg(feature = "extensor_dense_hashmap")]
     use crate::extensor::dense_hashmap::ExTensor;
-    use crate::graph::Graph;
+    #[cfg(feature = "matrix_naive")]
+    use crate::matrix::naive::Matrix;
+    #[cfg(feature = "matrix_naive_parallel")]
+    use crate::matrix::naive_parallel::Matrix;
+    #[cfg(feature = "matrix_sparse_hash")]
     use crate::matrix::sparse_hash::Matrix;
+    #[cfg(feature = "matrix_sparse_triples")]
+    use crate::matrix::sparse_triples::Matrix;
+
+    use crate::graph::Graph;
     use crate::utils;
     use num_traits::Zero;
 
