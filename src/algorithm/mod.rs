@@ -24,8 +24,9 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
     let mut sum = 0.0;
     for _j in 0..t {
         let bernoulli_mapping = utils::create_bernoulli(k);
-        let x_j = g.compute_walk_sum(k, bernoulli_mapping).coeffs()[0];
-        sum += x_j;
+        let v_j = g.compute_walk_sum(k, bernoulli_mapping);
+        println!("v_j: {:?}", v_j);
+        sum += v_j.coeffs()[0];
         println!("{}/{}", _j, t);
     }
     println!("in c: {}", now.elapsed().as_millis());
@@ -125,9 +126,9 @@ mod tests {
     fn c() {
         let g = Graph::from_graph6("src/data/test_graphs/path3.g6");
         let k = 4;
-        let eps = 0.9;
+        let eps = 0.9999;
         let now = std::time::Instant::now();
-        let res = algorithm::c_parallel_2(g, k, eps);
+        let res = algorithm::c(g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
 
         let p = 2.;

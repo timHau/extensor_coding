@@ -360,6 +360,17 @@ mod tests {
     }
 
     #[test]
+    fn extensor_vanish_2() {
+        let x_1 = &ExTensor::new(
+            &[9.0, 8.0, 7.0, 12.0],
+            &[vec![1], vec![1, 2, 3], vec![4], vec![6, 7, 8]],
+            9,
+        );
+        let prod_1 = &(x_1 * x_1);
+        assert_eq!(prod_1.is_zero(), true, "x wedge x vanishes");
+    }
+
+    #[test]
     fn extensor_anti_comm() {
         // test anti-commutativity
         let x_3 = &extensor!([2.0], [[1]]);

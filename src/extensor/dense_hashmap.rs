@@ -201,6 +201,7 @@ impl std::ops::Sub for ExTensor {
 #[cfg(test)]
 mod tests {
     use crate::extensor::dense_hashmap::ExTensor;
+    use bitvec::vec;
     use num_traits::Zero;
 
     #[test]
@@ -272,6 +273,16 @@ mod tests {
     #[test]
     fn extensor_vanish() {
         let x_1 = &ExTensor::new(&[1.0], &[vec![1]]);
+        let prod_1 = &(x_1 * x_1);
+        assert_eq!(prod_1.is_zero(), true, "x wedge x vanishes");
+    }
+
+    #[test]
+    fn extensor_vanish_2() {
+        let x_1 = &ExTensor::new(
+            &[9.0, 8.0, 7.0, 12.0],
+            &[vec![1], vec![1, 2, 3], vec![4], vec![6, 7, 8]],
+        );
         let prod_1 = &(x_1 * x_1);
         assert_eq!(prod_1.is_zero(), true, "x wedge x vanishes");
     }
