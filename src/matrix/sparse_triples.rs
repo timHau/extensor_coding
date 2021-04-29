@@ -126,8 +126,10 @@ impl<T> std::ops::IndexMut<(usize, usize)> for Matrix<T> {
 
 #[cfg(test)]
 mod tests {
+    use crate::extensor::dense_hashmap::ExTensor;
     use crate::matrix::sparse_triples::Matrix;
     use crate::utils;
+    use num_traits::identities::Zero;
 
     #[test]
     fn index() {
@@ -173,10 +175,12 @@ mod tests {
         let (f_vert, _) = utils::create_vandermonde(k);
         let m: Matrix<u8> = Matrix::new(2, 2, vec![1, 1, 0, 1]);
         let n = m.add_coding(&f_vert);
+        let expect = Matrix::new(
+            2,
+            2,
+            vec![f_vert(1), f_vert(1), ExTensor::zero(), f_vert(2)],
+        );
 
-        println!("n");
-        for (x, y, ext) in n.data() {
-            println!("{:?}", ext);
-        }
+        assert_eq!(n.data(), expect.data(), "add coding should work");
     }
 }

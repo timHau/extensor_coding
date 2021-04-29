@@ -59,7 +59,7 @@ impl Matrix<u8> {
         for (from, v) in self.data().iter() {
             let v: Vec<_> = v
                 .into_iter()
-                .map(|(to, _)| (*to, coding(*from as usize)))
+                .map(|(to, _)| (*to, coding((*from + 1) as usize)))
                 .collect();
             data.insert(*from, v);
         }
@@ -96,8 +96,10 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::extensor::dense_hashmap::ExTensor;
     use crate::matrix::sparse_hash::Matrix;
     use crate::utils;
+    use num_traits::identities::Zero;
 
     #[test]
     fn mat_vec_mul() {
@@ -121,12 +123,12 @@ mod tests {
         let (f_vert, _) = utils::create_vandermonde(k);
         let m: Matrix<u8> = Matrix::new(2, 2, vec![1, 1, 0, 1]);
         let n = m.add_coding(&f_vert);
+        let expect = Matrix::new(
+            2,
+            2,
+            vec![f_vert(1), f_vert(1), ExTensor::zero(), f_vert(2)],
+        );
 
-        println!("n");
-        for (x, v) in n.data() {
-            for (_, ext) in v.iter() {
-                println!("{:?}", ext);
-            }
-        }
+        assert_eq!(n.data(), expect.data(), "add coding should work");
     }
 }

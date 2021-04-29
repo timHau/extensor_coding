@@ -125,8 +125,8 @@ mod tests {
     #[test]
     fn c() {
         let g = Graph::from_graph6("src/data/test_graphs/path3.g6");
-        let k = 4;
-        let eps = 0.9999;
+        let k = 3;
+        let eps = 0.99;
         let now = std::time::Instant::now();
         let res = algorithm::c(g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
