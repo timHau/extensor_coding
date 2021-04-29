@@ -17,28 +17,21 @@ pub fn u(g: &Graph, k: usize) -> bool {
 /// # Algorithm C
 ///
 pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
-    // let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
-    let t = (2. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
+    let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
+    // let t = (2. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
 
     let now = Instant::now();
-    let mut xs = Vec::new();
+    let mut sum = 0.0;
     for _j in 0..t {
         let bernoulli_mapping = utils::create_bernoulli(k);
         let x_j = g.compute_walk_sum(k, bernoulli_mapping).coeffs()[0];
+        sum += x_j;
         println!("{}/{}", _j, t);
-        xs.push(x_j);
-
-        // tmp
-        let sum: f64 = xs.iter().sum();
-        let denom = (utils::factorial(k) * t as u128) as f64;
-        let tmp = (sum / denom).abs();
-        println!("tmp: {}", tmp);
     }
     println!("in c: {}", now.elapsed().as_millis());
 
-    let sum: f64 = xs.iter().sum();
     let denom = (utils::factorial(k) * t as u128) as f64;
-    (sum / denom).abs()
+    sum / denom
 }
 
 pub fn c_parallel(g: Graph, k: usize, eps: f64) -> f64 {
@@ -60,6 +53,37 @@ pub fn c_parallel(g: Graph, k: usize, eps: f64) -> f64 {
             let x_j = g.compute_walk_sum(k, bernoulli_mapping).coeffs()[0];
             println!("{}/{}", _j, t);
             sender.send(x_j).unwrap();
+        });
+    }
+
+    let sum: f64 = receiver.iter().take(t as usize).sum();
+    let denom = (utils::factorial(k) * t as u128) as f64;
+    (sum / denom).abs()
+}
+
+pub fn c_parallel_2(g: Graph, k: usize, eps: f64) -> f64 {
+    let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
+    //let t = (2. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
+
+    let n_workers = 10;
+    let pool = ThreadPool::new(n_workers);
+    let (sender, receiver) = mpsc::channel();
+
+    for _j in 0..10 {
+        let sender = sender.clone();
+        let k = k.clone();
+        let g = g.clone();
+        let t = t.clone();
+        let _j = _j.clone();
+        pool.execute(move || {
+            let mut s = 0.0;
+            for _k in 0..(t / 10) {
+                let bernoulli_mapping = utils::create_bernoulli(k);
+                let x_j = g.compute_walk_sum(k, bernoulli_mapping).coeffs()[0];
+                s += x_j;
+                println!("{}/{}/{}", _j, _k, t);
+            }
+            sender.send(s).unwrap();
         });
     }
 
@@ -99,14 +123,14 @@ mod tests {
 
     #[test]
     fn c() {
-        let g = Graph::from_graph6("src/data/test_graphs/path10.g6");
-        let k = 2;
-        let eps = 0.1;
+        let g = Graph::from_graph6("src/data/test_graphs/path3.g6");
+        let k = 4;
+        let eps = 0.9;
         let now = std::time::Instant::now();
-        let res = algorithm::c(g, k, eps);
+        let res = algorithm::c_parallel_2(g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
 
-        let p = 18.;
+        let p = 2.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
         println!(

@@ -1,4 +1,4 @@
-use crate::{extensor::dense_hashmap::ExTensor, matrix::naive::Matrix};
+use crate::{extensor::dense_hashmap::ExTensor, matrix::sparse_hash::Matrix};
 use num_traits::Zero;
 use std::time::Instant;
 
@@ -152,7 +152,7 @@ impl std::clone::Clone for Graph {
 mod tests {
     use crate::extensor::dense_hashmap::ExTensor;
     use crate::graph::Graph;
-    use crate::matrix::naive_parallel::Matrix;
+    use crate::matrix::sparse_hash::Matrix;
     use crate::utils;
     use num_traits::Zero;
 
@@ -167,33 +167,31 @@ mod tests {
 
     /// returns the adjacency matrix of the n path graph
     fn get_n_path_graph_adj_mat(n: usize) -> Matrix<u8> {
-        let mut res: Matrix<u8> = Matrix::zeros(n, n);
+        let mut res = Vec::with_capacity(n * n);
+        res.reserve(n * n);
 
         for i in 0..n {
             for j in 0..n {
                 if i == j + 1 || i + 1 == j {
-                    res[(i, j)] = 1;
+                    res.push(1);
+                } else {
+                    res.push(0);
                 }
             }
         }
 
-        res
+        Matrix::new(n, n, res)
     }
 
-    #[test]
-    fn tmp() {
-        let graph_with_header = String::from("src/data/test_graphs/path3.g6");
-        let g = Graph::from_graph6(&graph_with_header);
-        println!("{:?}", g.adj_mat);
-    }
-
-    /*
     #[test]
     fn graph6_header() {
         let graph_with_header = String::from("src/data/test_graphs/path10_with_header.g6");
         let g = Graph::from_graph6(&graph_with_header);
         let expect = get_n_path_graph_adj_mat(10);
-        assert_eq!(g.adj_mat, Box::new(expect));
+        assert_eq!(
+            *g.adj_mat, expect,
+            "Graph6 file with header should be read correctly"
+        );
     }
 
     #[test]
@@ -212,7 +210,7 @@ mod tests {
             .collect::<Vec<u8>>();
 
         let t_mat = Matrix::new(46, 46, tutte_mat);
-        assert_eq!(g.adj_mat, Box::new(t_mat));
+        assert_eq!(*g.adj_mat, t_mat, "Tutte Graph should be read correctly");
     }
 
     #[test]
@@ -220,7 +218,7 @@ mod tests {
         let path_10 = String::from("src/data/test_graphs/path10.g6");
         let g = Graph::from_graph6(&path_10);
         let expect = get_n_path_graph_adj_mat(10);
-        assert_eq!(g.adj_mat, Box::new(expect));
+        assert_eq!(*g.adj_mat, expect, "10 path graph should be read correctly");
     }
 
     #[test]
@@ -228,7 +226,10 @@ mod tests {
         let path_100 = String::from("src/data/test_graphs/path100.g6");
         let g = Graph::from_graph6(&path_100);
         let expect = get_n_path_graph_adj_mat(100);
-        assert_eq!(g.adj_mat, Box::new(expect));
+        assert_eq!(
+            *g.adj_mat, expect,
+            "100 path graph should be read correctly"
+        );
     }
 
     #[test]
@@ -236,9 +237,11 @@ mod tests {
         let path_100 = String::from("src/data/test_graphs/path100_with_header.g6");
         let g = Graph::from_graph6(&path_100);
         let expect = get_n_path_graph_adj_mat(100);
-        assert_eq!(g.adj_mat, Box::new(expect));
+        assert_eq!(
+            *g.adj_mat, expect,
+            "100 path graph with header should be read correctly"
+        );
     }
-    */
 
     #[test]
     fn compute_walk() {
@@ -247,6 +250,9 @@ mod tests {
         let k = 3;
         let res = g.compute_walk_sum(k, utils::create_vandermonde(k));
         let zero = ExTensor::zero();
-        assert_ne!(res, zero, "compute walk with vandermonde coding");
+        assert_ne!(
+            res, zero,
+            "compute walk with vandermonde coding should not be zero"
+        );
     }
 }
