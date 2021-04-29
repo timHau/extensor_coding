@@ -88,6 +88,7 @@ impl ExTensor {
         }
     }
 
+    #[allow(dead_code)]
     pub(crate) fn coeffs(&self) -> Vec<f64> {
         self.data.iter().map(|(_, coeff)| coeff.clone()).collect()
     }

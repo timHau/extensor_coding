@@ -92,6 +92,7 @@ where
     /// ## ncols
     ///
     /// return the number of cols
+    #[allow(dead_code)]
     pub(crate) fn ncols(&self) -> usize {
         self.ncols
     }
@@ -111,6 +112,7 @@ where
     /// ## col
     ///
     /// return the column at index `i`
+    #[allow(dead_code)]
     fn col(&self, i: usize) -> MatrixSlice<T> {
         let index = i % self.nrows;
         let mut data = Vec::with_capacity(self.nrows);

@@ -30,6 +30,7 @@ where
         &self.data
     }
 
+    #[allow(dead_code)]
     pub(crate) fn ncols(&self) -> usize {
         self.ncols
     }
