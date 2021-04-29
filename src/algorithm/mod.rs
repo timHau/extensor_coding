@@ -25,7 +25,6 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
     for _j in 0..t {
         let bernoulli_mapping = utils::create_bernoulli(k);
         let v_j = g.compute_walk_sum(k, bernoulli_mapping);
-        println!("v_j: {:?}", v_j);
         sum += v_j.coeffs()[0];
         println!("{}/{}", _j, t);
     }
@@ -124,14 +123,14 @@ mod tests {
 
     #[test]
     fn c() {
-        let g = Graph::from_graph6("src/data/test_graphs/path4.g6");
+        let g = Graph::from_graph6("src/data/test_graphs/path6.g6");
         let k = 2;
-        let eps = 0.99;
+        let eps = 0.999;
         let now = std::time::Instant::now();
         let res = algorithm::c(g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
 
-        let p = 6.;
+        let p = 10.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
         println!(
@@ -140,11 +139,9 @@ mod tests {
             res.abs(),
             upper_bound
         );
-        /*
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
         );
-        */
     }
 }
