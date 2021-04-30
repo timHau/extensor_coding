@@ -25,7 +25,7 @@ pub struct ExTensor {
 ///
 /// `max_basis_len` is the number of bits in the binary representation
 impl ExTensor {
-    pub(crate) fn new(coeffs: &[f64], basis: &[Vec<u32>], max_basis_len: usize) -> Self {
+    pub(crate) fn new(coeffs: &[f64], basis: &[Vec<u8>], max_basis_len: usize) -> Self {
         assert_eq!(
             basis.len(),
             coeffs.len(),
@@ -36,7 +36,7 @@ impl ExTensor {
         for (i, b) in basis.iter().enumerate() {
             let mut base = bitvec![0; max_basis_len];
             for bv in b {
-                if bv <= &(max_basis_len as u32) {
+                if bv <= &(max_basis_len as u8) {
                     base.set((*bv) as usize, true);
                 } else {
                     panic!(

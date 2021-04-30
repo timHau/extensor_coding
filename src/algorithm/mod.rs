@@ -124,13 +124,13 @@ mod tests {
     #[test]
     fn c() {
         let g = Graph::from_graph6("src/data/test_graphs/path6.g6");
-        let k = 3;
-        let eps = 0.999;
+        let k = 2;
+        let eps = 0.2;
         let now = std::time::Instant::now();
-        let res = algorithm::c(g, k, eps);
+        let res = algorithm::c(g, k, eps) / ((k - 1) as f64);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
 
-        let p = 8.;
+        let p = 10.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
         println!(

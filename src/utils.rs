@@ -13,7 +13,7 @@ type G = Box<dyn Fn(usize, usize) -> f64>;
 pub fn create_vandermonde(k: usize) -> (F, G) {
     let f_vert = move |v: usize| -> ExTensor {
         let coeffs: Vec<f64> = (0..k).map(|i| v.pow(i as u32) as f64).collect();
-        let basis: Vec<Vec<u32>> = (1..=k).map(|i| vec![i as u32]).collect();
+        let basis: Vec<Vec<u8>> = (1..=k).map(|i| vec![i as u8]).collect();
         ExTensor::new(&coeffs, &basis).lift(k)
     };
     let f_edge = |_v: usize, _w: usize| 1.0;
@@ -36,7 +36,7 @@ pub fn create_bernoulli(k: usize) -> (F, G) {
                 rand_val as f64
             })
             .collect();
-        let basis: Vec<Vec<u32>> = (1..=k).map(|i| vec![i as u32]).collect();
+        let basis: Vec<Vec<u8>> = (1..=k).map(|i| vec![i as u8]).collect();
         ExTensor::new(&coeffs, &basis).lift(k)
     };
     let f_edge = |_v: usize, _w: usize| 1.0;

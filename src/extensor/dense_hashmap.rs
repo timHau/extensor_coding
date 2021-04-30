@@ -4,11 +4,11 @@ use std::collections::HashMap;
 
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct ExTensor {
-    data: HashMap<Vec<u32>, f64>,
+    data: HashMap<Vec<u8>, f64>,
 }
 
 impl ExTensor {
-    pub(crate) fn new(coeffs: &[f64], basis: &[Vec<u32>]) -> Self {
+    pub(crate) fn new(coeffs: &[f64], basis: &[Vec<u8>]) -> Self {
         assert_eq!(
             basis.len(),
             coeffs.len(),
@@ -27,7 +27,7 @@ impl ExTensor {
     }
 
     /// this is O(n^2), probably could be better. Where n = number of elements in basis
-    pub(crate) fn get_sign_and_ord_basis(a: &Vec<u32>, b: &Vec<u32>) -> (f64, Vec<u32>) {
+    pub(crate) fn get_sign_and_ord_basis(a: &Vec<u8>, b: &Vec<u8>) -> (f64, Vec<u8>) {
         let mut ord_basis = a.union(b.clone());
 
         let mut num_swaps = 0;
@@ -61,7 +61,7 @@ impl ExTensor {
             .clone()
             .into_iter()
             .map(|(base, coeff)| {
-                let shifted: Vec<u32> = base.iter().map(|b| b + k as u32).collect();
+                let shifted: Vec<u8> = base.iter().map(|b| b + k as u8).collect();
                 (shifted, coeff)
             })
             .collect();
