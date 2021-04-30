@@ -1,4 +1,4 @@
-use array_tool::vec::{Intersect, Union};
+use crate::utils;
 use num_traits::{One, Zero};
 use std::collections::HashMap;
 
@@ -28,7 +28,7 @@ impl ExTensor {
 
     /// this is O(n^2), probably could be better. Where n = number of elements in basis
     pub(crate) fn get_sign_and_ord_basis(a: &Vec<u8>, b: &Vec<u8>) -> (f64, Vec<u8>) {
-        let mut ord_basis = a.union(b.clone());
+        let mut ord_basis: Vec<u8> = a.clone().into_iter().chain(b.clone().into_iter()).collect();
 
         let mut num_swaps = 0;
         let mut i = 0;
@@ -133,8 +133,8 @@ impl std::ops::Mul for &ExTensor {
 
         for (base_a, coeff_a) in self.data.iter() {
             for (base_b, coeff_b) in other.data.iter() {
-                let intersections = base_a.intersect(base_b.clone());
-                if intersections.is_empty() {
+                let has_intersection = utils::has_intersection(&base_a, &base_b);
+                if !has_intersection {
                     let (sign, next_base) = ExTensor::get_sign_and_ord_basis(base_a, base_b);
                     let next_coeff = sign * coeff_a * coeff_b;
 

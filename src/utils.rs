@@ -10,7 +10,7 @@ type F = Box<dyn Fn(usize) -> ExTensor>;
 type G = Box<dyn Fn(usize, usize) -> f64>;
 
 /// given k, create a lifted vandermonde coding that takes v as input
-pub fn create_vandermonde(k: usize) -> (F, G) {
+pub(crate) fn create_vandermonde(k: usize) -> (F, G) {
     let f_vert = move |v: usize| -> ExTensor {
         let coeffs: Vec<f64> = (0..k).map(|i| v.pow(i as u32) as f64).collect();
         let basis: Vec<Vec<u8>> = (1..=k).map(|i| vec![i as u8]).collect();
@@ -21,7 +21,7 @@ pub fn create_vandermonde(k: usize) -> (F, G) {
 }
 
 /// given k, create a lifted bernoulli coding
-pub fn create_bernoulli(k: usize) -> (F, G) {
+pub(crate) fn create_bernoulli(k: usize) -> (F, G) {
     let f_vert = move |_v: usize| -> ExTensor {
         let mut rng = rand::thread_rng();
         // create a uniform random variable that is either 0 or 1
@@ -43,12 +43,46 @@ pub fn create_bernoulli(k: usize) -> (F, G) {
     (Box::new(f_vert), Box::new(f_edge))
 }
 
-pub fn factorial(k: usize) -> u128 {
+pub(crate) fn factorial(k: usize) -> u128 {
     let mut res: u128 = 1;
     for i in 1..(k as u32 + 1) {
         res *= i as u128;
     }
     res
+}
+
+/// determine if a sorted vec `v` contains `target`
+pub(crate) fn contains_element(v: &Vec<u8>, target: &u8) -> bool {
+    let mut l = 0usize;
+    let mut r = v.len() - 1;
+
+    while l <= r {
+        let m = (l + r) / 2;
+        if &v[m] < target {
+            l = m + 1;
+        } else if &v[m] > target {
+            if m == 0 {
+                return false;
+            }
+            r = m - 1;
+        } else {
+            return true;
+        }
+    }
+
+    false
+}
+
+/// determine if two sorted (!!) vecs have at least one common element
+pub(crate) fn has_intersection(a: &Vec<u8>, b: &Vec<u8>) -> bool {
+    // both vecs are sorted, so we can use binary search
+    for val in a.iter() {
+        if contains_element(b, val) {
+            return true;
+        }
+    }
+
+    false
 }
 
 #[cfg(test)]
@@ -58,7 +92,9 @@ mod tests {
     #[cfg(feature = "extensor_dense_hashmap")]
     use crate::extensor::dense_hashmap::ExTensor;
 
-    use crate::utils::{create_bernoulli, create_vandermonde, factorial};
+    use crate::utils::{
+        contains_element, create_bernoulli, create_vandermonde, factorial, has_intersection,
+    };
 
     #[test]
     fn vandermonde() {
@@ -99,5 +135,24 @@ mod tests {
         assert_eq!(r2, 24 as u128, "4!");
         assert_eq!(r3, 5040 as u128, "7!");
         assert_eq!(r4, 3628800 as u128, "10!");
+    }
+
+    #[test]
+    fn contains_elem() {
+        let v = vec![1, 2, 3, 4, 5, 6];
+        let res = contains_element(&v, &2);
+        assert_eq!(res, true);
+        assert_eq!(contains_element(&v, &9), false);
+    }
+
+    #[test]
+    fn intersect() {
+        let v_1 = vec![1, 2, 3, 4, 5, 6];
+        let v_2 = vec![6, 7, 8, 9, 10, 11];
+        let res = has_intersection(&v_1, &v_2);
+        assert_eq!(res, true);
+        let v_3 = vec![7, 8, 9, 10, 11, 12];
+        let res_2 = has_intersection(&v_1, &v_3);
+        assert_eq!(res_2, false);
     }
 }
