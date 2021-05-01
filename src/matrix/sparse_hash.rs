@@ -126,6 +126,29 @@ mod tests {
     }
 
     #[test]
+    fn mat_vec_mul_3() {
+        let m = Matrix::new(
+            2,
+            2,
+            vec![
+                ExTensor::new(&[1], &[vec![1]]),
+                ExTensor::new(&[2], &[vec![2]]),
+                ExTensor::new(&[3], &[vec![5]]),
+                ExTensor::new(&[4], &[vec![6]]),
+            ],
+        );
+        let v = vec![
+            ExTensor::new(&[5], &[vec![3]]),
+            ExTensor::new(&[6], &[vec![4]]),
+        ];
+        let res = vec![
+            ExTensor::new(&[5, 12], &[vec![1, 3], vec![2, 4]]),
+            ExTensor::new(&[-15, -24], &[vec![3, 5], vec![4, 6]]),
+        ];
+        assert_eq!(&m * v, res);
+    }
+
+    #[test]
     fn coding() {
         let k = 2;
         let (f_vert, _) = utils::create_vandermonde(k);

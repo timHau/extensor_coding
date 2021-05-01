@@ -1,5 +1,5 @@
 use crate::{graph::Graph, utils};
-use num_traits::{Zero};
+use num_traits::Zero;
 
 /// # Algorithm U
 ///
@@ -28,7 +28,6 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
     let denom = (utils::factorial(k) * t) as f64;
     sum as f64 / denom
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -61,21 +60,19 @@ mod tests {
 
     #[test]
     fn c() {
-        let g = Graph::from_graph6("src/data/test_graphs/path6.g6");
-        let k = 2;
-        let eps = 0.2;
+        let g = Graph::from_graph6("src/data/test_graphs/path3.g6");
+        let k = 3;
+        let eps = 0.4;
         let now = std::time::Instant::now();
-        let res = algorithm::c(g, k, eps) / ((k - 1) as f64);
+        let res = algorithm::c(g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
 
-        let p = 10.;
+        let p = 3.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
         println!(
             "lower: {}, res: {}, upper: {}",
-            lower_bound,
-            res.abs(),
-            upper_bound
+            lower_bound, res, upper_bound
         );
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,

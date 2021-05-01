@@ -130,25 +130,15 @@ impl Graph {
     {
         let (f_vert, _f_edge) = mapping;
 
-        let transform_start = Instant::now();
         // add extensor coding to vertices and transform back to a matrix
         let a = (*self.adj_mat).add_coding(&f_vert);
-        println!(
-            "transform took: {} ms",
-            transform_start.elapsed().as_millis()
-        );
 
-        let b_start = Instant::now();
         let b = (0..a.ncols()).map(|i| f_vert(i + 1)).collect::<Vec<_>>();
-        println!("b took: {} ms", b_start.elapsed().as_millis());
 
-        let pow_start = Instant::now();
         let mut res = &a * b;
         for _ in 1..(k - 1) {
             res = &a * res;
         }
-        println!("power took: {} ms", pow_start.elapsed().as_millis());
-
 
         res.into_iter().fold(ExTensor::zero(), |acc, v| acc + v)
     }

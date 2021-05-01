@@ -254,37 +254,21 @@ mod tests {
         let x_2 = vec![2, 6];
         let (sign, ord_basis) = ExTensor::get_sign_and_ord_basis(&x_1, &x_2);
         assert_eq!(sign, 1, "sign of simple permutation should be 1");
-        assert_eq!(
-            ord_basis,
-            vec![1, 2, 2, 6],
-            "ordered basis should match"
-        );
+        assert_eq!(ord_basis, vec![1, 2, 2, 6], "ordered basis should match");
 
         let x_3 = vec![4, 7];
         let (sign_2, ord_basis_2) = ExTensor::get_sign_and_ord_basis(&x_1, &x_3);
         assert_eq!(sign_2, 1, "sign of simple permutation should be 1");
-        assert_eq!(
-            ord_basis_2,
-            vec![1, 2, 4, 7],
-            "ordered basis should match"
-        );
+        assert_eq!(ord_basis_2, vec![1, 2, 4, 7], "ordered basis should match");
 
         let (sign_3, ord_basis_3) = ExTensor::get_sign_and_ord_basis(&x_3, &x_1);
         assert_eq!(sign_3, 1, "sign of simple permutation should be 1");
-        assert_eq!(
-            ord_basis_3,
-            vec![1, 2, 4, 7],
-            "ordered basis should match"
-        );
+        assert_eq!(ord_basis_3, vec![1, 2, 4, 7], "ordered basis should match");
 
         let x_4 = vec![3, 4];
         let (sign_4, ord_basis_4) = ExTensor::get_sign_and_ord_basis(&x_2, &x_4);
         assert_eq!(sign_4, 1, "sign of simple permutation should be 1");
-        assert_eq!(
-            ord_basis_4,
-            vec![2, 3, 4, 6],
-            "ordered basis should match"
-        );
+        assert_eq!(ord_basis_4, vec![2, 3, 4, 6], "ordered basis should match");
     }
 
     #[test]
@@ -308,6 +292,7 @@ mod tests {
         let x = &ExTensor::new(&[2, 3], &[vec![1], vec![2]]);
         let l = x.lift(2);
         let a = &ExTensor::new(&[2, 3], &[vec![3], vec![4]]);
+        println!("l: {:?}", l);
         assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
     }
 
