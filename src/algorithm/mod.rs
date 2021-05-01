@@ -1,8 +1,5 @@
 use crate::{graph::Graph, utils};
-use num_traits::Zero;
-use std::sync::mpsc;
-use std::time::Instant;
-use threadpool::ThreadPool;
+use num_traits::{Zero};
 
 /// # Algorithm U
 ///
@@ -17,80 +14,21 @@ pub fn u(g: &Graph, k: usize) -> bool {
 /// # Algorithm C
 ///
 pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
-    let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
+    let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u64;
     // let t = (2. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
 
-    let now = Instant::now();
-    let mut sum = 0.0;
+    let mut sum = 0;
     for _j in 0..t {
         let bernoulli_mapping = utils::create_bernoulli(k);
         let v_j = g.compute_walk_sum(k, bernoulli_mapping);
         sum += v_j.coeffs()[0];
         println!("{}/{}", _j, t);
     }
-    println!("in c: {}", now.elapsed().as_millis());
 
-    let denom = (utils::factorial(k) * t as u128) as f64;
-    sum / denom
+    let denom = (utils::factorial(k) * t) as f64;
+    sum as f64 / denom
 }
 
-pub fn c_parallel(g: Graph, k: usize, eps: f64) -> f64 {
-    let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
-    //let t = (2. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
-
-    let n_workers = 10;
-    let pool = ThreadPool::new(n_workers);
-    let (sender, receiver) = mpsc::channel();
-
-    for _j in 0..t {
-        let sender = sender.clone();
-        let k = k.clone();
-        let g = g.clone();
-        let t = t.clone();
-        let _j = _j.clone();
-        pool.execute(move || {
-            let bernoulli_mapping = utils::create_bernoulli(k);
-            let x_j = g.compute_walk_sum(k, bernoulli_mapping).coeffs()[0];
-            println!("{}/{}", _j, t);
-            sender.send(x_j).unwrap();
-        });
-    }
-
-    let sum: f64 = receiver.iter().take(t as usize).sum();
-    let denom = (utils::factorial(k) * t as u128) as f64;
-    (sum / denom).abs()
-}
-
-pub fn c_parallel_2(g: Graph, k: usize, eps: f64) -> f64 {
-    let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
-    //let t = (2. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
-
-    let n_workers = 10;
-    let pool = ThreadPool::new(n_workers);
-    let (sender, receiver) = mpsc::channel();
-
-    for _j in 0..10 {
-        let sender = sender.clone();
-        let k = k.clone();
-        let g = g.clone();
-        let t = t.clone();
-        let _j = _j.clone();
-        pool.execute(move || {
-            let mut s = 0.0;
-            for _k in 0..(t / 10) {
-                let bernoulli_mapping = utils::create_bernoulli(k);
-                let x_j = g.compute_walk_sum(k, bernoulli_mapping).coeffs()[0];
-                s += x_j;
-                println!("{}/{}/{}", _j, _k, t);
-            }
-            sender.send(s).unwrap();
-        });
-    }
-
-    let sum: f64 = receiver.iter().take(t as usize).sum();
-    let denom = (utils::factorial(k) * t as u128) as f64;
-    (sum / denom).abs()
-}
 
 #[cfg(test)]
 mod tests {

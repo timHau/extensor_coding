@@ -4,14 +4,14 @@ use std::collections::HashMap;
 
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct ExTensor {
-    data: HashMap<BitVec, f64>,
+    data: HashMap<BitVec, i64>,
     max_basis_len: usize,
 }
 
 /// # ExTensor
 ///
-/// Given an array of f64 coefficients `coeffs` and a slice of vectors `basis` construct an extensor.
-/// An ExTensor is represented as an hash map from bitvec (basis) to f64 (coefficient).
+/// Given an array of i64 coefficients `coeffs` and a slice of vectors `basis` construct an extensor.
+/// An ExTensor is represented as an hash map from bitvec (basis) to i64 (coefficient).
 /// The bit coding in the basis is as follows
 ///
 /// |  binary  |       basis     |
@@ -25,7 +25,7 @@ pub struct ExTensor {
 ///
 /// `max_basis_len` is the number of bits in the binary representation
 impl ExTensor {
-    pub(crate) fn new(coeffs: &[f64], basis: &[Vec<u8>], max_basis_len: usize) -> Self {
+    pub(crate) fn new(coeffs: &[i64], basis: &[Vec<u8>], max_basis_len: usize) -> Self {
         assert_eq!(
             basis.len(),
             coeffs.len(),
@@ -55,7 +55,7 @@ impl ExTensor {
         }
     }
 
-    pub(crate) fn get_sign(a: &BitVec, b: &BitVec) -> f64 {
+    pub(crate) fn get_sign(a: &BitVec, b: &BitVec) -> i64 {
         let mut sum: u32 = 0;
 
         for i in 1..a.len() - 1 {
@@ -65,11 +65,7 @@ impl ExTensor {
             sum += (a & b).count_ones() as u32;
         }
 
-        if sum % 2 == 0 {
-            1.0
-        } else {
-            -1.0
-        }
+        if sum % 2 == 0 { 1 } else { -1 }
     }
 
     pub(crate) fn lift(&self, k: usize) -> Self {
@@ -89,7 +85,7 @@ impl ExTensor {
     }
 
     #[allow(dead_code)]
-    pub(crate) fn coeffs(&self) -> Vec<f64> {
+    pub(crate) fn coeffs(&self) -> Vec<i64> {
         self.data.iter().map(|(_, coeff)| coeff.clone()).collect()
     }
 }
@@ -105,14 +101,14 @@ impl Zero for ExTensor {
     fn is_zero(&self) -> bool {
         match self.data.len() {
             0 => true,
-            _ => self.data.iter().all(|(_, &coeff)| coeff == 0.0),
+            _ => self.data.iter().all(|(_, &coeff)| coeff == 0),
         }
     }
 }
 
 impl One for ExTensor {
     fn one() -> Self {
-        ExTensor::new(&[1.0], &[vec![0]], 8)
+        ExTensor::new(&[1], &[vec![0]], 8)
     }
 }
 
@@ -125,7 +121,7 @@ impl std::ops::Add for &ExTensor {
         let mut data = HashMap::with_capacity(self.data.len() + other.data.len());
         for (base, coeff) in joined_data {
             if data.contains_key(base) {
-                let next_coeff: f64 = data.get(base).unwrap() + coeff;
+                let next_coeff: i64 = data.get(base).unwrap() + coeff;
                 data.insert(base.clone(), next_coeff);
             } else {
                 data.insert(base.clone(), *coeff);
@@ -165,7 +161,7 @@ impl std::ops::Mul for &ExTensor {
                     let next_base = base_a.clone() ^ base_b.clone();
                     // compute sign and multiply coefficients
                     let sign = ExTensor::get_sign(base_b, base_a);
-                    let next_coeff: f64 = sign * coeff_a * coeff_b;
+                    let next_coeff: i64 = sign * coeff_a * coeff_b;
 
                     if data.contains_key(&next_base) {
                         let old_coeff = data.get(&next_base).unwrap();
@@ -193,10 +189,10 @@ impl std::ops::Mul for ExTensor {
     }
 }
 
-impl std::ops::Mul<f64> for &ExTensor {
+impl std::ops::Mul<i64> for &ExTensor {
     type Output = ExTensor;
 
-    fn mul(self, c: f64) -> ExTensor {
+    fn mul(self, c: i64) -> ExTensor {
         let data = self
             .data
             .iter()
@@ -209,7 +205,7 @@ impl std::ops::Mul<f64> for &ExTensor {
     }
 }
 
-impl std::ops::Mul<&ExTensor> for f64 {
+impl std::ops::Mul<&ExTensor> for i64 {
     type Output = ExTensor;
 
     fn mul(self, t: &ExTensor) -> ExTensor {
@@ -221,7 +217,7 @@ impl std::ops::Sub for &ExTensor {
     type Output = ExTensor;
 
     fn sub(self, other: &ExTensor) -> ExTensor {
-        self + &(-1.0 * other)
+        self + &(-1 * other)
     }
 }
 
@@ -238,7 +234,7 @@ impl std::fmt::Display for ExTensor {
         let mut res = String::from("");
 
         for (i, (base, coeff)) in self.data.iter().enumerate() {
-            if coeff != &0.0 {
+            if coeff != &0 {
                 res += &format!("{} ", coeff);
                 for (j, b) in base.iter().enumerate() {
                     if *b {
@@ -255,27 +251,7 @@ impl std::fmt::Display for ExTensor {
     }
 }
 
-#[macro_export]
-macro_rules! extensor {
-
-    ($coeffs: expr, [$($b: expr),*] ) => {{
-        let mut basis = Vec::new();
-        $(
-           basis.push($b.to_vec());
-        )*
-        ExTensor::new($coeffs.as_ref(), &basis, 8)
-    }};
-
-    ($coeffs: expr, [$($b: expr),*], $max_basis_len: expr) => {{
-        let mut basis = Vec::new();
-        $(
-           basis.push($b.to_vec());
-        )*
-        ExTensor::new($coeffs.as_ref(), &basis, $max_basis_len)
-    }};
-
-}
-
+/*
 #[cfg(test)]
 mod tests {
     use crate::extensor::bitvec::ExTensor;
@@ -422,3 +398,4 @@ mod tests {
         assert_eq!(y.is_zero(), true, "extensor with empty basis is zero");
     }
 }
+*/

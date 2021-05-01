@@ -4,11 +4,11 @@ use std::collections::HashMap;
 
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct ExTensor {
-    data: HashMap<Vec<u8>, f64>,
+    data: HashMap<Vec<u8>, i64>,
 }
 
 impl ExTensor {
-    pub(crate) fn new(coeffs: &[f64], basis: &[Vec<u8>]) -> Self {
+    pub(crate) fn new(coeffs: &[i64], basis: &[Vec<u8>]) -> Self {
         assert_eq!(
             basis.len(),
             coeffs.len(),
@@ -26,31 +26,26 @@ impl ExTensor {
         ExTensor { data }
     }
 
-    /// this is O(n^2), probably could be better. Where n = number of elements in basis
-    pub(crate) fn get_sign_and_ord_basis(a: &Vec<u8>, b: &Vec<u8>) -> (f64, Vec<u8>) {
-        let mut ord_basis: Vec<u8> = a.clone().into_iter().chain(b.clone().into_iter()).collect();
+    pub(crate) fn get_sign_and_ord_basis(a: &Vec<u8>, b: &Vec<u8>) -> (i64, Vec<u8>) {
+        let mut ord_basis = Vec::new();
+        let mut num_perm = 0;
 
-        let mut num_swaps = 0;
         let mut i = 0;
-        while i < ord_basis.len() {
-            // count number of elements that are smaller than ord_basis[i]
-            let mut smaller_count = 0;
-            for j in 0..ord_basis.len() {
-                if ord_basis[j] < ord_basis[i] {
-                    smaller_count += 1;
-                }
-            }
-
-            // swap ord_basis[i] with ord_basis[smaller_count]
-            ord_basis.swap(i, smaller_count);
-            num_swaps += 1;
-
-            if i == smaller_count {
+        let mut j = 0;
+        while i < a.len() && j < b.len() {
+            if a[i] <= b[j] {
+                ord_basis.push(a[i]);
                 i += 1;
+            } else {
+                ord_basis.push(b[j]);
+                j += 1;
+                num_perm += a.len() - i;
             }
         }
+        ord_basis.extend(a[i..].to_vec());
+        ord_basis.extend(b[j..].to_vec());
 
-        let sign = if num_swaps % 2 == 0 { 1.0 } else { -1.0 };
+        let sign = if num_perm % 2 == 0 { 1 } else { -1 };
 
         (sign, ord_basis)
     }
@@ -69,7 +64,7 @@ impl ExTensor {
         self * &ExTensor { data }
     }
 
-    pub(crate) fn coeffs(&self) -> Vec<f64> {
+    pub(crate) fn coeffs(&self) -> Vec<i64> {
         self.data.iter().map(|(_, coeff)| coeff.clone()).collect()
     }
 }
@@ -84,14 +79,14 @@ impl Zero for ExTensor {
     fn is_zero(&self) -> bool {
         match self.data.len() {
             0 => true,
-            _ => self.data.iter().all(|(_, &coeff)| coeff == 0.0),
+            _ => self.data.iter().all(|(_, &coeff)| coeff == 0),
         }
     }
 }
 
 impl One for ExTensor {
     fn one() -> Self {
-        ExTensor::new(&[1.0], &[vec![0]])
+        ExTensor::new(&[1], &[vec![0]])
     }
 }
 
@@ -104,7 +99,7 @@ impl std::ops::Add for &ExTensor {
         let mut data = HashMap::with_capacity(self.data.len() + other.data.len());
         for (base, coeff) in joined_data {
             if data.contains_key(base) {
-                let next_coeff: f64 = data.get(base).unwrap() + coeff;
+                let next_coeff = data.get(base).unwrap() + coeff;
                 data.insert(base.clone(), next_coeff);
             } else {
                 data.insert(base.clone(), *coeff);
@@ -161,10 +156,10 @@ impl std::ops::Mul for ExTensor {
     }
 }
 
-impl std::ops::Mul<f64> for &ExTensor {
+impl std::ops::Mul<i64> for &ExTensor {
     type Output = ExTensor;
 
-    fn mul(self, c: f64) -> ExTensor {
+    fn mul(self, c: i64) -> ExTensor {
         let data = self
             .data
             .iter()
@@ -174,7 +169,7 @@ impl std::ops::Mul<f64> for &ExTensor {
     }
 }
 
-impl std::ops::Mul<&ExTensor> for f64 {
+impl std::ops::Mul<&ExTensor> for i64 {
     type Output = ExTensor;
 
     fn mul(self, t: &ExTensor) -> ExTensor {
@@ -186,7 +181,7 @@ impl std::ops::Sub for &ExTensor {
     type Output = ExTensor;
 
     fn sub(self, other: &ExTensor) -> ExTensor {
-        self + &(-1.0 * other)
+        self + &(-1 * other)
     }
 }
 
@@ -205,10 +200,10 @@ mod tests {
 
     #[test]
     fn extensor_add() {
-        let x_1 = &ExTensor::new(&[2.0, 5.0], &[vec![1, 3], vec![3, 9]]);
-        let x_2 = &ExTensor::new(&[1.0, 1.0], &[vec![1, 2], vec![3, 9]]);
+        let x_1 = &ExTensor::new(&[2, 5], &[vec![1, 3], vec![3, 9]]);
+        let x_2 = &ExTensor::new(&[1, 1], &[vec![1, 2], vec![3, 9]]);
         let sum = x_1 + x_2;
-        let res = ExTensor::new(&[2.0, 1.0, 6.0], &[vec![1, 3], vec![1, 2], vec![3, 9]]);
+        let res = ExTensor::new(&[2, 1, 6], &[vec![1, 3], vec![1, 2], vec![3, 9]]);
         assert_eq!(&sum, &res, "exterior sum is definined component wise");
         let sum_2 = x_2 + x_1;
         assert_eq!(&sum, &sum_2, "exterior sum is commutative");
@@ -219,7 +214,7 @@ mod tests {
         let x_1 = vec![1, 2, 3];
         let x_2 = vec![4, 5, 6];
         let (sign, ord_basis) = ExTensor::get_sign_and_ord_basis(&x_1, &x_2);
-        assert_eq!(sign, 1.0, "sign of simple ordered basis should be 1");
+        assert_eq!(sign, 1, "sign of simple ordered basis should be 1");
         assert_eq!(
             ord_basis,
             vec![1, 2, 3, 4, 5, 6],
@@ -229,10 +224,10 @@ mod tests {
 
     #[test]
     fn get_sign_unord() {
-        let x_1 = vec![1, 2, 3];
-        let x_2 = vec![4, 6, 5];
+        let x_1 = vec![1, 2, 4];
+        let x_2 = vec![3, 5, 6];
         let (sign, ord_basis) = ExTensor::get_sign_and_ord_basis(&x_1, &x_2);
-        assert_eq!(sign, -1.0, "sign of simple permutation should be -1");
+        assert_eq!(sign, -1, "sign of simple permutation should be -1");
         assert_eq!(
             ord_basis,
             vec![1, 2, 3, 4, 5, 6],
@@ -242,10 +237,10 @@ mod tests {
 
     #[test]
     fn get_sign_unord_2() {
-        let x_1 = vec![1, 4, 3];
-        let x_2 = vec![2, 6, 5];
+        let x_1 = vec![1, 2, 6];
+        let x_2 = vec![3, 4, 5];
         let (sign, ord_basis) = ExTensor::get_sign_and_ord_basis(&x_1, &x_2);
-        assert_eq!(sign, 1.0, "sign should be 1");
+        assert_eq!(sign, -1, "sign of simple permutation should be -1");
         assert_eq!(
             ord_basis,
             vec![1, 2, 3, 4, 5, 6],
@@ -254,24 +249,71 @@ mod tests {
     }
 
     #[test]
+    fn get_sign_unord_3() {
+        let x_1 = vec![1, 2];
+        let x_2 = vec![2, 6];
+        let (sign, ord_basis) = ExTensor::get_sign_and_ord_basis(&x_1, &x_2);
+        assert_eq!(sign, 1, "sign of simple permutation should be 1");
+        assert_eq!(
+            ord_basis,
+            vec![1, 2, 2, 6],
+            "ordered basis should match"
+        );
+
+        let x_3 = vec![4, 7];
+        let (sign_2, ord_basis_2) = ExTensor::get_sign_and_ord_basis(&x_1, &x_3);
+        assert_eq!(sign_2, 1, "sign of simple permutation should be 1");
+        assert_eq!(
+            ord_basis_2,
+            vec![1, 2, 4, 7],
+            "ordered basis should match"
+        );
+
+        let (sign_3, ord_basis_3) = ExTensor::get_sign_and_ord_basis(&x_3, &x_1);
+        assert_eq!(sign_3, 1, "sign of simple permutation should be 1");
+        assert_eq!(
+            ord_basis_3,
+            vec![1, 2, 4, 7],
+            "ordered basis should match"
+        );
+
+        let x_4 = vec![3, 4];
+        let (sign_4, ord_basis_4) = ExTensor::get_sign_and_ord_basis(&x_2, &x_4);
+        assert_eq!(sign_4, 1, "sign of simple permutation should be 1");
+        assert_eq!(
+            ord_basis_4,
+            vec![2, 3, 4, 6],
+            "ordered basis should match"
+        );
+    }
+
+    #[test]
     fn wedge_prod() {
-        let x_1 = ExTensor::new(&[2.0, 3.0], &[vec![1, 2], vec![3, 4]]);
-        let x_2 = ExTensor::new(&[4.0, 5.0], &[vec![2, 6], vec![4, 7]]);
-        let res = ExTensor::new(&[12.0, 10.0], &[vec![2, 3, 4, 6], vec![1, 2, 4, 7]]);
+        let x_1 = ExTensor::new(&[2, 3], &[vec![1, 2], vec![3, 4]]);
+        let x_2 = ExTensor::new(&[4, 5], &[vec![2, 6], vec![4, 7]]);
+        let res = ExTensor::new(&[12, 10], &[vec![2, 3, 4, 6], vec![1, 2, 4, 7]]);
+        assert_eq!(&x_1 * &x_2, res, "wedge product should match");
+    }
+
+    #[test]
+    fn wedge_prod_2() {
+        let x_1 = ExTensor::new(&[3], &[vec![3, 4]]);
+        let x_2 = ExTensor::new(&[4], &[vec![2, 6]]);
+        let res = ExTensor::new(&[12], &[vec![2, 3, 4, 6]]);
         assert_eq!(&x_1 * &x_2, res, "wedge product should match");
     }
 
     #[test]
     fn lifted() {
-        let x = &ExTensor::new(&[2.0, 3.0], &[vec![1], vec![2]]);
+        let x = &ExTensor::new(&[2, 3], &[vec![1], vec![2]]);
         let l = x.lift(2);
-        let a = &ExTensor::new(&[2.0, 3.0], &[vec![3], vec![4]]);
+        let a = &ExTensor::new(&[2, 3], &[vec![3], vec![4]]);
         assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
     }
 
     #[test]
     fn extensor_vanish() {
-        let x_1 = &ExTensor::new(&[1.0], &[vec![1]]);
+        let x_1 = &ExTensor::new(&[1], &[vec![1]]);
         let prod_1 = &(x_1 * x_1);
         assert_eq!(prod_1.is_zero(), true, "x wedge x vanishes");
     }
@@ -279,7 +321,7 @@ mod tests {
     #[test]
     fn extensor_vanish_2() {
         let x_1 = &ExTensor::new(
-            &[9.0, 8.0, 7.0, 12.0],
+            &[9, 8, 7, 12],
             &[vec![1], vec![1, 2, 3], vec![4], vec![6, 7, 8]],
         );
         let prod_1 = &(x_1 * x_1);
@@ -288,12 +330,12 @@ mod tests {
 
     #[test]
     fn extensor_anti_comm() {
-        let x_3 = &ExTensor::new(&[2.0], &[vec![1]]);
-        let x_4 = &ExTensor::new(&[4.0], &[vec![3]]);
+        let x_3 = &ExTensor::new(&[2], &[vec![1]]);
+        let x_4 = &ExTensor::new(&[4], &[vec![3]]);
         let prod_4 = x_3 * x_4;
-        let res_1 = ExTensor::new(&[8.0], &[vec![1, 3]]);
+        let res_1 = ExTensor::new(&[8], &[vec![1, 3]]);
         let prod_5 = x_4 * x_3;
-        let res_anti = ExTensor::new(&[-8.0], &[vec![1, 3]]);
+        let res_anti = ExTensor::new(&[-8], &[vec![1, 3]]);
         assert_eq!(prod_4, res_1, "wedge product on simple extensors");
         assert_eq!(
             prod_5, res_anti,
@@ -303,20 +345,20 @@ mod tests {
 
     #[test]
     fn det_f2() {
-        let x_5 = &ExTensor::new(&[2.0, 3.0], &[vec![1], vec![2]]);
-        let x_6 = &ExTensor::new(&[4.0, 5.0], &[vec![1], vec![2]]);
+        let x_5 = &ExTensor::new(&[2, 3], &[vec![1], vec![2]]);
+        let x_6 = &ExTensor::new(&[4, 5], &[vec![1], vec![2]]);
         let prod_6 = x_5 * x_6;
-        let det = ExTensor::new(&[-2.0], &[vec![1, 2]]);
+        let det = ExTensor::new(&[-2], &[vec![1, 2]]);
         assert_eq!(prod_6, det, "Wedge Product exhibits determinant on F^2x2");
     }
 
     #[test]
     fn det_f3() {
-        let x_7 = &ExTensor::new(&[2.0, 3.0, 4.0], &[vec![1], vec![2], vec![3]]);
-        let x_8 = &ExTensor::new(&[5.0, 6.0, 7.0], &[vec![1], vec![2], vec![3]]);
-        let x_9 = &ExTensor::new(&[8.0, 9.0, 10.0], &[vec![1], vec![2], vec![3]]);
+        let x_7 = &ExTensor::new(&[2, 3, 4], &[vec![1], vec![2], vec![3]]);
+        let x_8 = &ExTensor::new(&[5, 6, 7], &[vec![1], vec![2], vec![3]]);
+        let x_9 = &ExTensor::new(&[8, 9, 10], &[vec![1], vec![2], vec![3]]);
         let prod_7 = &(&(x_7 * x_8) * x_9);
-        let det = &ExTensor::new(&[0.0], &[vec![1, 2, 3]]);
+        let det = &ExTensor::new(&[0], &[vec![1, 2, 3]]);
         assert_eq!(prod_7, det, "Wedge Product exhibits determinant on F^3x3");
     }
 }

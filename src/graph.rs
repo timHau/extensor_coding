@@ -139,7 +139,7 @@ impl Graph {
         );
 
         let b_start = Instant::now();
-        let b = (1..(a.ncols() + 1)).map(|i| f_vert(i)).collect::<Vec<_>>();
+        let b = (0..a.ncols()).map(|i| f_vert(i + 1)).collect::<Vec<_>>();
         println!("b took: {} ms", b_start.elapsed().as_millis());
 
         let pow_start = Instant::now();
@@ -148,6 +148,7 @@ impl Graph {
             res = &a * res;
         }
         println!("power took: {} ms", pow_start.elapsed().as_millis());
+
 
         res.into_iter().fold(ExTensor::zero(), |acc, v| acc + v)
     }
