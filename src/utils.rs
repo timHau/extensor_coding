@@ -21,15 +21,14 @@ pub(crate) fn create_vandermonde(k: usize) -> (F, G) {
 
 /// given k, create a lifted bernoulli coding
 pub(crate) fn create_bernoulli(k: usize) -> (F, G) {
-    let mut rng = rand::thread_rng();
-    let unif = Uniform::from(0..2);
-
     let f_vert = move |_v: usize| -> ExTensor {
         // create a uniform random variable that is either 0 or 1
         let coeffs: Vec<i64> = (0..k)
             .map(|_i| {
+                let mut rng = rand::thread_rng();
+                let unif = Uniform::from(0..2);
                 // transform the variable to be either -1 or +1
-                let mut rand_val = unif.clone().sample(&mut rng.clone());
+                let mut rand_val = unif.sample(&mut rng);
                 if rand_val == 0 {
                     rand_val = -1;
                 }

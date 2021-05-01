@@ -13,7 +13,6 @@ use crate::matrix::sparse_hash::Matrix;
 use crate::matrix::sparse_triples::Matrix;
 
 use num_traits::Zero;
-use std::time::Instant;
 
 #[derive(Debug)]
 pub struct Graph {

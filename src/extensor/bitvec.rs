@@ -35,7 +35,7 @@ impl ExTensor {
             let mut base = bitvec![0; max_basis_len];
             for bv in b {
                 if bv <= &(max_basis_len as u8) {
-                    base.set((*bv) as usize, true);
+                    base.set((*bv - 1) as usize, true);
                 } else {
                     panic!(
                         "To many basis elements for extensor, max_len is {}",
