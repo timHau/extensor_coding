@@ -252,6 +252,24 @@ mod tests {
     }
 
     #[test]
+    fn extensor_add_2() {
+        let x_1 = &ExTensor::new(&[-3, 4], &[vec![1, 3], vec![3, 9]]);
+        let x_2 = &ExTensor::new(&[3, -4], &[vec![1, 3], vec![3, 9]]);
+        let sum = x_1 + x_2;
+        let res = &ExTensor::new(&[0, 0], &[vec![1, 3], vec![3, 9]]);
+        assert_eq!(&sum, res, "tensors should cancel each other");
+    }
+
+    #[test]
+    fn extensor_add_3() {
+        let x_1 = &ExTensor::new(&[-3, 4], &[vec![1, 3], vec![3, 4]]);
+        let x_2 = &ExTensor::new(&[3, -4], &[vec![1, 3], vec![3, 9]]);
+        let sum = x_1 + x_2;
+        let res = &ExTensor::new(&[0, 4, -4], &[vec![1, 3], vec![3, 4], vec![3, 9]]);
+        assert_eq!(&sum, res, "tensors should add");
+    }
+
+    #[test]
     fn get_sign_ord() {
         let x_1 = vec![1, 2, 3];
         let x_2 = vec![4, 5, 6];

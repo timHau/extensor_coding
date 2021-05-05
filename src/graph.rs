@@ -270,4 +270,30 @@ mod tests {
             "compute walk with vandermonde coding should not be zero"
         );
     }
+
+    #[test]
+    fn compute_walk_2() {
+        let path_10 = String::from("src/data/test_graphs/path10.g6");
+        let g = Graph::from_graph6(&path_10);
+        let k = 5;
+        let res = g.compute_walk_sum(k, utils::create_vandermonde(k));
+        let zero = ExTensor::zero();
+        assert_ne!(
+            res, zero,
+            "compute walk with vandermonde coding should not be zero"
+        );
+    }
+
+    #[test]
+    fn compute_walk_3() {
+        let path_10 = String::from("src/data/test_graphs/path3.g6");
+        let g = Graph::from_graph6(&path_10);
+        let k = 5;
+        let res = g.compute_walk_sum(k, utils::create_vandermonde(k));
+        assert_eq!(
+            res.is_zero(),
+            true,
+            "compute walk with vandermonde coding should be zero"
+        );
+    }
 }
