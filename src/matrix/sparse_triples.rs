@@ -6,7 +6,7 @@ use crate::extensor::dense_hashmap::ExTensor;
 use num_traits::identities::{One, Zero};
 use std::borrow::BorrowMut;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Matrix<T> {
     nrows: usize,
     ncols: usize,

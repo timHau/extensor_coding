@@ -1,6 +1,6 @@
 use crate::utils;
 use num_traits::{One, Zero};
-use std::collections::HashMap;
+use std::{cmp::min, collections::HashMap};
 
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct ExTensor {
@@ -20,12 +20,42 @@ impl ExTensor {
         data.reserve(num_elems);
 
         for i in 0..basis.len() {
-            data.insert(basis[i].clone(), coeffs[i]);
+            let (sign, sorted) = ExTensor::sign_and_sort(&basis[i]);
+            data.insert(sorted, sign * coeffs[i]);
         }
 
         ExTensor { data }
     }
 
+    /// ## sign_and_sort
+    /// get the sign of the permutation and sort the basis.
+    pub(crate) fn sign_and_sort(a: &Vec<u8>) -> (i64, Vec<u8>) {
+        let mut w = 1;
+        let mut res = Vec::with_capacity(a.len());
+        let mut res_sign = 1;
+
+        while w < a.len() {
+            let mut i = 0;
+            while i < a.len() {
+                let upper = min(i + 2 * w, a.len());
+                let mid = min(i + w, a.len());
+
+                let a_lower = a[i..mid].to_vec();
+                let a_upper = a[mid..upper].to_vec();
+                let (sign, ord_basis) = ExTensor::get_sign_and_ord_basis(&a_lower, &a_upper);
+                res.extend(ord_basis.iter());
+                res_sign *= sign;
+
+                i += 2 * w;
+            }
+            w *= 2;
+        }
+
+        (res_sign, res)
+    }
+
+    /// ## get_sign_and_ord_basis
+    /// merge to sorted(!!!) basis vecs and compute their sign
     pub(crate) fn get_sign_and_ord_basis(a: &Vec<u8>, b: &Vec<u8>) -> (i64, Vec<u8>) {
         let mut ord_basis = Vec::new();
         let mut num_perm = 0;
@@ -65,6 +95,9 @@ impl ExTensor {
     }
 
     pub(crate) fn coeffs(&self) -> Vec<i64> {
+        if self.is_zero() {
+            return vec![0];
+        }
         self.data.iter().map(|(_, coeff)| coeff.clone()).collect()
     }
 }
@@ -292,6 +325,7 @@ mod tests {
         let x = &ExTensor::new(&[2, 3], &[vec![1], vec![2]]);
         let l = x.lift(2);
         let a = &ExTensor::new(&[2, 3], &[vec![3], vec![4]]);
+        // (2 e_1 + 3 e_2) ^ (2 e_3 + 3 e_4) = 4 e_1 ^ e_3 + 6 e_2 ^ e_3  + 6 e_1 ^ e_4 + 9 e_2 ^ e_4
         println!("l: {:?}", l);
         assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
     }
@@ -326,6 +360,21 @@ mod tests {
             prod_5, res_anti,
             "wedge product on simple extensors is anti communative"
         );
+    }
+
+    #[test]
+    fn sort_and_sign() {
+        let v = vec![2, 1];
+        let (sign, sorted) = ExTensor::sign_and_sort(&v);
+        assert_eq!(sign, -1, "sign should be -1");
+        assert_eq!(sorted, vec![1, 2], "vec should be sorted");
+    }
+
+    #[test]
+    fn extensor_anti_comm_2() {
+        let x = &ExTensor::new(&[1], &[vec![1, 2]]);
+        let anti_x = &ExTensor::new(&[-1], &[vec![2, 1]]);
+        assert_eq!(x, anti_x, "wedge product is commutativ");
     }
 
     #[test]
