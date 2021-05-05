@@ -88,7 +88,7 @@ where
         let mut res = vec![T::zero(); self.nrows];
 
         for (x, y, v) in self.data.iter() {
-            res[*x] = res[*x].clone() + v.clone() * other[*y].clone();
+            res[*x] = res[*x].clone() + other[*y].clone() * v.clone();
         }
 
         res
@@ -125,6 +125,23 @@ impl<T> std::ops::IndexMut<(usize, usize)> for Matrix<T> {
 
         let (_x, _y, v) = self.data[index].borrow_mut();
         v
+    }
+}
+
+impl<T> std::fmt::Display for Matrix<T>
+where
+    T: Zero + std::fmt::Display,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let mut res = String::from("");
+
+        for (i, (_x, _y, value)) in self.data.iter().enumerate() {
+            if !value.is_zero() {
+                res += &format!("{} \n", value);
+            }
+        }
+
+        write!(f, "{}", res)
     }
 }
 

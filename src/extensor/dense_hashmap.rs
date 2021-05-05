@@ -235,6 +235,30 @@ impl std::ops::Sub for ExTensor {
     }
 }
 
+impl std::fmt::Display for ExTensor {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let mut res = String::from("");
+
+        for (i, (base, coeff)) in self.data.iter().enumerate() {
+            if coeff != &0 {
+                res += &format!("{} ", coeff);
+                for (j, b) in base.iter().enumerate() {
+                    if j < base.len() - 1 {
+                        res += &format!("e_{} ∧ ", b);
+                    } else {
+                        res += &format!("e_{}", b);
+                    }
+                }
+                if i < self.data.len() - 1 {
+                    res += " + ";
+                }
+            }
+        }
+
+        write!(f, "{}", res)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::extensor::dense_hashmap::ExTensor;
