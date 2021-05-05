@@ -14,42 +14,32 @@ pub fn u(g: &Graph, k: usize) -> bool {
 /// # Algorithm C
 ///
 pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
-    let t = (100. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u64;
-    // let t = (2. * (k as u32).pow(3) as f64 / eps.powf(2.0)) as u32;
-
+    let mut x_s = Vec::new();
     let mut sum = 0;
-    for _j in 0..t {
+    let mut mean = 0.0;
+    let mut var = 1.0;
+
+    while var > eps {
         let bernoulli_mapping = utils::create_bernoulli(k);
         let v_j = g.compute_walk_sum(k, bernoulli_mapping);
-        sum += v_j.coeffs()[0];
-        println!("{}/{}", _j, t);
+        let coeff = v_j.coeffs()[0];
+        sum += coeff;
+        x_s.push(coeff);
+
+        mean = sum as f64 / x_s.len() as f64;
+        var = x_s
+            .iter()
+            .fold(0.0, |acc, v| acc + ((*v as f64) - mean).powf(2.))
+            / x_s.len() as f64;
     }
 
-    let denom = (utils::factorial(k) * t) as f64;
-    sum as f64 / denom
+    mean
 }
 
 #[cfg(test)]
 mod tests {
     use crate::algorithm;
-    #[cfg(feature = "extensor_bitvec")]
-    use crate::extensor::bitvec::ExTensor;
-    #[cfg(feature = "extensor_dense_hashmap")]
-    use crate::extensor::dense_hashmap::ExTensor;
-
-    #[cfg(feature = "matrix_naive")]
-    use crate::matrix::naive::Matrix;
-    #[cfg(feature = "matrix_naive_parallel")]
-    use crate::matrix::naive_parallel::Matrix;
-    #[cfg(feature = "matrix_sparse_hash")]
-    use crate::matrix::sparse_hash::Matrix;
-    #[cfg(feature = "matrix_sparse_triples")]
-    use crate::matrix::sparse_triples::Matrix;
-
     use crate::graph::Graph;
-    use crate::utils;
-
-    use num_traits::Zero;
 
     #[test]
     fn u_3() {
@@ -78,13 +68,13 @@ mod tests {
     #[test]
     fn c() {
         let g = Graph::from_graph6("src/data/test_graphs/path3.g6");
-        let k = 3;
-        let eps = 0.4;
+        let k = 2;
+        let eps = 0.3;
         let now = std::time::Instant::now();
         let res = algorithm::c(g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
 
-        let p = 3.;
+        let p = 4.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
         println!(

@@ -224,7 +224,11 @@ impl std::fmt::Display for ExTensor {
                 res += &format!("{} ", coeff);
                 for (j, b) in base.iter().enumerate() {
                     if *b {
-                        res += &format!("e_{} ∧ ", j);
+                        if j < base.len() {
+                            res += &format!("e_{} ∧ ", j + 1);
+                        } else {
+                            res += &format!("e_{}", j + 1);
+                        }
                     }
                 }
                 if i < self.data.len() - 1 {

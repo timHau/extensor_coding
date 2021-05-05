@@ -22,11 +22,11 @@ pub(crate) fn create_vandermonde(k: usize) -> (F, G) {
 /// given k, create a lifted bernoulli coding
 pub(crate) fn create_bernoulli(k: usize) -> (F, G) {
     let f_vert = move |_v: usize| -> ExTensor {
-        // create a uniform random variable that is either 0 or 1
         let coeffs: Vec<i64> = (0..k)
             .map(|_i| {
                 let mut rng = rand::thread_rng();
                 let unif = Uniform::from(0..2);
+                // create a uniform random variable that is either 0 or 1
                 // transform the variable to be either -1 or +1
                 let mut rand_val = unif.sample(&mut rng);
                 if rand_val == 0 {
@@ -48,6 +48,10 @@ pub(crate) fn factorial(k: usize) -> u64 {
         res *= i;
     }
     res
+}
+
+pub(crate) fn binomial(n: usize, k: usize) -> u64 {
+    factorial(n) / (factorial(k) * factorial(n - k))
 }
 
 /// determine if a sorted vec `v` contains `target`
@@ -92,7 +96,8 @@ mod tests {
     use crate::extensor::dense_hashmap::ExTensor;
 
     use crate::utils::{
-        contains_element, create_bernoulli, create_vandermonde, factorial, has_intersection,
+        binomial, contains_element, create_bernoulli, create_vandermonde, factorial,
+        has_intersection,
     };
 
     #[test]
@@ -153,5 +158,19 @@ mod tests {
         let v_3 = vec![7, 8, 9, 10, 11, 12];
         let res_2 = has_intersection(&v_1, &v_3);
         assert_eq!(res_2, false);
+    }
+
+    #[test]
+    fn binom() {
+        let bc = binomial(5, 2);
+        assert_eq!(bc, 10, "5 choose 2");
+    }
+
+    #[test]
+    fn tmp() {
+        let k = 3;
+        let (f_vert, _) = create_bernoulli(k);
+        let prod = f_vert(1) * f_vert(2);
+        println!("p: {:?}", prod);
     }
 }

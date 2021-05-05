@@ -10,7 +10,7 @@ bitvec = "0.21.1"
 num-traits = "0.2.14"
 
 [features]
-default = ["extensor_dense_hashmap", "matrix_sparse_hash"]
+default = ["extensor_dense_hashmap", "matrix_sparse_triples"]
 extensor_dense_hashmap = []
 extensor_bitvec = []
 matrix_naive = []
