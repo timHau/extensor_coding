@@ -5,23 +5,27 @@ use crate::extensor::dense_hashmap::ExTensor;
 
 use rand::distributions::{Distribution, Uniform};
 
-type F = Box<dyn Fn(usize) -> ExTensor>;
-type G = Box<dyn Fn(usize, usize) -> f64>;
-
 /// given k, create a lifted vandermonde coding that takes v as input
-pub(crate) fn create_vandermonde(k: usize) -> (F, G) {
-    let f_vert = move |v: usize| -> ExTensor {
+pub(crate) fn create_vandermonde(n: usize, k: usize) -> Vec<ExTensor> {
+    let mut res = Vec::with_capacity(n);
+    res.reserve(n);
+
+    for v in 1..=n {
         let coeffs: Vec<i64> = (0..k).map(|i| v.pow(i as u32) as i64).collect();
         let basis: Vec<Vec<u8>> = (1..=k).map(|i| vec![i as u8]).collect();
-        ExTensor::new(&coeffs, &basis).lift(k)
-    };
-    let f_edge = |_v: usize, _w: usize| 1.0;
-    (Box::new(f_vert), Box::new(f_edge))
+        let col = ExTensor::new(&coeffs, &basis).lift(k);
+        res.push(col);
+    }
+
+    res
 }
 
 /// given k, create a lifted bernoulli coding
-pub(crate) fn create_bernoulli(k: usize) -> (F, G) {
-    let f_vert = move |_v: usize| -> ExTensor {
+pub(crate) fn create_bernoulli(n: usize, k: usize) -> Vec<ExTensor> {
+    let mut res = Vec::with_capacity(n);
+    res.reserve(n);
+
+    for v in 1..=n {
         let coeffs: Vec<i64> = (0..k)
             .map(|_i| {
                 let mut rng = rand::thread_rng();
@@ -36,10 +40,11 @@ pub(crate) fn create_bernoulli(k: usize) -> (F, G) {
             })
             .collect();
         let basis: Vec<Vec<u8>> = (1..=k).map(|i| vec![i as u8]).collect();
-        ExTensor::new(&coeffs, &basis).lift(k)
-    };
-    let f_edge = |_v: usize, _w: usize| 1.0;
-    (Box::new(f_vert), Box::new(f_edge))
+        let col = ExTensor::new(&coeffs, &basis).lift(k);
+        res.push(col);
+    }
+
+    res
 }
 
 pub(crate) fn factorial(k: usize) -> u64 {
@@ -95,11 +100,14 @@ mod tests {
     #[cfg(feature = "extensor_dense_hashmap")]
     use crate::extensor::dense_hashmap::ExTensor;
 
+    use crate::matrix::sparse_triples::Matrix;
+
     use crate::utils::{
         binomial, contains_element, create_bernoulli, create_vandermonde, factorial,
         has_intersection,
     };
 
+    /*
     #[test]
     fn vandermonde() {
         let k = 5;
@@ -168,9 +176,40 @@ mod tests {
 
     #[test]
     fn tmp() {
-        let k = 3;
+        let k = 2;
         let (f_vert, _) = create_bernoulli(k);
+
+        let m = Matrix::new(3, 3, vec![0, 1, 0, 0, 0, 1, 0, 0, 0]).add_coding(&f_vert);
+        println!("m: {}", m);
+
+        let b = vec![f_vert(1), f_vert(2), f_vert(3)];
+
+        println!("b:");
+        for bv in b.iter() {
+            println!("{}", bv);
+        }
+
+        let mut r = &m * b;
+        for _i in 1..(k - 1) {
+            println!("\n iteration: {}", _i);
+            println!("m: {}", m);
+
+            r = &m * r;
+        }
+
         let prod = f_vert(1) * f_vert(2);
-        println!("p: {:?}", prod);
+
+        println!("\n");
+        for rv in r.iter() {
+            println!("rv: {}", rv)
+        }
+
+        println!(
+            "\nsum: {:?}",
+            r.clone()
+                .into_iter()
+                .fold(ExTensor::new(&[], &[]), |acc, v| acc + v),
+        );
     }
+    */
 }

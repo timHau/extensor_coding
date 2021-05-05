@@ -131,10 +131,7 @@ where
 }
 
 impl Matrix<u8> {
-    pub(crate) fn add_coding<F>(&self, coding: &F) -> Matrix<ExTensor>
-    where
-        F: Fn(usize) -> ExTensor,
-    {
+    pub(crate) fn add_coding(&self, coding: &Vec<ExTensor>) -> Matrix<ExTensor> {
         let n = self.nrows;
         let mut data = Vec::with_capacity(n * n);
         data.reserve(n * n);
@@ -142,7 +139,7 @@ impl Matrix<u8> {
         for (i, v) in self.data.iter().enumerate() {
             let row_index = i / self.ncols;
             if *v == 1 {
-                data.push(coding(row_index + 1));
+                data.push(coding[row_index].clone());
             } else {
                 data.push(ExTensor::zero());
             }
@@ -258,6 +255,7 @@ mod tests {
         assert_eq!(r, vec![3, 1], "simple Matrix Vector multiplication");
     }
 
+    /*
     #[test]
     fn coding() {
         let k = 2;
@@ -271,13 +269,6 @@ mod tests {
         );
 
         assert_eq!(n.data(), expect.data(), "add coding should work");
-    }
-
-    #[test]
-    fn tmp() {
-        let k = 2;
-        let (f_vert, _) = utils::create_vandermonde(k);
-        println!("{:?}", f_vert(2));
     }
 
     #[test]
@@ -304,4 +295,5 @@ mod tests {
 
         assert_eq!(n.data(), expect.data(), "add coding should work");
     }
+    */
 }

@@ -6,7 +6,7 @@ use num_traits::Zero;
 /// Given an Graph `g` and i32 `k` as input, such that the number of `k`-paths in
 /// G is 0 or 1, decide if there is a `k`-path in `g`
 pub fn u(g: &Graph, k: usize) -> bool {
-    let vandermonde_mapping = utils::create_vandermonde(k);
+    let vandermonde_mapping = utils::create_vandermonde(g.num_vert(), k);
     let res = g.compute_walk_sum(k, vandermonde_mapping);
     !res.is_zero()
 }
@@ -14,26 +14,20 @@ pub fn u(g: &Graph, k: usize) -> bool {
 /// # Algorithm C
 ///
 pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
-    let mut x_s = Vec::new();
-    let mut sum = 0;
-    let mut mean = 0.0;
-    let mut var = 1.0;
+    let t = 1000;
 
-    while var > eps {
-        let bernoulli_mapping = utils::create_bernoulli(k);
+    let mut sum = 0;
+    let mut x_s = Vec::new();
+    for j in 0..t {
+        let bernoulli_mapping = utils::create_bernoulli(g.num_vert(), k);
         let v_j = g.compute_walk_sum(k, bernoulli_mapping);
         let coeff = v_j.coeffs()[0];
         sum += coeff;
         x_s.push(coeff);
-
-        mean = sum as f64 / x_s.len() as f64;
-        var = x_s
-            .iter()
-            .fold(0.0, |acc, v| acc + ((*v as f64) - mean).powf(2.))
-            / x_s.len() as f64;
+        println!("{} / {}", j, t);
     }
 
-    mean
+    sum as f64 / (utils::factorial(k) * t) as f64
 }
 
 #[cfg(test)]
@@ -68,13 +62,13 @@ mod tests {
     #[test]
     fn c() {
         let g = Graph::from_graph6("src/data/test_graphs/path3.g6");
-        let k = 2;
+        let k = 3;
         let eps = 0.3;
         let now = std::time::Instant::now();
         let res = algorithm::c(g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
 
-        let p = 4.;
+        let p = 2.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
         println!(
