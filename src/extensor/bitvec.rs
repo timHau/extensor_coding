@@ -217,7 +217,7 @@ impl std::ops::Sub for ExTensor {
 
 impl std::fmt::Display for ExTensor {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let mut res = String::from("");
+        let mut res = String::from("\n");
 
         for (i, (base, coeff)) in self.data.iter().enumerate() {
             if coeff != &0 {
@@ -225,14 +225,14 @@ impl std::fmt::Display for ExTensor {
                 for (j, b) in base.iter().enumerate() {
                     if *b {
                         if j < base.len() {
-                            res += &format!("e_{} ∧ ", j + 1);
+                            res += &format!("e_{}∧", j + 1);
                         } else {
                             res += &format!("e_{}", j + 1);
                         }
                     }
                 }
                 if i < self.data.len() - 1 {
-                    res += " + ";
+                    res += "  +  ";
                 }
             }
         }

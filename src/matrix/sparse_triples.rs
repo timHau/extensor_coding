@@ -133,11 +133,11 @@ where
     T: Zero + std::fmt::Display,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let mut res = String::from("");
+        let mut res = String::from("\n");
 
-        for (i, (_x, _y, value)) in self.data.iter().enumerate() {
+        for (x, y, value) in self.data.iter() {
             if !value.is_zero() {
-                res += &format!("{} \n", value);
+                res += &format!("({}, {}),  {} \n", x, y, value);
             }
         }
 

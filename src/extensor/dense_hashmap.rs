@@ -141,7 +141,7 @@ impl std::ops::Add for &ExTensor {
         let mut data = HashMap::with_capacity(self.data.len() + other.data.len());
         for (base, coeff) in joined_data {
             if data.contains_key(base) {
-                let next_coeff = data.get(base).unwrap() + coeff;
+                let next_coeff = data[base] + coeff;
                 data.insert(base.clone(), next_coeff);
             } else {
                 data.insert(base.clone(), *coeff);
@@ -176,8 +176,7 @@ impl std::ops::Mul for &ExTensor {
                     let next_coeff = sign * coeff_a * coeff_b;
 
                     if data.contains_key(&next_base) {
-                        let old_coeff = data.get(&next_base).unwrap();
-                        let next_coeff = old_coeff + next_coeff;
+                        let next_coeff = data[&next_base] + next_coeff;
                         data.insert(next_base, next_coeff);
                     } else {
                         data.insert(next_base, next_coeff);
@@ -241,16 +240,16 @@ impl std::fmt::Display for ExTensor {
 
         for (i, (base, coeff)) in self.data.iter().enumerate() {
             if coeff != &0 {
-                res += &format!("{} ", coeff);
+                res += &format!("({}) ", coeff);
                 for (j, b) in base.iter().enumerate() {
                     if j < base.len() - 1 {
-                        res += &format!("e_{} ∧ ", b);
+                        res += &format!("e{}∧", b);
                     } else {
-                        res += &format!("e_{}", b);
+                        res += &format!("e{}", b);
                     }
                 }
                 if i < self.data.len() - 1 {
-                    res += " + ";
+                    res += "  +  ";
                 }
             }
         }
@@ -291,6 +290,24 @@ mod tests {
         let sum = x_1 + x_2;
         let res = &ExTensor::new(&[0, 4, -4], &[vec![1, 3], vec![3, 4], vec![3, 9]]);
         assert_eq!(&sum, res, "tensors should add");
+    }
+
+    #[test]
+    fn extensor_sub() {
+        let x_1 = &ExTensor::new(&[3, 4], &[vec![1, 3], vec![3, 9]]);
+        let x_2 = &ExTensor::new(&[3, 4], &[vec![1, 3], vec![3, 9]]);
+        let sum = x_1 - x_2;
+        let res = &ExTensor::new(&[0, 0], &[vec![1, 3], vec![3, 9]]);
+        assert_eq!(&sum, res, "tensors should cancel each other");
+    }
+
+    #[test]
+    fn extensor_sub_2() {
+        let x_1 = &ExTensor::new(&[3, 4], &[vec![1, 3], vec![3, 9]]);
+        let x_2 = &ExTensor::new(&[3, -4], &[vec![1, 3], vec![3, 9]]);
+        let sum = x_1 - x_2;
+        let res = &ExTensor::new(&[0, 8], &[vec![1, 3], vec![3, 9]]);
+        assert_eq!(&sum, res, "tensors sub should work");
     }
 
     #[test]
@@ -377,6 +394,7 @@ mod tests {
         let l = x.lift(2);
         let a = &ExTensor::new(&[2, 3], &[vec![3], vec![4]]);
         // (2 e_1 + 3 e_2) ^ (2 e_3 + 3 e_4) = 4 e_1 ^ e_3 + 6 e_2 ^ e_3  + 6 e_1 ^ e_4 + 9 e_2 ^ e_4
+        // (2, 3, 0, 0).T ^ (0, 0, 2, 3).T = (2 e_1 + 3 e_2 + 0 e_3 + 0_e_4) ^ (0 e_1 + 0 e_2 + 2 e_3 + 3 e_4)
         println!("l: {:?}", l);
         assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
     }
