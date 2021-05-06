@@ -101,6 +101,7 @@ mod tests {
     };
 
     #[test]
+    #[cfg(feature = "extensor_dense_hashmap")]
     fn vandermonde() {
         let k = 5;
         let n = 5;

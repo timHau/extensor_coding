@@ -1,5 +1,6 @@
-use bitvec::prelude::{bitvec, BitVec};
+use crate::bitvec::BitVec;
 use num_traits::{One, Zero};
+use std::cmp::max;
 use std::collections::HashMap;
 
 #[derive(Debug, PartialEq, Default, Clone)]
@@ -28,22 +29,10 @@ impl ExTensor {
             coeffs.len(),
             "Number of coefficients and basis blades must match"
         );
-        let max_basis_len = 2 * 8;
 
         let mut data = HashMap::with_capacity(basis.len());
         for (i, b) in basis.iter().enumerate() {
-            let mut base = bitvec![0; max_basis_len];
-            for bv in b {
-                if bv <= &(max_basis_len as u8) {
-                    base.set((*bv - 1) as usize, true);
-                } else {
-                    panic!(
-                        "To many basis elements for extensor, max_len is {}",
-                        max_basis_len
-                    );
-                }
-            }
-
+            let base = BitVec::from(b);
             data.insert(base, coeffs[i]);
         }
 
@@ -53,11 +42,10 @@ impl ExTensor {
     pub(crate) fn get_sign(a: &BitVec, b: &BitVec) -> i64 {
         let mut sum: u32 = 0;
 
-        for i in 1..a.len() - 1 {
-            let b = b.clone();
+        for i in 1..max(a.len(), b.len()) - 1 {
             let mut a = a.clone();
             a.shift_right(i);
-            sum += (a & b).count_ones() as u32;
+            sum += (&a & b).count_ones();
         }
 
         if sum % 2 == 0 {
@@ -80,8 +68,7 @@ impl ExTensor {
         self * &ExTensor { data }
     }
 
-    #[allow(dead_code)]
-    pub(crate) fn coeffs(&self) -> Vec<i64> {
+    pub fn coeffs(&self) -> Vec<i64> {
         self.data.iter().map(|(_, coeff)| coeff.clone()).collect()
     }
 }
@@ -110,10 +97,10 @@ impl One for ExTensor {
 impl std::ops::Add for &ExTensor {
     type Output = ExTensor;
 
-    fn add(self, rhs: &ExTensor) -> ExTensor {
-        let joined_data = self.data.iter().chain(rhs.data.iter());
+    fn add(self, other: &ExTensor) -> ExTensor {
+        let joined_data = self.data.iter().chain(other.data.iter());
 
-        let mut data = HashMap::with_capacity(self.data.len() + rhs.data.len());
+        let mut data = HashMap::with_capacity(self.data.len() + other.data.len());
         for (base, coeff) in joined_data {
             if data.contains_key(base) {
                 let next_coeff: i64 = data.get(base).unwrap() + coeff;
@@ -130,33 +117,33 @@ impl std::ops::Add for &ExTensor {
 impl std::ops::Add for ExTensor {
     type Output = ExTensor;
 
-    fn add(self, rhs: ExTensor) -> ExTensor {
-        &self + &rhs
+    fn add(self, other: ExTensor) -> ExTensor {
+        &self + &other
     }
 }
 
 impl std::ops::Mul for &ExTensor {
     type Output = ExTensor;
 
-    fn mul(self, rhs: &ExTensor) -> ExTensor {
-        let num_elems = self.data.len() * rhs.data.len();
+    fn mul(self, other: &ExTensor) -> ExTensor {
+        let num_elems = self.data.len() * other.data.len();
         let mut data = HashMap::with_capacity(num_elems);
         data.reserve(num_elems);
 
         for (base_a, coeff_a) in self.data.iter() {
-            for (base_b, coeff_b) in rhs.data.iter() {
+            for (base_b, coeff_b) in other.data.iter() {
                 // check if the base is independent. Intersection test can be done via bitwise and
                 // only if they are independent (no common basis element) will we continue.
-                let intersections = base_a.clone() & base_b.clone();
+                let intersections = base_a & base_b;
                 if !intersections.any() {
                     // calculate the next basis bit vec, which can be done via bitwise or
-                    let next_base = base_a.clone() ^ base_b.clone();
+                    let next_base = base_a ^ base_b;
                     // compute sign and multiply coefficients
                     let sign = ExTensor::get_sign(base_b, base_a);
                     let next_coeff: i64 = sign * coeff_a * coeff_b;
 
                     if data.contains_key(&next_base) {
-                        let old_coeff = data.get(&next_base).unwrap();
+                        let old_coeff = data[&next_base];
                         let next_coeff = old_coeff + next_coeff;
                         data.insert(next_base, next_coeff);
                     } else {
@@ -173,8 +160,8 @@ impl std::ops::Mul for &ExTensor {
 impl std::ops::Mul for ExTensor {
     type Output = ExTensor;
 
-    fn mul(self, rhs: ExTensor) -> ExTensor {
-        &self * &rhs
+    fn mul(self, other: ExTensor) -> ExTensor {
+        &self * &other
     }
 }
 
@@ -202,19 +189,20 @@ impl std::ops::Mul<&ExTensor> for i64 {
 impl std::ops::Sub for &ExTensor {
     type Output = ExTensor;
 
-    fn sub(self, rhs: &ExTensor) -> ExTensor {
-        self + &(-1 * rhs)
+    fn sub(self, other: &ExTensor) -> ExTensor {
+        self + &(-1 * other)
     }
 }
 
 impl std::ops::Sub for ExTensor {
     type Output = ExTensor;
 
-    fn sub(self, rhs: ExTensor) -> ExTensor {
-        &self - &rhs
+    fn sub(self, other: ExTensor) -> ExTensor {
+        &self - &other
     }
 }
 
+/*
 impl std::fmt::Display for ExTensor {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut res = String::from("\n");
@@ -240,11 +228,12 @@ impl std::fmt::Display for ExTensor {
         write!(f, "{}", res)
     }
 }
+*/
 
 #[cfg(test)]
 mod tests {
+    use crate::bitvec::BitVec;
     use crate::extensor::bitvec::ExTensor;
-    use bitvec::prelude::{bitvec, Lsb0};
     use num_traits::Zero;
 
     #[test]
@@ -259,32 +248,68 @@ mod tests {
     }
 
     #[test]
-    fn wedge_prod() {
-        let x_1 = &ExTensor::new(&[2, 3], &[vec![1, 2], vec![3, 4]]);
-        let x_2 = &ExTensor::new(&[4, 5], &[vec![6, 2], vec![7, 4]]);
-        let res_1 = &ExTensor::new(&[12, 10], &[vec![2, 3, 4, 6], vec![1, 2, 4, 7]]);
-        assert_eq!(&(x_1 * x_2), res_1, "wedge product");
-        let x_3 = &ExTensor::new(&[1], &[vec![2]]);
-        let x_4 = &ExTensor::new(&[1], &[vec![1]]);
-        let res_2 = &ExTensor::new(&[-1], &[vec![1, 2]]);
-        assert_eq!(
-            &(x_3 * x_4),
-            res_2,
-            "sign changes when base has to be reorderd"
-        );
+    fn extensor_add_2() {
+        let x_1 = &ExTensor::new(&[-3, 4], &[vec![1, 3], vec![3, 9]]);
+        let x_2 = &ExTensor::new(&[3, -4], &[vec![1, 3], vec![3, 9]]);
+        let sum = x_1 + x_2;
+        let res = &ExTensor::new(&[0, 0], &[vec![1, 3], vec![3, 9]]);
+        assert_eq!(&sum, res, "tensors should cancel each other");
+    }
+
+    #[test]
+    fn extensor_add_3() {
+        let x_1 = &ExTensor::new(&[-3, 4], &[vec![1, 3], vec![3, 4]]);
+        let x_2 = &ExTensor::new(&[3, -4], &[vec![1, 3], vec![3, 9]]);
+        let sum = x_1 + x_2;
+        let res = &ExTensor::new(&[0, 4, -4], &[vec![1, 3], vec![3, 4], vec![3, 9]]);
+        assert_eq!(&sum, res, "tensors should add");
+    }
+
+    #[test]
+    fn extensor_sub() {
+        let x_1 = &ExTensor::new(&[3, 4], &[vec![1, 3], vec![3, 9]]);
+        let x_2 = &ExTensor::new(&[3, 4], &[vec![1, 3], vec![3, 9]]);
+        let sum = x_1 - x_2;
+        let res = &ExTensor::new(&[0, 0], &[vec![1, 3], vec![3, 9]]);
+        assert_eq!(&sum, res, "tensors should cancel each other");
+    }
+
+    #[test]
+    fn extensor_sub_2() {
+        let x_1 = &ExTensor::new(&[3, 4], &[vec![1, 3], vec![3, 9]]);
+        let x_2 = &ExTensor::new(&[3, -4], &[vec![1, 3], vec![3, 9]]);
+        let sum = x_1 - x_2;
+        let res = &ExTensor::new(&[0, 8], &[vec![1, 3], vec![3, 9]]);
+        assert_eq!(&sum, res, "tensors sub should work");
     }
 
     #[test]
     fn get_sign() {
-        let x_1 = bitvec![0, 1, 0, 0, 0];
-        let x_2 = bitvec![0, 1, 0, 0, 0];
+        let x_1 = BitVec::from(&vec![2]);
+        let x_2 = BitVec::from(&vec![2]);
         assert_eq!(ExTensor::get_sign(&x_1, &x_2), 1);
-        let x_3 = bitvec![0, 0, 1, 0, 0];
+        let x_3 = BitVec::from(&vec![3]);
         assert_eq!(ExTensor::get_sign(&x_1, &x_3), -1);
-        let x_4 = bitvec![0, 0, 1, 1, 0];
+        let x_4 = BitVec::from(&vec![3, 4]);
         assert_eq!(ExTensor::get_sign(&x_1, &x_4), 1);
-        let x_5 = bitvec![0, 0, 1, 1, 1];
+        let x_5 = BitVec::from(&vec![3, 4, 5]);
         assert_eq!(ExTensor::get_sign(&x_1, &x_5), -1);
+    }
+
+    #[test]
+    fn wedge_prod() {
+        let x_1 = ExTensor::new(&[2, 3], &[vec![1, 2], vec![3, 4]]);
+        let x_2 = ExTensor::new(&[4, 5], &[vec![2, 6], vec![4, 7]]);
+        let res = ExTensor::new(&[12, 10], &[vec![2, 3, 4, 6], vec![1, 2, 4, 7]]);
+        assert_eq!(&x_1 * &x_2, res, "wedge product should match");
+    }
+
+    #[test]
+    fn wedge_prod_2() {
+        let x_1 = ExTensor::new(&[3], &[vec![3, 4]]);
+        let x_2 = ExTensor::new(&[4], &[vec![2, 6]]);
+        let res = ExTensor::new(&[12], &[vec![2, 3, 4, 6]]);
+        assert_eq!(&x_1 * &x_2, res, "wedge product should match");
     }
 
     #[test]
@@ -368,14 +393,6 @@ mod tests {
         let prod_7 = &(&(x_7 * x_8) * x_9);
         let det = &ExTensor::new(&[0], &[vec![1, 2, 3]]);
         assert_eq!(prod_7, det, "Wedge Product exhibits determinant on F^3x3");
-    }
-
-    #[test]
-    fn lifted() {
-        let x = &ExTensor::new(&[2, 3], &[vec![1], vec![2]]);
-        let l = x.lift(2);
-        let a = &ExTensor::new(&[2, 3], &[vec![3], vec![4]]);
-        assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
     }
 
     #[test]

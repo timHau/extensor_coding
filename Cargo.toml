@@ -6,11 +6,10 @@ edition = "2018"
 
 [dependencies]
 rand = "0.8.0"
-bitvec = "0.21.1"
 num-traits = "0.2.14"
 
 [features]
-default = ["extensor_dense_hashmap", "matrix_naive"]
+default = ["extensor_bitvec", "matrix_naive"]
 extensor_dense_hashmap = []
 extensor_bitvec = []
 matrix_naive = []
