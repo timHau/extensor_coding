@@ -1,13 +1,4 @@
-#![allow(dead_code)]
-
-pub mod algorithm;
-mod bitvec;
-mod extensor;
-mod graph;
-mod matrix;
-mod utils;
-
-use graph::Graph;
+use extensor_coding::{algorithm, graph::Graph};
 use std::time::Instant;
 
 fn main() {

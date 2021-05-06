@@ -1,6 +1,6 @@
 # Extensor Coding
 
-## switch implementations
+## Switch implementations
 
 There are different implementations for the ExTensor and the Matrix structure. You switch 
 between them by simple editing the `Cargo.toml` file.
@@ -21,3 +21,21 @@ Options are:
     * `naive_parallel` - (very) naive parallelization attempt
     * `sparse_hash` - as sparse HashMap
     * `sparse_triples` - as sparse vec of triples (row, col, value)
+
+## Run Tests
+
+To run the tests simply do a 
+```
+cargo test
+```
+If you only want to run tests in a certain module e.g. all tests in the graph module do
+```
+cargo test -- graph::tests
+```
+
+## Run Benchmarks 
+
+All Benchmarks are located under the `benches/` directory. You can execute them with
+```
+cargo bench
+```

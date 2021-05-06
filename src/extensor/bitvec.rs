@@ -23,7 +23,7 @@ pub struct ExTensor {
 /// | 10100000 |       e_1 ∧ e_3 |
 /// | 11100000 | e_1 ∧ e_2 ∧ e_3 |
 impl ExTensor {
-    pub(crate) fn new(coeffs: &[i64], basis: &[Vec<u8>]) -> Self {
+    pub fn new(coeffs: &[i64], basis: &[Vec<u8>]) -> Self {
         assert_eq!(
             basis.len(),
             coeffs.len(),
