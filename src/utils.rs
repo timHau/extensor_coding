@@ -25,7 +25,7 @@ pub(crate) fn create_bernoulli(n: usize, k: usize) -> Vec<ExTensor> {
     let mut res = Vec::with_capacity(n);
     res.reserve(n);
 
-    for v in 1..=n {
+    for _v in 1..=n {
         let coeffs: Vec<i64> = (0..k)
             .map(|_i| {
                 let mut rng = rand::thread_rng();
@@ -53,10 +53,6 @@ pub(crate) fn factorial(k: usize) -> u64 {
         res *= i;
     }
     res
-}
-
-pub(crate) fn binomial(n: usize, k: usize) -> u64 {
-    factorial(n) / (factorial(k) * factorial(n - k))
 }
 
 /// determine if a sorted vec `v` contains `target`
@@ -100,40 +96,38 @@ mod tests {
     #[cfg(feature = "extensor_dense_hashmap")]
     use crate::extensor::dense_hashmap::ExTensor;
 
-    use crate::matrix::sparse_triples::Matrix;
-
     use crate::utils::{
-        binomial, contains_element, create_bernoulli, create_vandermonde, factorial,
-        has_intersection,
+        contains_element, create_bernoulli, create_vandermonde, factorial, has_intersection,
     };
 
-    /*
     #[test]
     fn vandermonde() {
         let k = 5;
-        let (f_vert, f_edge) = create_vandermonde(k);
-        assert_eq!(f_edge(3, 4), 1.0, "function on edge is constant 1");
-        let vert_val_1 = f_vert(1);
-        let vert_val_2 = f_vert(2);
-        let vert_val_3 = f_vert(3);
-        let vert_val_4 = f_vert(4);
-        let vert_val_5 = f_vert(5);
-        let prod = vert_val_1 * vert_val_2 * vert_val_3 * vert_val_4 * vert_val_5;
+        let n = 5;
+        let coding = create_vandermonde(n, k);
+        let vert_val_1 = &coding[0];
+        let vert_val_2 = &coding[1];
+        let vert_val_3 = &coding[2];
+        let vert_val_4 = &coding[3];
+        let vert_val_5 = &coding[4];
+        let prod = &(&(&(vert_val_1 * vert_val_2) * vert_val_3) * vert_val_4) * vert_val_5;
         let res = ExTensor::new(&[82944], &[vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]]);
         assert_eq!(prod, res, "lifted vandermonde");
     }
 
     #[test]
     fn bernoulli() {
-        let k = 5;
-        let (f_vert, f_edge) = create_bernoulli(k);
-        let vert_val = f_vert(4);
-        assert_eq!(f_edge(3, 4), 1.0, "function on edge is constant 1");
-        for coeff in vert_val.coeffs() {
-            assert!(
-                coeff == 1 || coeff == -1,
-                "coefficients are either +1 or -1"
-            );
+        let k = 3;
+        let n = 5;
+        let coding = create_bernoulli(n, k);
+        for _i in 0..n {
+            let vert_val = &coding[4];
+            for coeff in vert_val.coeffs() {
+                assert!(
+                    coeff == 1 || coeff == -1,
+                    "coefficients are either +1 or -1"
+                );
+            }
         }
     }
 
@@ -167,49 +161,4 @@ mod tests {
         let res_2 = has_intersection(&v_1, &v_3);
         assert_eq!(res_2, false);
     }
-
-    #[test]
-    fn binom() {
-        let bc = binomial(5, 2);
-        assert_eq!(bc, 10, "5 choose 2");
-    }
-
-    #[test]
-    fn tmp() {
-        let k = 2;
-        let (f_vert, _) = create_bernoulli(k);
-
-        let m = Matrix::new(3, 3, vec![0, 1, 0, 0, 0, 1, 0, 0, 0]).add_coding(&f_vert);
-        println!("m: {}", m);
-
-        let b = vec![f_vert(1), f_vert(2), f_vert(3)];
-
-        println!("b:");
-        for bv in b.iter() {
-            println!("{}", bv);
-        }
-
-        let mut r = &m * b;
-        for _i in 1..(k - 1) {
-            println!("\n iteration: {}", _i);
-            println!("m: {}", m);
-
-            r = &m * r;
-        }
-
-        let prod = f_vert(1) * f_vert(2);
-
-        println!("\n");
-        for rv in r.iter() {
-            println!("rv: {}", rv)
-        }
-
-        println!(
-            "\nsum: {:?}",
-            r.clone()
-                .into_iter()
-                .fold(ExTensor::new(&[], &[]), |acc, v| acc + v),
-        );
-    }
-    */
 }
