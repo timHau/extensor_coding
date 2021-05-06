@@ -8,7 +8,7 @@ pub struct ExTensor {
 }
 
 impl ExTensor {
-    pub fn new(coeffs: &[i64], basis: &[Vec<u8>]) -> Self {
+    pub(crate) fn new(coeffs: &[i64], basis: &[Vec<u8>]) -> Self {
         assert_eq!(
             basis.len(),
             coeffs.len(),
@@ -98,10 +98,10 @@ impl One for ExTensor {
 impl std::ops::Add for &ExTensor {
     type Output = ExTensor;
 
-    fn add(self, rhs: &ExTensor) -> ExTensor {
-        let joined_data = self.data.iter().chain(rhs.data.iter());
+    fn add(self, other: &ExTensor) -> ExTensor {
+        let joined_data = self.data.iter().chain(other.data.iter());
 
-        let mut data = HashMap::with_capacity(self.data.len() + rhs.data.len());
+        let mut data = HashMap::with_capacity(self.data.len() + other.data.len());
         for (base, coeff) in joined_data {
             if data.contains_key(base) {
                 let next_coeff = data[base] + coeff;
@@ -118,21 +118,21 @@ impl std::ops::Add for &ExTensor {
 impl std::ops::Add for ExTensor {
     type Output = ExTensor;
 
-    fn add(self, rhs: ExTensor) -> ExTensor {
-        &self + &rhs
+    fn add(self, other: ExTensor) -> ExTensor {
+        &self + &other
     }
 }
 
 impl std::ops::Mul for &ExTensor {
     type Output = ExTensor;
 
-    fn mul(self, rhs: &ExTensor) -> ExTensor {
-        let num_elems = self.data.len() * rhs.data.len();
+    fn mul(self, other: &ExTensor) -> ExTensor {
+        let num_elems = self.data.len() * other.data.len();
         let mut data = HashMap::with_capacity(num_elems);
         data.reserve(num_elems);
 
         for (base_a, coeff_a) in self.data.iter() {
-            for (base_b, coeff_b) in rhs.data.iter() {
+            for (base_b, coeff_b) in other.data.iter() {
                 let has_intersection = utils::has_intersection(&base_a, &base_b);
                 if !has_intersection {
                     let (sign, next_base) = ExTensor::get_sign_and_ord_basis(base_a, base_b);
@@ -155,8 +155,8 @@ impl std::ops::Mul for &ExTensor {
 impl std::ops::Mul for ExTensor {
     type Output = ExTensor;
 
-    fn mul(self, rhs: ExTensor) -> ExTensor {
-        &self * &rhs
+    fn mul(self, other: ExTensor) -> ExTensor {
+        &self * &other
     }
 }
 
@@ -184,16 +184,16 @@ impl std::ops::Mul<&ExTensor> for i64 {
 impl std::ops::Sub for &ExTensor {
     type Output = ExTensor;
 
-    fn sub(self, rhs: &ExTensor) -> ExTensor {
-        self + &(-1 * rhs)
+    fn sub(self, other: &ExTensor) -> ExTensor {
+        self + &(-1 * other)
     }
 }
 
 impl std::ops::Sub for ExTensor {
     type Output = ExTensor;
 
-    fn sub(self, rhs: ExTensor) -> ExTensor {
-        &self - &rhs
+    fn sub(self, other: ExTensor) -> ExTensor {
+        &self - &other
     }
 }
 

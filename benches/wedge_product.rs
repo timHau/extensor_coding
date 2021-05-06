@@ -10,7 +10,7 @@ fn rand_coeffs_and_basis(n: i32) -> (Vec<i64>, Vec<Vec<u8>>) {
 }
 
 fn join_runs(runs: Vec<Vec<u128>>) -> Vec<f64> {
-    let mut res = vec![0.0; runs.len()];
+    let mut res = vec![0.0; runs[0].len()];
 
     for tv in runs.iter() {
         for (i, v) in tv.iter().enumerate() {
@@ -19,7 +19,7 @@ fn join_runs(runs: Vec<Vec<u128>>) -> Vec<f64> {
     }
 
     res.iter()
-        .map(|t| *t / runs.len() as f64)
+        .map(|t| *t / (runs.len() as f64))
         .collect::<Vec<f64>>()
 }
 
@@ -52,9 +52,9 @@ fn bench_bitvec(num_iter: i32) -> Vec<f64> {
     join_runs(times)
 }
 
-fn bench_hashmap(num_iter: i32) {
+fn bench_hashmap(num_iter: i32) -> Vec<f64> {
     let mut times = Vec::new();
-    let max_basis = 30;
+    let max_basis = 80;
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
@@ -77,6 +77,8 @@ fn bench_hashmap(num_iter: i32) {
 
         times.push(times_per_iter)
     }
+
+    join_runs(times)
 }
 
 fn main() {
@@ -84,5 +86,6 @@ fn main() {
     let times_bitvec = bench_bitvec(num_iter);
     let times_hashmap = bench_hashmap(num_iter);
 
-    println!("times: {:?}", times_bitvec);
+    println!("times bitvec: {:?}", times_bitvec);
+    println!("times hashmap: {:?}", times_hashmap);
 }
