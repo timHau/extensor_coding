@@ -35,12 +35,13 @@ where
     T: Default + Mul<Output = T> + Add<Output = T>,
 {
     type Output = (usize, usize, T);
-    fn mul(self, other: MatrixSlice<T>) -> (usize, usize, T) {
+
+    fn mul(self, rhs: MatrixSlice<T>) -> (usize, usize, T) {
         let mut res = T::default();
-        for (a, b) in self.data.into_iter().zip(other.data.into_iter()) {
+        for (a, b) in self.data.into_iter().zip(rhs.data.into_iter()) {
             res = res + (a * b);
         }
-        (self.index, other.index, res)
+        (self.index, rhs.index, res)
     }
 }
 
@@ -162,15 +163,16 @@ where
         + 'static,
 {
     type Output = Vec<T>;
-    fn mul(self, other: Vec<T>) -> Vec<T> {
-        assert_eq!(self.ncols, other.len(), "dimensions of matrices dont match");
+
+    fn mul(self, rhs: Vec<T>) -> Vec<T> {
+        assert_eq!(self.ncols, rhs.len(), "dimensions of matrices dont match");
         let mut res = vec![T::zero(); self.nrows];
 
         let mut handles = vec![];
         for i in 0..self.nrows {
-            for _j in 0..other.len() {
+            for _j in 0..rhs.len() {
                 let row = self.row(i);
-                let col = MatrixSlice::new(&other);
+                let col = MatrixSlice::new(&rhs);
                 let handle = thread::spawn(move || row * col);
                 handles.push(handle);
             }
@@ -200,8 +202,8 @@ impl<T> IndexMut<(usize, usize)> for Matrix<T> {
 }
 
 impl<T: PartialEq> PartialEq<Matrix<T>> for Matrix<T> {
-    fn eq(&self, other: &Matrix<T>) -> bool {
-        self.data == other.data
+    fn eq(&self, rhs: &Matrix<T>) -> bool {
+        self.data == rhs.data
     }
 }
 

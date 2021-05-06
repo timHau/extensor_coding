@@ -75,10 +75,10 @@ where
 {
     type Output = Vec<T>;
 
-    fn mul(self, other: Vec<T>) -> Vec<T> {
+    fn mul(self, rhs: Vec<T>) -> Vec<T> {
         assert_eq!(
             self.ncols,
-            other.len(),
+            rhs.len(),
             "dimensions of vector and matrix do not match"
         );
 
@@ -86,7 +86,7 @@ where
 
         for (x, v) in self.data.iter() {
             let val = v.iter().fold(T::zero(), |acc, (y, val)| {
-                acc + val.clone() * other[*y].clone()
+                acc + val.clone() * rhs[*y].clone()
             });
             res[*x] = val;
         }

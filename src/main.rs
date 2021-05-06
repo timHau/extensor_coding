@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 pub mod algorithm;
+mod bitvec;
 mod extensor;
 mod graph;
 mod matrix;

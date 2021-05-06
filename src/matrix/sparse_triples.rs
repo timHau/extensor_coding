@@ -75,17 +75,17 @@ where
 {
     type Output = Vec<T>;
 
-    fn mul(self, other: Vec<T>) -> Vec<T> {
+    fn mul(self, rhs: Vec<T>) -> Vec<T> {
         assert_eq!(
             self.ncols,
-            other.len(),
+            rhs.len(),
             "dimensions of vector and matrix do not match"
         );
 
         let mut res = vec![T::zero(); self.nrows];
 
         for (x, y, v) in self.data.iter() {
-            res[*x] = res[*x].clone() + other[*y].clone() * v.clone();
+            res[*x] = res[*x].clone() + rhs[*y].clone() * v.clone();
         }
 
         res

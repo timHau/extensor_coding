@@ -65,10 +65,10 @@ where
 {
     type Output = Vec<T>;
 
-    fn mul(self, other: Vec<T>) -> Vec<T> {
+    fn mul(self, rhs: Vec<T>) -> Vec<T> {
         assert_eq!(
             self.ncols,
-            other.len(),
+            rhs.len(),
             "dimensions of vector and matrix do not match"
         );
 
@@ -77,7 +77,7 @@ where
         for i in 0..self.nrows {
             let mut v = T::zero();
             for j in 0..self.ncols {
-                v = v + self.data[i * self.ncols + j].clone() * other[j].clone();
+                v = v + self.data[i * self.ncols + j].clone() * rhs[j].clone();
             }
             res[i] = v;
         }

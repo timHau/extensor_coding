@@ -171,14 +171,12 @@ mod tests {
     use crate::utils;
     use num_traits::Zero;
 
-    /*
     #[test]
     #[should_panic(expected = ".graph6 input file not found")]
     fn test_graph6_not_found() {
         let graph_path = String::from("src/data/this_is_not_a_file.g6");
         Graph::from_graph6(&graph_path);
     }
-     */
 
     /// returns the adjacency matrix of the n path graph
     fn get_n_path_graph_adj_mat(n: usize) -> Matrix<u8> {
@@ -258,13 +256,12 @@ mod tests {
         );
     }
 
-    /*
     #[test]
     fn compute_walk() {
         let path_10 = String::from("src/data/test_graphs/path10.g6");
         let g = Graph::from_graph6(&path_10);
         let k = 3;
-        let res = g.compute_walk_sum(k, utils::create_vandermonde(k));
+        let res = g.compute_walk_sum(k, utils::create_vandermonde(g.num_vert(), k));
         let zero = ExTensor::zero();
         assert_ne!(
             res, zero,
@@ -277,7 +274,7 @@ mod tests {
         let path_10 = String::from("src/data/test_graphs/path10.g6");
         let g = Graph::from_graph6(&path_10);
         let k = 5;
-        let res = g.compute_walk_sum(k, utils::create_vandermonde(k));
+        let res = g.compute_walk_sum(k, utils::create_vandermonde(g.num_vert(), k));
         let zero = ExTensor::zero();
         assert_ne!(
             res, zero,
@@ -290,12 +287,11 @@ mod tests {
         let path_10 = String::from("src/data/test_graphs/path3.g6");
         let g = Graph::from_graph6(&path_10);
         let k = 5;
-        let res = g.compute_walk_sum(k, utils::create_vandermonde(k));
+        let res = g.compute_walk_sum(k, utils::create_vandermonde(g.num_vert(), k));
         assert_eq!(
             res.is_zero(),
             true,
             "compute walk with vandermonde coding should be zero"
         );
     }
-    */
 }
