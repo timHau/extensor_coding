@@ -1,6 +1,6 @@
 use crate::utils;
 use num_traits::{One, Zero};
-use std::{cmp::min, collections::HashMap};
+use std::collections::HashMap;
 
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct ExTensor {
@@ -20,47 +20,10 @@ impl ExTensor {
         data.reserve(num_elems);
 
         for i in 0..basis.len() {
-            let (sign, sorted) = ExTensor::sign_and_sort(&basis[i]);
-            if data.contains_key(&sorted) {
-                let old_val = data[&sorted];
-                data.insert(sorted, old_val + sign * coeffs[i]);
-            } else {
-                data.insert(sorted, sign * coeffs[i]);
-            }
+            data.insert(basis[i].clone(), coeffs[i]);
         }
 
         ExTensor { data }
-    }
-
-    /// ## sign_and_sort
-    /// get the sign of the permutation and sort the basis.
-    pub(crate) fn sign_and_sort(a: &Vec<u8>) -> (i64, Vec<u8>) {
-        if a.len() == 1 {
-            return (1, a.to_vec());
-        }
-
-        let mut w = 1;
-        let mut res = a.clone();
-        let mut res_sign = 1;
-
-        while w < a.len() {
-            let mut i = 0;
-            while i < a.len() {
-                let upper = min(i + 2 * w, a.len());
-                let mid = min(i + w, a.len());
-
-                let a_lower = a[i..mid].to_vec();
-                let a_upper = a[mid..upper].to_vec();
-                let (sign, ord_basis) = ExTensor::get_sign_and_ord_basis(&a_lower, &a_upper);
-                res[i..upper].copy_from_slice(&ord_basis[..]);
-                res_sign *= sign;
-
-                i += 2 * w;
-            }
-            w *= 2;
-        }
-
-        (res_sign, res)
     }
 
     /// ## get_sign_and_ord_basis
@@ -429,21 +392,6 @@ mod tests {
             prod_5, res_anti,
             "wedge product on simple extensors is anti communative"
         );
-    }
-
-    #[test]
-    fn sort_and_sign() {
-        let v = vec![2, 1];
-        let (sign, sorted) = ExTensor::sign_and_sort(&v);
-        assert_eq!(sign, -1, "sign should be -1");
-        assert_eq!(sorted, vec![1, 2], "vec should be sorted");
-    }
-
-    #[test]
-    fn extensor_anti_comm_2() {
-        let x = &ExTensor::new(&[1], &[vec![1, 2]]);
-        let anti_x = &ExTensor::new(&[-1], &[vec![2, 1]]);
-        assert_eq!(x, anti_x, "wedge product is commutativ");
     }
 
     #[test]

@@ -14,7 +14,7 @@ pub fn u(g: &Graph, k: usize) -> bool {
 /// # Algorithm C
 ///
 pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
-    let t = 1000;
+    let t = (100.0 * (k as f64).powf(3.0) / eps.powf(2.0)) as u64;
 
     let mut sum = 0;
     let mut x_s = Vec::new();

@@ -8,9 +8,9 @@ use graph::Graph;
 use std::time::Instant;
 
 fn main() {
-    let g = Graph::from_graph6("src/data/test_graphs/path3.g6");
-    let k = 4;
-    let eps = 0.8;
+    let g = Graph::from_graph6("src/data/test_graphs/path10.g6");
+    let k = 3;
+    let eps = 0.9;
 
     let now = Instant::now();
     let res = algorithm::c(g, k, eps);
