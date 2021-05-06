@@ -107,7 +107,15 @@ mod tests {
     #[cfg(feature = "extensor_dense_hashmap")]
     use crate::extensor::dense_hashmap::ExTensor;
 
+    #[cfg(feature = "matrix_naive")]
     use crate::matrix::naive::Matrix;
+    #[cfg(feature = "matrix_naive_parallel")]
+    use crate::matrix::naive_parallel::Matrix;
+    #[cfg(feature = "matrix_sparse_hash")]
+    use crate::matrix::sparse_hash::Matrix;
+    #[cfg(feature = "matrix_sparse_triples")]
+    use crate::matrix::sparse_triples::Matrix;
+
     use crate::utils;
     use num_traits::identities::Zero;
 
@@ -149,17 +157,22 @@ mod tests {
         assert_eq!(r, vec![6, 15], "simple Matrix Vector multiplication");
     }
 
-    /*
     #[test]
     fn coding() {
         let k = 2;
-        let coding = utils::create_vandermonde(k);
+        let n = 2;
+        let coding = utils::create_vandermonde(n, k);
         let m: Matrix<u8> = Matrix::new(2, 2, vec![1, 1, 0, 1]);
         let n = m.add_coding(&coding);
         let expect = Matrix::new(
             2,
             2,
-            vec![f_vert(1), f_vert(1), ExTensor::zero(), f_vert(2)],
+            vec![
+                coding[0].clone(),
+                coding[0].clone(),
+                ExTensor::zero(),
+                coding[1].clone(),
+            ],
         );
 
         assert_eq!(n.data(), expect.data(), "add coding should work");
@@ -168,26 +181,26 @@ mod tests {
     #[test]
     fn coding_2() {
         let k = 3;
-        let (f_vert, _) = utils::create_vandermonde(k);
+        let n = 3;
+        let coding = utils::create_vandermonde(n, k);
         let m: Matrix<u8> = Matrix::new(3, 3, vec![0, 1, 0, 1, 0, 1, 0, 1, 0]);
-        let n = m.add_coding(&f_vert);
+        let n = m.add_coding(&coding);
         let expect = Matrix::new(
             3,
             3,
             vec![
                 ExTensor::zero(),
-                f_vert(1),
+                coding[0].clone(),
                 ExTensor::zero(),
-                f_vert(2),
+                coding[1].clone(),
                 ExTensor::zero(),
-                f_vert(2),
+                coding[1].clone(),
                 ExTensor::zero(),
-                f_vert(3),
+                coding[2].clone(),
                 ExTensor::zero(),
             ],
         );
 
         assert_eq!(n.data(), expect.data(), "add coding should work");
     }
-    */
 }
