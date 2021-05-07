@@ -6,7 +6,7 @@ use crate::extensor::dense_hashmap::ExTensor;
 use num_traits::identities::{One, Zero};
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Matrix<T> {
+pub struct Matrix<T> {
     nrows: usize,
     ncols: usize,
     data: Vec<T>,
@@ -16,7 +16,7 @@ impl<T> Matrix<T>
 where
     T: Clone + One + Zero,
 {
-    pub(crate) fn new(nrows: usize, ncols: usize, data: Vec<T>) -> Self {
+    pub fn new(nrows: usize, ncols: usize, data: Vec<T>) -> Self {
         assert_eq!(
             data.len(),
             nrows * ncols,
@@ -106,14 +106,7 @@ mod tests {
     #[cfg(feature = "extensor_dense_hashmap")]
     use crate::extensor::dense_hashmap::ExTensor;
 
-    #[cfg(feature = "matrix_naive")]
     use crate::matrix::naive::Matrix;
-    #[cfg(feature = "matrix_naive_parallel")]
-    use crate::matrix::naive_parallel::Matrix;
-    #[cfg(feature = "matrix_sparse_hash")]
-    use crate::matrix::sparse_hash::Matrix;
-    #[cfg(feature = "matrix_sparse_triples")]
-    use crate::matrix::sparse_triples::Matrix;
 
     use crate::utils;
     use num_traits::identities::Zero;

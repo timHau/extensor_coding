@@ -7,7 +7,7 @@ use num_traits::identities::{One, Zero};
 use std::borrow::BorrowMut;
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Matrix<T> {
+pub struct Matrix<T> {
     nrows: usize,
     ncols: usize,
     data: Vec<(usize, usize, T)>,
@@ -17,7 +17,7 @@ impl<T> Matrix<T>
 where
     T: Clone + One + Zero,
 {
-    pub(crate) fn new(nrows: usize, ncols: usize, values: Vec<T>) -> Self {
+    pub fn new(nrows: usize, ncols: usize, values: Vec<T>) -> Self {
         assert_eq!(
             values.len(),
             nrows * ncols,
@@ -44,7 +44,6 @@ where
         &self.data
     }
 
-    #[allow(dead_code)]
     pub(crate) fn ncols(&self) -> usize {
         self.ncols
     }

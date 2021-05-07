@@ -9,7 +9,7 @@ rand = "0.8.0"
 num-traits = "0.2.14"
 
 [features]
-default = ["extensor_dense_hashmap", "matrix_sparse_triples"]
+default = ["extensor_dense_hashmap", "matrix_sparse_hash"]
 extensor_dense_hashmap = []
 extensor_bitvec = []
 matrix_naive = []
@@ -26,3 +26,7 @@ debug = true
 [[bench]]
 name = "wedge_product"
 harness = false
+
+#[[bench]]
+#name = "matrix_vec"
+#harness = false

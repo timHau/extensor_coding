@@ -83,9 +83,10 @@ impl std::ops::BitAnd for &BitVec {
     type Output = BitVec;
 
     fn bitand(self, rhs: &BitVec) -> BitVec {
-        let mut data = vec![];
-
         let max_len = max(self.data.len(), rhs.data.len());
+        let mut data = Vec::with_capacity(max_len);
+        data.reserve(max_len);
+
         for i in 0..max_len {
             let b_1 = self.data.get(i).unwrap_or(&false);
             let b_2 = rhs.data.get(i).unwrap_or(&false);

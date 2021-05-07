@@ -4,5 +4,5 @@ pub mod algorithm;
 mod bitvec;
 pub mod extensor; // only pub because its used in benches/
 pub mod graph;
-mod matrix;
+pub mod matrix; // only pub because its used in benches/
 mod utils;

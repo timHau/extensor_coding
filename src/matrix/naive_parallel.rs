@@ -46,7 +46,7 @@ where
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct Matrix<T> {
+pub struct Matrix<T> {
     data: Vec<T>,
     nrows: usize,
     ncols: usize,
@@ -70,7 +70,7 @@ where
     /// ## new
     ///
     /// create a nrows x ncols matrix from the values inside vec
-    pub(crate) fn new(nrows: usize, ncols: usize, data: Vec<T>) -> Self {
+    pub fn new(nrows: usize, ncols: usize, data: Vec<T>) -> Self {
         assert_eq!(
             nrows * ncols,
             data.len(),
