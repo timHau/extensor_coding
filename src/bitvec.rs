@@ -1,4 +1,4 @@
-use std::cmp::max;
+use std::cmp::{max, min};
 use std::hash::Hasher;
 
 #[derive(Debug, Eq, Clone)]
@@ -83,11 +83,11 @@ impl std::ops::BitAnd for &BitVec {
     type Output = BitVec;
 
     fn bitand(self, rhs: &BitVec) -> BitVec {
-        let max_len = max(self.data.len(), rhs.data.len());
-        let mut data = Vec::with_capacity(max_len);
-        data.reserve(max_len);
+        let min_len = min(self.data.len(), rhs.data.len());
+        let mut data = Vec::with_capacity(min_len);
+        data.reserve(min_len);
 
-        for i in 0..max_len {
+        for i in 0..min_len {
             let b_1 = self.data.get(i).unwrap_or(&false);
             let b_2 = rhs.data.get(i).unwrap_or(&false);
 
@@ -125,6 +125,14 @@ impl std::cmp::PartialEq for BitVec {
 impl std::hash::Hash for BitVec {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.data.hash(state);
+    }
+}
+
+impl std::ops::Index<usize> for BitVec {
+    type Output = bool;
+
+    fn index(&self, index: usize) -> &bool {
+        self.data.get(index).unwrap()
     }
 }
 

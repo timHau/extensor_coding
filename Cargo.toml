@@ -7,6 +7,7 @@ edition = "2018"
 [dependencies]
 rand = "0.8.0"
 num-traits = "0.2.14"
+plotters = "^0.3.0"
 
 [features]
 default = ["extensor_dense_hashmap", "matrix_sparse_hash"]
@@ -29,4 +30,8 @@ harness = false
 
 #[[bench]]
 #name = "matrix_vec"
+#harness = false
+
+#[[bench]]
+#name = "algorithm"
 #harness = false

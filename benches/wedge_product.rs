@@ -1,4 +1,5 @@
 use extensor_coding::{extensor::bitvec, extensor::dense_hashmap};
+use plotters::prelude::*;
 use rand::Rng;
 use std::time::Instant;
 
@@ -81,11 +82,58 @@ fn bench_hashmap(num_iter: i32) -> Vec<f64> {
     join_runs(times)
 }
 
+fn plot_results(
+    times_bitvec: Vec<f64>,
+    times_hashmap: Vec<f64>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let root = BitMapBackend::new("benches/output/wedge_prod.png", (1024, 640)).into_drawing_area();
+    root.fill(&WHITE)?;
+
+    let mut chart = ChartBuilder::on(&root)
+        .caption("wedge product comparison", ("sans-serif", 20).into_font())
+        .margin(20)
+        .x_label_area_size(50)
+        .y_label_area_size(50)
+        .build_cartesian_2d(0f32..80f32, 0f32..50f32)?;
+
+    chart
+        .configure_mesh()
+        .x_labels(10)
+        .y_labels(10)
+        .y_desc("Laufzeit (in ms)")
+        .x_desc("Nummer von Basiselementen")
+        .light_line_style(&WHITE.mix(0.8))
+        .draw()?;
+
+    chart
+        .draw_series(LineSeries::new(
+            (0..times_bitvec.len()).map(|i| (i as f32, times_bitvec[i] as f32)),
+            &RED,
+        ))?
+        .label("bitvec")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
+
+    chart
+        .draw_series(LineSeries::new(
+            (0..times_hashmap.len()).map(|i| (i as f32, times_hashmap[i] as f32)),
+            &BLUE,
+        ))?
+        .label("dense_hashmap")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
+
+    chart
+        .configure_series_labels()
+        .background_style(&WHITE.mix(0.5))
+        .border_style(&BLACK)
+        .draw()?;
+
+    Ok(())
+}
+
 fn main() {
     let num_iter = 50;
     let times_bitvec = bench_bitvec(num_iter);
     let times_hashmap = bench_hashmap(num_iter);
 
-    println!("times bitvec: {:?}", times_bitvec);
-    println!("times hashmap: {:?}", times_hashmap);
+    plot_results(times_bitvec, times_hashmap);
 }
