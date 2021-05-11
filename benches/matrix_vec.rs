@@ -3,6 +3,7 @@ mod utils;
 use extensor_coding::{
     matrix::naive, matrix::naive_parallel, matrix::sparse_hash, matrix::sparse_triples,
 };
+use plotters::style;
 use rand::Rng;
 use std::time::Instant;
 
@@ -122,8 +123,24 @@ fn main() {
     let times_triples = bench_triples(num_iter);
     let times_hash = bench_hash(num_iter);
 
-    println!("naive: {:?}", times_naive);
-    // println!("naive_parallel: {:?}", times_naive_parallel);
-    println!("triples: {:?}", times_triples);
-    println!("hash: {:?}", times_hash);
+    let result = vec![
+        ("naive".to_string(), style::RED, times_naive),
+        ("triples".to_string(), style::GREEN, times_triples.clone()),
+        ("hashmap".to_string(), style::BLUE, times_hash.clone()),
+    ];
+    let _ = utils::plot_results(
+        (0f32..500f32, 0f32..500000f32),
+        "benches/output/matrix_vec.png",
+        &result,
+    );
+
+    let sparse_result = vec![
+        ("triples".to_string(), style::GREEN, times_triples),
+        ("hashmap".to_string(), style::BLUE, times_hash),
+    ];
+    let _ = utils::plot_results(
+        (0f32..500f32, 0f32..12000f32),
+        "benches/output/matrix_vec_sparse.png",
+        &result,
+    );
 }

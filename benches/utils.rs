@@ -1,4 +1,5 @@
 use plotters::prelude::*;
+use std::ops::Range;
 
 pub fn join_runs(runs: Vec<Vec<u128>>) -> Vec<f64> {
     let mut res = vec![0.0; runs[0].len()];
@@ -15,9 +16,11 @@ pub fn join_runs(runs: Vec<Vec<u128>>) -> Vec<f64> {
 }
 
 pub fn plot_results(
+    dimensions: (Range<f32>, Range<f32>),
+    path: &str,
     results: &Vec<(String, RGBColor, Vec<f64>)>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let root = BitMapBackend::new("benches/output/wedge_prod.png", (1024, 640)).into_drawing_area();
+    let root = BitMapBackend::new(path, (1024, 640)).into_drawing_area();
     root.fill(&WHITE)?;
 
     let mut chart = ChartBuilder::on(&root)
@@ -25,7 +28,7 @@ pub fn plot_results(
         .margin(20)
         .x_label_area_size(50)
         .y_label_area_size(50)
-        .build_cartesian_2d(0f32..80f32, 0f32..50f32)?;
+        .build_cartesian_2d(dimensions.0, dimensions.1)?;
 
     chart
         .configure_mesh()

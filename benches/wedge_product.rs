@@ -79,5 +79,9 @@ fn main() {
         ("bitvec".to_string(), style::RED, times_bitvec),
         ("dense_hashmap".to_string(), style::BLUE, times_hashmap),
     ];
-    let _ = utils::plot_results(&result);
+    let _ = utils::plot_results(
+        (0f32..80f32, 0f32..50f32),
+        "benches/output/wedge_prod.png",
+        &result,
+    );
 }
