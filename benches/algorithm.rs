@@ -1,19 +1,7 @@
+mod utils;
+
 use extensor_coding::{algorithm, graph::Graph};
 use std::time::Instant;
-
-fn join_runs(runs: Vec<Vec<u128>>) -> Vec<f64> {
-    let mut res = vec![0.0; runs[0].len()];
-
-    for tv in runs.iter() {
-        for (i, v) in tv.iter().enumerate() {
-            res[i] += *v as f64;
-        }
-    }
-
-    res.iter()
-        .map(|t| *t / (runs.len() as f64))
-        .collect::<Vec<f64>>()
-}
 
 fn bench_c(num_iter: i32) -> Vec<f64> {
     let mut times = Vec::new();
@@ -38,7 +26,7 @@ fn bench_c(num_iter: i32) -> Vec<f64> {
         times.push(times_per_iter);
     }
 
-    join_runs(times)
+    utils::join_runs(times)
 }
 
 fn main() {
