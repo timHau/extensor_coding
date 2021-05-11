@@ -1,4 +1,3 @@
-/target
-/.idea
-/.vscode
-flamegraph.svg
+# Ignore everything in this directory
+*
+!.gitignore

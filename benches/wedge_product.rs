@@ -80,7 +80,11 @@ fn main() {
         ("dense_hashmap".to_string(), style::BLUE, times_hashmap),
     ];
     let _ = utils::plot_results(
-        (0f32..80f32, 0f32..50f32),
+        "wedge product comparison",
+        (
+            ("Laufzeit (in ms)", 0f32..80f32),
+            ("Nummer von Basiselementen", 0f32..50f32),
+        ),
         "benches/output/wedge_prod.png",
         &result,
     );

@@ -16,26 +16,29 @@ pub fn join_runs(runs: Vec<Vec<u128>>) -> Vec<f64> {
 }
 
 pub fn plot_results(
-    dimensions: (Range<f32>, Range<f32>),
+    title: &str,
+    axis: ((&str, Range<f32>), (&str, Range<f32>)),
     path: &str,
     results: &Vec<(String, RGBColor, Vec<f64>)>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let root = BitMapBackend::new(path, (1024, 640)).into_drawing_area();
     root.fill(&WHITE)?;
 
+    let (x, y) = axis;
+
     let mut chart = ChartBuilder::on(&root)
-        .caption("wedge product comparison", ("sans-serif", 20).into_font())
+        .caption(title, ("sans-serif", 20).into_font())
         .margin(20)
         .x_label_area_size(50)
         .y_label_area_size(50)
-        .build_cartesian_2d(dimensions.0, dimensions.1)?;
+        .build_cartesian_2d(x.1, y.1)?;
 
     chart
         .configure_mesh()
         .x_labels(10)
         .y_labels(10)
-        .y_desc("Laufzeit (in ms)")
-        .x_desc("Nummer von Basiselementen")
+        .y_desc(x.0)
+        .x_desc(y.0)
         .light_line_style(&WHITE.mix(0.8))
         .draw()?;
 

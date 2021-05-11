@@ -129,7 +129,8 @@ fn main() {
         ("hashmap".to_string(), style::BLUE, times_hash.clone()),
     ];
     let _ = utils::plot_results(
-        (0f32..500f32, 0f32..500000f32),
+        "matrix vec prod",
+        (("n", 0f32..500f32), ("Zeit (in ns)", 0f32..500000f32)),
         "benches/output/matrix_vec.png",
         &result,
     );
@@ -139,8 +140,9 @@ fn main() {
         ("hashmap".to_string(), style::BLUE, times_hash),
     ];
     let _ = utils::plot_results(
-        (0f32..500f32, 0f32..12000f32),
+        "sparse matrix vec prod",
+        (("n", 0f32..500f32), ("Zeit (in ns)", 0f32..12000f32)),
         "benches/output/matrix_vec_sparse.png",
-        &result,
+        &sparse_result,
     );
 }
