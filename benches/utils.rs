@@ -14,7 +14,9 @@ pub fn join_runs(runs: Vec<Vec<u128>>) -> Vec<f64> {
         .collect::<Vec<f64>>()
 }
 
-pub fn plot_results(results: &[(String, Vec<f64>)]) -> Result<(), Box<dyn std::error::Error>> {
+pub fn plot_results(
+    results: &Vec<(String, RGBColor, Vec<f64>)>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let root = BitMapBackend::new("benches/output/wedge_prod.png", (1024, 640)).into_drawing_area();
     root.fill(&WHITE)?;
 
@@ -34,14 +36,16 @@ pub fn plot_results(results: &[(String, Vec<f64>)]) -> Result<(), Box<dyn std::e
         .light_line_style(&WHITE.mix(0.8))
         .draw()?;
 
-    for (name, res) in results.iter() {
+    for (name, col, res) in results.iter() {
         chart
             .draw_series(LineSeries::new(
                 (0..res.len()).map(|i| (i as f32, res[i] as f32)),
-                &RED,
+                col.clone().to_owned(),
             ))?
             .label(name)
-            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
+            .legend(move |(x, y)| {
+                PathElement::new(vec![(x, y), (x + 20, y)], col.clone().to_owned())
+            });
     }
 
     chart

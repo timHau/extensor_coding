@@ -1,6 +1,7 @@
 mod utils;
 
 use extensor_coding::{extensor::bitvec, extensor::dense_hashmap};
+use plotters::style;
 use rand::Rng;
 use std::time::Instant;
 
@@ -75,8 +76,8 @@ fn main() {
     let times_hashmap = bench_hashmap(num_iter);
 
     let result = vec![
-        ("bitvec".to_string(), times_bitvec),
-        ("dense_hashmap".to_string(), times_hashmap),
+        ("bitvec".to_string(), style::RED, times_bitvec),
+        ("dense_hashmap".to_string(), style::BLUE, times_hashmap),
     ];
     let _ = utils::plot_results(&result);
 }
