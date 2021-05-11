@@ -2,4 +2,3 @@
 /.idea
 /.vscode
 flamegraph.svg
-/benches/output/
