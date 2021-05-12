@@ -32,12 +32,14 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
         println!("t: {}", t);
 
         let n = t as f64;
-        let mean = sum / n;
-        let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
-        let t_val = utils::t_value(t - 1);
-        println!("mean: {}, std_dev: {}", mean, std_dev);
-        if mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean {
-            return mean;
+        if n > 2.0 {
+            let mean = sum / n;
+            let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
+            let t_val = utils::t_value(t - 1);
+            println!("mean: {}, std_dev: {}", mean, std_dev);
+            if mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean {
+                return mean;
+            }
         }
     }
 
