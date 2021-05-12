@@ -77,12 +77,34 @@ mod tests {
     fn c() {
         let g = Graph::from_graph6("src/data/test_graphs/path3.g6");
         let k = 2;
-        let eps = 0.9;
+        let eps = 0.5;
         let now = std::time::Instant::now();
         let res = algorithm::c(g, k, eps);
         println!("algorihm c took: {}s", now.elapsed().as_secs());
 
         let p = 4.;
+        let lower_bound = (1. - eps) * p;
+        let upper_bound = (1. + eps) * p;
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
+        );
+    }
+
+    #[test]
+    fn c_2() {
+        let g = Graph::from_graph6("src/data/test_graphs/path3.g6");
+        let k = 3;
+        let eps = 0.5;
+        let now = std::time::Instant::now();
+        let res = algorithm::c(g, k, eps);
+        println!("algorihm c took: {}s", now.elapsed().as_secs());
+
+        let p = 2.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
         println!(

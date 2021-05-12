@@ -28,10 +28,10 @@ debug = true
 #name = "wedge_product"
 #harness = false
 
-[[bench]]
-name = "matrix_vec"
-harness = false
-
 #[[bench]]
-#name = "algorithm"
+#name = "matrix_vec"
 #harness = false
+
+[[bench]]
+name = "algorithm"
+harness = false
