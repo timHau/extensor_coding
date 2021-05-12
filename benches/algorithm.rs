@@ -14,7 +14,7 @@ fn bench_c(num_iter: i32) -> Vec<f64> {
         println!("{} / {}", _j, num_iter);
 
         for k in 2..=max_k {
-            let g = Graph::from_graph6("src/data/test_graphs/path100.g6");
+            let g = Graph::from_graph6("src/data/path10.g6");
             let eps = 0.9;
 
             let now = Instant::now();
@@ -37,7 +37,7 @@ fn main() {
     let result = vec![("algorithm c".to_string(), style::RED, times_algo_c)];
     let _ = utils::plot_results(
         "algorithm c (dense_hashmap, sparse matrix)",
-        (("k", 0f32..9f32), ("Zeit (in ns)", 0f32..600000f32)),
+        (("k", 2f32..9f32), ("Zeit (in ns)", 0f32..600000f32)),
         "benches/output/algo.png",
         &result,
     );

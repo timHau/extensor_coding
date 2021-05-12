@@ -5,6 +5,8 @@ use crate::extensor::dense_hashmap::ExTensor;
 
 use rand::distributions::{Distribution, Uniform};
 
+/// ## create_vandermonde
+///
 /// given k, create a lifted vandermonde coding that takes v as input
 pub(crate) fn create_vandermonde(n: usize, k: usize) -> Vec<ExTensor> {
     let mut res = Vec::with_capacity(n);
@@ -20,6 +22,8 @@ pub(crate) fn create_vandermonde(n: usize, k: usize) -> Vec<ExTensor> {
     res
 }
 
+/// ## create_bernoulli
+///
 /// given k, create a lifted bernoulli coding
 pub(crate) fn create_bernoulli(n: usize, k: usize) -> Vec<ExTensor> {
     let mut res = Vec::with_capacity(n);
@@ -47,6 +51,51 @@ pub(crate) fn create_bernoulli(n: usize, k: usize) -> Vec<ExTensor> {
     res
 }
 
+/// ## file_n_from
+///
+/// given a `path_str` which is the path to a graph6 file as a string, it opens the file and returns
+/// the file with `n` which is the number of vertices in that graph.
+/// It works with .g6 and .s6 files, with and without headers. If the file is not found it will panic.
+pub(crate) fn file_n_from(path_str: &str) -> (Vec<u8>, usize) {
+    // read file if it exists
+    let mut file = std::fs::read(path_str).expect(".graph6 input file not found");
+
+    let mut _n = 0;
+
+    let has_sparse_header =
+        file.len() > 10 && std::str::from_utf8(&file[..11]).unwrap() == ">>sparse6<<";
+    let has_graph_header =
+        file.len() > 9 && std::str::from_utf8(&file[..10]).unwrap() == ">>graph6<<";
+    let is_sparse = file[0] as char == ':' || has_sparse_header;
+
+    if !is_sparse {
+        if has_graph_header {
+            _n = (file[10] - 63) as usize;
+            file = file[11..].to_vec();
+        } else {
+            _n = (file[0] - 63) as usize;
+            file = file[1..].to_vec();
+        }
+    } else if has_sparse_header {
+        _n = (file[12] - 63) as usize;
+        file = file[13..].to_vec();
+    } else {
+        _n = (file[1] - 63) as usize;
+        file = file[2..].to_vec();
+    }
+
+    if _n > 62 {
+        let n1 = ((file[0] - 63) as i32) << 12;
+        let n2 = ((file[1] - 63) as i32) << 6;
+        let n3 = (file[2] - 63) as i32;
+        _n = (n1 + n2 + n3) as usize;
+        file = file[3..].to_vec();
+    }
+
+    (file, _n)
+}
+
+/// calculates k!
 pub(crate) fn factorial(k: usize) -> u64 {
     let mut res = 1;
     for i in 1..=k as u64 {

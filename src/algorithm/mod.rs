@@ -18,7 +18,7 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
     let mut sum = 0.0;
     let mut ssum = 0.0;
 
-    while t < 2 * (k as f64 / eps.powf(2.0)) as i32 {
+    while t < 4 * (k as f64 / eps.powf(2.0)) as i32 {
         let bernoulli_mapping = utils::create_bernoulli(g.num_vert(), k);
         let v_j = g.compute_walk_sum(k, bernoulli_mapping);
         let coeff = v_j.coeffs()[0].abs() as f64;
@@ -32,11 +32,13 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
         println!("t: {}", t);
 
         let n = t as f64;
-        if n > 2.0 {
+        if n > 10.0 {
             let mean = sum / n;
             let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
             let t_val = utils::t_value(t - 1);
+
             println!("mean: {}, std_dev: {}", mean, std_dev);
+
             if mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean {
                 return mean;
             }
@@ -53,7 +55,7 @@ mod tests {
 
     #[test]
     fn u_3() {
-        let g = Graph::from_graph6("src/data/test_graphs/path3.g6");
+        let g = Graph::from_graph6("src/data/path3.g6");
         let k = 3;
         let res = algorithm::u(&g, k);
         assert_eq!(res, true, "algorithm u on 3 path graph");
@@ -61,7 +63,7 @@ mod tests {
 
     #[test]
     fn u_4() {
-        let g = Graph::from_graph6("src/data/test_graphs/path4.g6");
+        let g = Graph::from_graph6("src/data/path4.g6");
         let k = 4;
         let res = algorithm::u(&g, k);
         assert_eq!(res, true, "algorithm u on 4 path graph");
@@ -69,7 +71,7 @@ mod tests {
 
     #[test]
     fn u_4_3() {
-        let g = Graph::from_graph6("src/data/test_graphs/path3.g6");
+        let g = Graph::from_graph6("src/data/path3.g6");
         let k = 4;
         let res = algorithm::u(&g, k);
         assert_eq!(res, false, "no 4 path in a 3 path graph");
@@ -77,7 +79,7 @@ mod tests {
 
     #[test]
     fn c() {
-        let g = Graph::from_graph6("src/data/test_graphs/path3.g6");
+        let g = Graph::from_graph6("src/data/path3.g6");
         let k = 2;
         let eps = 0.5;
         let now = std::time::Instant::now();
@@ -99,7 +101,7 @@ mod tests {
 
     #[test]
     fn c_2() {
-        let g = Graph::from_graph6("src/data/test_graphs/path3.g6");
+        let g = Graph::from_graph6("src/data/path3.g6");
         let k = 3;
         let eps = 0.5;
         let now = std::time::Instant::now();

@@ -12,6 +12,7 @@ use crate::matrix::sparse_hash::Matrix;
 #[cfg(feature = "matrix_sparse_triples")]
 use crate::matrix::sparse_triples::Matrix;
 
+use crate::utils;
 use num_traits::Zero;
 
 #[derive(Debug)]
@@ -24,55 +25,11 @@ pub struct Graph {
 /// implementation of the Graph structure used
 /// currently a graph is just its adjacency matrix
 impl Graph {
-    /// ## file_n_from
-    ///
-    /// given a `path_str` which is the path to a graph6 file as a string, it opens the file and returns
-    /// the file with `n` which is the number of vertices in that graph.
-    /// It works with .g6 and .s6 files, with and without headers. If the file is not found it will panic.
-    pub(crate) fn file_n_from(path_str: &str) -> (Vec<u8>, usize) {
-        // read file if it exists
-        let mut file = std::fs::read(path_str).expect(".graph6 input file not found");
-
-        let mut _n = 0;
-
-        let has_sparse_header =
-            file.len() > 10 && std::str::from_utf8(&file[..11]).unwrap() == ">>sparse6<<";
-        let has_graph_header =
-            file.len() > 9 && std::str::from_utf8(&file[..10]).unwrap() == ">>graph6<<";
-        let is_sparse = file[0] as char == ':' || has_sparse_header;
-
-        if !is_sparse {
-            if has_graph_header {
-                _n = (file[10] - 63) as usize;
-                file = file[11..].to_vec();
-            } else {
-                _n = (file[0] - 63) as usize;
-                file = file[1..].to_vec();
-            }
-        } else if has_sparse_header {
-            _n = (file[12] - 63) as usize;
-            file = file[13..].to_vec();
-        } else {
-            _n = (file[1] - 63) as usize;
-            file = file[2..].to_vec();
-        }
-
-        if _n > 62 {
-            let n1 = ((file[0] - 63) as i32) << 12;
-            let n2 = ((file[1] - 63) as i32) << 6;
-            let n3 = (file[2] - 63) as i32;
-            _n = (n1 + n2 + n3) as usize;
-            file = file[3..].to_vec();
-        }
-
-        (file, _n)
-    }
-
     /// ## from_graph6
     ///
     /// create a Graph from a .g6 file which is located at `path_str`.
     pub fn from_graph6(path_str: &str) -> Self {
-        let (file, n) = Self::file_n_from(path_str);
+        let (file, n) = utils::file_n_from(path_str);
 
         let mut buffer = Vec::new();
         file.into_iter().for_each(|b| {
@@ -104,12 +61,46 @@ impl Graph {
     }
 
     fn _from_sparse6(path_str: &str) -> Self {
-        let (_file, n) = Self::file_n_from(path_str);
+        let (_file, n) = utils::file_n_from(path_str);
 
         println!("TODO {}", n);
 
         Graph {
             adj_mat: Box::new(Matrix::new(0, 0, vec![])),
+        }
+    }
+
+    fn from_tsv(path_str: &str) -> Self {
+        let mut file = std::fs::read_to_string(path_str).expect("file was not found");
+        let mut lines = file.lines();
+
+        let n = lines
+            .nth(1)
+            .unwrap()
+            .split(" ")
+            .filter(|v| *v != "%")
+            .map(|v| (*v).parse::<i32>().unwrap())
+            .collect::<Vec<_>>()[1] as usize;
+
+        let mut adj_mat = vec![0; n * n];
+        for line in lines {
+            if !line.starts_with("%") {
+                let splited: Vec<_> = line
+                    .split(" ")
+                    .take(2)
+                    .map(|v| (*v).parse::<i32>().unwrap())
+                    .collect();
+
+                let from = (splited[0] - 1) as usize;
+                let to = (splited[1] - 1) as usize;
+                adj_mat[to + n * from] = 1;
+            }
+        }
+
+        let adj_mat = Matrix::new(n, n, adj_mat);
+
+        Graph {
+            adj_mat: Box::new(adj_mat),
         }
     }
 
@@ -198,7 +189,7 @@ mod tests {
 
     #[test]
     fn graph6_header() {
-        let graph_with_header = String::from("src/data/test_graphs/path10_with_header.g6");
+        let graph_with_header = String::from("src/data/path10_with_header.g6");
         let g = Graph::from_graph6(&graph_with_header);
         let expect = get_n_path_graph_adj_mat(10);
         assert_eq!(
@@ -209,10 +200,10 @@ mod tests {
 
     #[test]
     fn tutte_graph() {
-        let tutte_str = String::from("src/data/test_graphs/tutte_graph.g6");
+        let tutte_str = String::from("src/data/tutte_graph.g6");
         let g = Graph::from_graph6(&tutte_str);
 
-        let tutte_mat_file = std::fs::read_to_string("src/data/test_graphs/tutte_mat.txt")
+        let tutte_mat_file = std::fs::read_to_string("src/data/tutte_mat.txt")
             .expect("could not read tutte_mat.txt");
         let tutte_mat_file = tutte_mat_file.replace('\n', " ");
 
@@ -228,7 +219,7 @@ mod tests {
 
     #[test]
     fn adj_mat() {
-        let path_10 = String::from("src/data/test_graphs/path10.g6");
+        let path_10 = String::from("src/data/path10.g6");
         let g = Graph::from_graph6(&path_10);
         let expect = get_n_path_graph_adj_mat(10);
         assert_eq!(*g.adj_mat, expect, "10 path graph should be read correctly");
@@ -236,7 +227,7 @@ mod tests {
 
     #[test]
     fn big_graph() {
-        let path_100 = String::from("src/data/test_graphs/path100.g6");
+        let path_100 = String::from("src/data/path100.g6");
         let g = Graph::from_graph6(&path_100);
         let expect = get_n_path_graph_adj_mat(100);
         assert_eq!(
@@ -247,7 +238,7 @@ mod tests {
 
     #[test]
     fn big_graph_with_header() {
-        let path_100 = String::from("src/data/test_graphs/path100_with_header.g6");
+        let path_100 = String::from("src/data/path100_with_header.g6");
         let g = Graph::from_graph6(&path_100);
         let expect = get_n_path_graph_adj_mat(100);
         assert_eq!(
@@ -257,8 +248,22 @@ mod tests {
     }
 
     #[test]
+    fn read_tsv() {
+        let tsv = String::from("src/data/out.brunson_southern-women_southern-women");
+        let g = Graph::from_tsv(&tsv);
+        let expect = Matrix::new(
+            5,
+            5,
+            vec![
+                1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1,
+            ],
+        );
+        assert_eq!(*g.adj_mat, expect, "tsv reads correct adj_mat");
+    }
+
+    #[test]
     fn compute_walk() {
-        let path_10 = String::from("src/data/test_graphs/path10.g6");
+        let path_10 = String::from("src/data/path10.g6");
         let g = Graph::from_graph6(&path_10);
         let k = 3;
         let res = g.compute_walk_sum(k, utils::create_vandermonde(g.num_vert(), k));
@@ -271,7 +276,7 @@ mod tests {
 
     #[test]
     fn compute_walk_2() {
-        let path_10 = String::from("src/data/test_graphs/path10.g6");
+        let path_10 = String::from("src/data/path10.g6");
         let g = Graph::from_graph6(&path_10);
         let k = 5;
         let res = g.compute_walk_sum(k, utils::create_vandermonde(g.num_vert(), k));
@@ -284,7 +289,7 @@ mod tests {
 
     #[test]
     fn compute_walk_3() {
-        let path_10 = String::from("src/data/test_graphs/path3.g6");
+        let path_10 = String::from("src/data/path3.g6");
         let g = Graph::from_graph6(&path_10);
         let k = 5;
         let res = g.compute_walk_sum(k, utils::create_vandermonde(g.num_vert(), k));
