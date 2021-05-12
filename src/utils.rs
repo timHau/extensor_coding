@@ -7,7 +7,10 @@ use rand::distributions::{Distribution, Uniform};
 
 /// ## create_vandermonde
 ///
-/// given k, create a lifted vandermonde coding that takes v as input
+/// Given `k`, create a lifted vandermonde coding
+/// `n` is the number of vertices in the graph
+/// For every vertex `v` in the Graph create a exterior Tensor
+// v_i ↦ (i^0, i^1, ...,  i^(k-1))
 pub(crate) fn create_vandermonde(n: usize, k: usize) -> Vec<ExTensor> {
     let mut res = Vec::with_capacity(n);
     res.reserve(n);
@@ -25,6 +28,9 @@ pub(crate) fn create_vandermonde(n: usize, k: usize) -> Vec<ExTensor> {
 /// ## create_bernoulli
 ///
 /// given k, create a lifted bernoulli coding
+/// `n` is the number of vertices in the graph
+/// For every vertex `v` in the Graph create a exterior Tensor
+// v_i ↦ (±1, ±1, ...,  ±1)
 pub(crate) fn create_bernoulli(n: usize, k: usize) -> Vec<ExTensor> {
     let mut res = Vec::with_capacity(n);
     res.reserve(n);
@@ -95,6 +101,8 @@ pub(crate) fn file_n_from(path_str: &str) -> (Vec<u8>, usize) {
     (file, _n)
 }
 
+/// ## factorial
+///
 /// calculates k!
 pub(crate) fn factorial(k: usize) -> u64 {
     let mut res = 1;
@@ -104,6 +112,8 @@ pub(crate) fn factorial(k: usize) -> u64 {
     res
 }
 
+/// ## contains_element
+///
 /// determine if a sorted vec `v` contains `target`
 pub(crate) fn contains_element(v: &Vec<u8>, target: &u8) -> bool {
     let mut l = 0usize;
@@ -126,6 +136,8 @@ pub(crate) fn contains_element(v: &Vec<u8>, target: &u8) -> bool {
     false
 }
 
+/// ## has_intersection
+///
 /// determine if two sorted (!!) vecs have at least one common element
 pub(crate) fn has_intersection(a: &Vec<u8>, b: &Vec<u8>) -> bool {
     // both vecs are sorted, so we can use binary search

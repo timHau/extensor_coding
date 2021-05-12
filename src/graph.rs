@@ -70,7 +70,15 @@ impl Graph {
         }
     }
 
-    fn from_tsv(path_str: &str) -> Self {
+    /// ## from_tsv
+    ///
+    /// Create a Graph from the given `path_str` tsv file
+    /// The second line should be prefixed by a % and contains the number of vertices as the second
+    /// entry. So e.g. `% x num_vert num_vert`
+    /// All lines that are not prefixed by % are assumend to have the following format:
+    /// `from_id to_id`. So the first entry is the index from the "starting" vertex (index starts at `1`)
+    /// and the second entry is the index of the "ending" vertex
+    pub fn from_tsv(path_str: &str) -> Self {
         let mut file = std::fs::read_to_string(path_str).expect("file was not found");
         let mut lines = file.lines();
 
@@ -106,14 +114,14 @@ impl Graph {
 
     /// ## compute_walk_sum
     ///
-    /// given an usize `k` and an extensor mapping compute its walk sum.
+    /// Given an usize `k` and an extensor mapping compute its walk sum.
     /// The mapping is a tuple of closures, where the first element is a function from
     /// a vertex to a extensor and the second element is a function from two vertices (an edge) to
     /// an f64. The walk sum is calculated as
     ///
     /// f(G, ξ) = (1 1 .. 1) A^(k-1) (ξ(v_1) ξ(v_2) ... ξ(v_n))^T
     ///
-    pub(crate) fn compute_walk_sum(&self, k: usize, coding: Vec<ExTensor>) -> ExTensor {
+    pub fn compute_walk_sum(&self, k: usize, coding: Vec<ExTensor>) -> ExTensor {
         // add extensor coding to vertices and transform back to a matrix
         let a = (*self.adj_mat).add_coding(&coding);
 

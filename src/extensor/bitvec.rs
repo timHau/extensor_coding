@@ -23,6 +23,9 @@ pub struct ExTensor {
 /// | 10100000 |       e_1 ∧ e_3 |
 /// | 11100000 | e_1 ∧ e_2 ∧ e_3 |
 impl ExTensor {
+    /// ## new
+    ///
+    /// Given an Slice of i64 and a Slice of Basis Vecs (u8) create a new ExTensor
     pub fn new(coeffs: &[i64], basis: &[Vec<u8>]) -> Self {
         assert_eq!(
             basis.len(),
@@ -39,6 +42,10 @@ impl ExTensor {
         ExTensor { data }
     }
 
+    /// ## get_sign
+    ///
+    /// Given the basis representation `a` and `b` of two ExTensors determine
+    /// the sign of the permutation that will sort the union of `a` and `b`
     pub(crate) fn get_sign(a: &BitVec, b: &BitVec) -> i64 {
         let mut sum: u32 = 0;
 
@@ -55,6 +62,13 @@ impl ExTensor {
         }
     }
 
+    /// ## lift
+    ///
+    /// Lift an ExTensor `self`, wich means to "shift" the basis by `k` to obtain a new
+    /// extensor `self'` and calculate `self wedge self'` more formal
+    /// ```not-a-test
+    /// ∑_(i in {1..k}) a_i e_i   ∧   ∑_(j in {1..k}) a_j e_(j + k)
+    /// ```
     pub(crate) fn lift(&self, k: usize) -> Self {
         let data = self
             .data
@@ -68,6 +82,9 @@ impl ExTensor {
         self * &ExTensor { data }
     }
 
+    /// ## coeffs
+    ///
+    /// Return the coefficients of the ExTensor
     pub fn coeffs(&self) -> Vec<i64> {
         self.data.iter().map(|(_, coeff)| coeff.clone()).collect()
     }

@@ -39,3 +39,10 @@ All Benchmarks are located under the `benches/` directory. You can execute them 
 ```
 cargo bench
 ```
+
+## Create Docs 
+
+Comments can be turned into a documentation with
+```
+cargo doc --open --no-deps
+```
