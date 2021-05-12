@@ -1,11 +1,12 @@
 mod utils;
 
 use extensor_coding::{algorithm, graph::Graph};
+use plotters::style;
 use std::time::Instant;
 
 fn bench_c(num_iter: i32) -> Vec<f64> {
     let mut times = Vec::new();
-    let max_k = 10;
+    let max_k = 9;
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
@@ -33,5 +34,11 @@ fn main() {
     let num_iter = 10;
     let times_algo_c = bench_c(num_iter);
 
-    println!("algorithm c: {:?}", times_algo_c);
+    let result = vec![("algorithm c".to_string(), style::RED, times_algo_c)];
+    let _ = utils::plot_results(
+        "algorithm c (dense_hashmap, sparse matrix)",
+        (("k", 0f32..9f32), ("Zeit (in ns)", 0f32..600000f32)),
+        "benches/output/algo.png",
+        &result,
+    );
 }

@@ -1,6 +1,7 @@
 use plotters::prelude::*;
 use std::ops::Range;
 
+#[allow(dead_code)]
 pub fn join_runs(runs: Vec<Vec<u128>>) -> Vec<f64> {
     let mut res = vec![0.0; runs[0].len()];
 
@@ -15,6 +16,7 @@ pub fn join_runs(runs: Vec<Vec<u128>>) -> Vec<f64> {
         .collect::<Vec<f64>>()
 }
 
+#[allow(dead_code)]
 pub fn plot_results(
     title: &str,
     axis: ((&str, Range<f32>), (&str, Range<f32>)),

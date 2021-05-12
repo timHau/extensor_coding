@@ -14,7 +14,7 @@ fn rand_coeffs_and_basis(n: i32) -> (Vec<i64>, Vec<Vec<u8>>) {
 
 fn bench_bitvec(num_iter: i32) -> Vec<f64> {
     let mut times = Vec::new();
-    let max_basis = 30;
+    let max_basis = 40;
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
@@ -83,7 +83,7 @@ fn main() {
         "wedge product comparison",
         (
             ("Laufzeit (in ms)", 0f32..80f32),
-            ("Nummer von Basiselementen", 0f32..50f32),
+            ("Nummer von Basiselementen", 0f32..40f32),
         ),
         "benches/output/wedge_prod.png",
         &result,
