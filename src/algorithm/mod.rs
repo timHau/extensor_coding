@@ -14,20 +14,34 @@ pub fn u(g: &Graph, k: usize) -> bool {
 /// # Algorithm C
 ///
 pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
-    let t = (100.0 * (k as f64).powf(3.0) / eps.powf(2.0)) as u64;
+    let mut t = 0;
+    let mut sum = 0.0;
+    let mut ssum = 0.0;
 
-    let mut sum = 0;
-    let mut x_s = Vec::new();
-    for j in 0..t {
+    while t < 2 * (k as f64 / eps.powf(2.0)) as i32 {
         let bernoulli_mapping = utils::create_bernoulli(g.num_vert(), k);
         let v_j = g.compute_walk_sum(k, bernoulli_mapping);
-        let coeff = v_j.coeffs()[0];
-        sum += coeff;
-        x_s.push(coeff);
-        println!("{} / {}", j, t);
+        let coeff = v_j.coeffs()[0].abs() as f64;
+        let denom = utils::factorial(k) as f64;
+        let x_j = coeff / denom;
+
+        sum += x_j;
+        ssum += x_j * x_j;
+        t += 1;
+
+        println!("t: {}", t);
+
+        let n = t as f64;
+        let mean = sum / n;
+        let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
+        let t_val = utils::t_value(t - 1);
+        println!("mean: {}, std_dev: {}", mean, std_dev);
+        if mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean {
+            return mean;
+        }
     }
 
-    sum as f64 / (utils::factorial(k) * t) as f64
+    sum / (t as f64)
 }
 
 #[cfg(test)]

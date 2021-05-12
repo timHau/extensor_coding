@@ -89,6 +89,18 @@ pub(crate) fn has_intersection(a: &Vec<u8>, b: &Vec<u8>) -> bool {
     false
 }
 
+pub(crate) fn t_value(df: i32) -> f64 {
+    match df {
+        0..=4 => 3.747,
+        5..=8 => 2.896,
+        9..=16 => 2.583,
+        17..=32 => 2.457,
+        33..=64 => 2.390,
+        65..=128 => 2.358,
+        _ => 2.326,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[cfg(feature = "extensor_bitvec")]
