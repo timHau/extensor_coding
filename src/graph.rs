@@ -79,7 +79,7 @@ impl Graph {
     /// `from_id to_id`. So the first entry is the index from the "starting" vertex (index starts at `1`)
     /// and the second entry is the index of the "ending" vertex
     pub fn from_tsv(path_str: &str) -> Self {
-        let mut file = std::fs::read_to_string(path_str).expect("file was not found");
+        let file = std::fs::read_to_string(path_str).expect("file was not found");
         let mut lines = file.lines();
 
         let n = lines

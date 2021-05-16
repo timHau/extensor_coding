@@ -4,6 +4,7 @@ use extensor_coding::{extensor::bitvec, extensor::dense_hashmap};
 use plotters::style;
 use rand::Rng;
 use std::time::Instant;
+use indicatif::{ProgressBar, ProgressStyle};
 
 fn rand_coeffs_and_basis(n: i32) -> (Vec<i64>, Vec<Vec<u8>>) {
     let mut rng = rand::thread_rng();
@@ -12,14 +13,14 @@ fn rand_coeffs_and_basis(n: i32) -> (Vec<i64>, Vec<Vec<u8>>) {
     (coeffs, basis)
 }
 
-fn bench_bitvec(num_iter: i32) -> Vec<f64> {
+fn bench_bitvec(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<u128>> {
     let mut times = Vec::new();
     let max_basis = 40;
+    let bar = ProgressBar::new(num_iter);
+    bar.set_style(prog_style.clone());
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
-
-        println!("{} / {}", _j, num_iter);
 
         for n in 1..=max_basis {
             let (coeffs_1, basis_1) = rand_coeffs_and_basis(n);
@@ -35,20 +36,22 @@ fn bench_bitvec(num_iter: i32) -> Vec<f64> {
             times_per_iter.push(elapsed);
         }
 
-        times.push(times_per_iter)
+        times.push(times_per_iter);
+        bar.inc(1);
     }
+    bar.finish();
 
-    utils::join_runs(times)
+    times
 }
 
-fn bench_hashmap(num_iter: i32) -> Vec<f64> {
+fn bench_hashmap(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<u128>> {
     let mut times = Vec::new();
     let max_basis = 80;
+    let bar = ProgressBar::new(num_iter);
+    bar.set_style(prog_style.clone());
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
-
-        println!("{} / {}", _j, num_iter);
 
         for n in 1..=max_basis {
             let (coeffs_1, basis_1) = rand_coeffs_and_basis(n);
@@ -64,16 +67,23 @@ fn bench_hashmap(num_iter: i32) -> Vec<f64> {
             times_per_iter.push(elapsed);
         }
 
-        times.push(times_per_iter)
+        times.push(times_per_iter);
+        bar.inc(1);
     }
+    bar.finish();
 
-    utils::join_runs(times)
+    times
 }
 
 fn main() {
     let num_iter = 50;
-    let times_bitvec = bench_bitvec(num_iter);
-    let times_hashmap = bench_hashmap(num_iter);
+
+    let prog_style = ProgressStyle::default_bar()
+        .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
+        .progress_chars("=>-");
+
+    let times_bitvec = bench_bitvec(num_iter, &prog_style);
+    let times_hashmap = bench_hashmap(num_iter, &prog_style);
 
     let result = vec![
         ("bitvec".to_string(), style::RED, times_bitvec),

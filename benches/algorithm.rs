@@ -3,15 +3,16 @@ mod utils;
 use extensor_coding::{algorithm, graph::Graph};
 use plotters::style;
 use std::time::Instant;
+use indicatif::{ProgressBar, ProgressStyle};
 
-fn bench_c(num_iter: i32) -> Vec<f64> {
+fn bench_c(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<u128>> {
     let mut times = Vec::new();
     let max_k = 9;
+    let bar = ProgressBar::new(num_iter);
+    bar.set_style(prog_style.clone());
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
-
-        println!("{} / {}", _j, num_iter);
 
         for k in 2..=max_k {
             let g = Graph::from_graph6("src/data/path10.g6");
@@ -25,14 +26,21 @@ fn bench_c(num_iter: i32) -> Vec<f64> {
         }
 
         times.push(times_per_iter);
+        bar.inc(1);
     }
+    bar.finish();
 
-    utils::join_runs(times)
+    times
 }
 
 fn main() {
     let num_iter = 10;
-    let times_algo_c = bench_c(num_iter);
+
+    let prog_style = ProgressStyle::default_bar()
+        .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
+        .progress_chars("=>-");
+
+    let times_algo_c = bench_c(num_iter, &prog_style);
 
     let result = vec![("algorithm c".to_string(), style::RED, times_algo_c)];
     let _ = utils::plot_results(

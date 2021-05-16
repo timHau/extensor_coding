@@ -6,20 +6,21 @@ use extensor_coding::{
 use plotters::style;
 use rand::Rng;
 use std::time::Instant;
+use indicatif::{ProgressBar, ProgressStyle};
 
 fn rand_vec(n: i32) -> Vec<i32> {
     let mut rng = rand::thread_rng();
     (0..n).map(|_| rng.gen_range(0..1)).collect()
 }
 
-fn bench_naive(num_iter: i32) -> Vec<f64> {
+fn bench_naive(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<u128>> {
     let mut times = Vec::new();
     let max_n = 500;
+    let bar = ProgressBar::new(num_iter);
+    bar.set_style(prog_style.clone());
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
-
-        println!("{} / {}", _j, num_iter);
 
         for n in 1..=max_n {
             let m = naive::Matrix::new(n, n, rand_vec((n * n) as i32));
@@ -33,19 +34,21 @@ fn bench_naive(num_iter: i32) -> Vec<f64> {
         }
 
         times.push(times_per_iter);
+        bar.inc(1);
     }
+    bar.finish();
 
-    utils::join_runs(times)
+    times
 }
 
-fn bench_naive_parallel(num_iter: i32) -> Vec<f64> {
+fn bench_naive_parallel(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<u128>> {
     let mut times = Vec::new();
     let max_n = 500;
+    let bar = ProgressBar::new(num_iter);
+    bar.set_style(prog_style.clone());
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
-
-        println!("{} / {}", _j, num_iter);
 
         for n in 1..=max_n {
             let m = naive_parallel::Matrix::new(n, n, rand_vec((n * n) as i32));
@@ -59,19 +62,21 @@ fn bench_naive_parallel(num_iter: i32) -> Vec<f64> {
         }
 
         times.push(times_per_iter);
+        bar.inc(1);
     }
+    bar.finish();
 
-    utils::join_runs(times)
+    times
 }
 
-fn bench_triples(num_iter: i32) -> Vec<f64> {
+fn bench_triples(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<u128>> {
     let mut times = Vec::new();
     let max_n = 500;
+    let bar = ProgressBar::new(num_iter);
+    bar.set_style(prog_style.clone());
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
-
-        println!("{} / {}", _j, num_iter);
 
         for n in 1..=max_n {
             let m = sparse_triples::Matrix::new(n, n, rand_vec((n * n) as i32));
@@ -85,19 +90,21 @@ fn bench_triples(num_iter: i32) -> Vec<f64> {
         }
 
         times.push(times_per_iter);
+        bar.inc(1);
     }
+    bar.finish();
 
-    utils::join_runs(times)
+    times
 }
 
-fn bench_hash(num_iter: i32) -> Vec<f64> {
+fn bench_hash(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<u128>> {
     let mut times = Vec::new();
     let max_n = 500;
+    let bar = ProgressBar::new(num_iter);
+    bar.set_style(prog_style.clone());
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
-
-        println!("{} / {}", _j, num_iter);
 
         for n in 1..=max_n {
             let m = sparse_hash::Matrix::new(n, n, rand_vec((n * n) as i32));
@@ -111,17 +118,24 @@ fn bench_hash(num_iter: i32) -> Vec<f64> {
         }
 
         times.push(times_per_iter);
+        bar.inc(1);
     }
+    bar.finish();
 
-    utils::join_runs(times)
+    times
 }
 
 fn main() {
     let num_iter = 50;
-    let times_naive = bench_naive(num_iter);
+
+    let prog_style = ProgressStyle::default_bar()
+        .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
+        .progress_chars("=>-");
+
+    let times_naive = bench_naive(num_iter, &prog_style);
     // let times_naive_parallel = bench_naive_parallel(num_iter);
-    let times_triples = bench_triples(num_iter);
-    let times_hash = bench_hash(num_iter);
+    let times_triples = bench_triples(num_iter, &prog_style);
+    let times_hash = bench_hash(num_iter, &prog_style);
 
     let result = vec![
         ("naive".to_string(), style::RED, times_naive),
