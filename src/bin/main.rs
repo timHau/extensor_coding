@@ -2,7 +2,7 @@ use extensor_coding::{algorithm, graph::Graph};
 use std::time::Instant;
 
 fn main() {
-    let g = Graph::from_graph6("src/data/test_graphs/path10.g6");
+    let g = Graph::from_graph6("src/data/path10.g6");
     let k = 3;
     let eps = 0.9;
 

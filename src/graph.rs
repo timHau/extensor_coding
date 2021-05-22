@@ -142,14 +142,6 @@ impl Graph {
     }
 }
 
-impl std::clone::Clone for Graph {
-    fn clone(&self) -> Self {
-        Graph {
-            adj_mat: Box::new(*self.adj_mat.clone()),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
 
