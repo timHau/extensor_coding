@@ -46,7 +46,7 @@ fn main() {
     let _ = utils::plot_results(
         "algorithm c (dense_hashmap, sparse matrix)",
         (("k", 2f32..9f32), ("Zeit (in ns)", 0f32..600000f32)),
-        "benches/output/algo.png",
+        "benches/output/algo",
         &result,
     );
 }

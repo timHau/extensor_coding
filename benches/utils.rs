@@ -23,24 +23,27 @@ pub fn plot_results(
     path: &str,
     results: &Vec<(String, RGBColor, Vec<Vec<f64>>)>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let run_root = BitMapBackend::new(path, (1024, 640)).into_drawing_area();
+    let run_path = format!("{}.svg", path);
+    let run_root = SVGBackend::new(&run_path, (1024, 640)).into_drawing_area();
     run_root.fill(&WHITE)?;
 
     let (x, y) = axis;
+    let (x_name, x_range) = x;
+    let (y_name, y_range) = y;
 
     let mut run_chart = ChartBuilder::on(&run_root)
         .caption(title, ("sans-serif", 20).into_font())
         .margin(20)
         .x_label_area_size(50)
         .y_label_area_size(50)
-        .build_cartesian_2d(x.1, y.1)?;
+        .build_cartesian_2d(x_range.clone(), y_range.clone())?;
 
     run_chart
         .configure_mesh()
         .x_labels(10)
         .y_labels(10)
-        .x_desc(x.0)
-        .y_desc(y.0)
+        .x_desc(x_name)
+        .y_desc(y_name)
         .light_line_style(&WHITE.mix(0.8))
         .draw()?;
 

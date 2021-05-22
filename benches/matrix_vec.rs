@@ -114,7 +114,7 @@ fn main() {
     let _ = utils::plot_results(
         "matrix vec prod",
         (("n", 0f32..500f32), ("Zeit (in ns)", 0f32..400000f32)),
-        "benches/output/matrix_vec.png",
+        "benches/output/matrix_vec",
         &result,
     );
 
@@ -125,7 +125,7 @@ fn main() {
     let _ = utils::plot_results(
         "sparse matrix vec prod",
         (("n", 0f32..500f32), ("Zeit (in ns)", 0f32..4000f32)),
-        "benches/output/matrix_vec_sparse.png",
+        "benches/output/matrix_vec_sparse",
         &sparse_result,
     );
 }

@@ -5,8 +5,6 @@ use crate::extensor::dense_hashmap::ExTensor;
 
 #[cfg(feature = "matrix_naive")]
 use crate::matrix::naive::Matrix;
-#[cfg(feature = "matrix_naive_parallel")]
-use crate::matrix::naive_parallel::Matrix;
 #[cfg(feature = "matrix_sparse_hash")]
 use crate::matrix::sparse_hash::Matrix;
 #[cfg(feature = "matrix_sparse_triples")]
@@ -61,9 +59,9 @@ impl Graph {
     }
 
     fn from_sparse6(path_str: &str) -> Self {
-        let (_file, n) = utils::file_n_from(path_str);
+        let (file, _n) = utils::file_n_from(path_str);
 
-        println!("TODO {}", n);
+        println!("TODO {:?}", file);
 
         Graph {
             adj_mat: Box::new(Matrix::new(0, 0, vec![])),
@@ -140,6 +138,13 @@ impl Graph {
     pub(crate) fn num_vert(&self) -> usize {
         self.adj_mat.ncols()
     }
+
+    pub fn color_coding(&self, k: usize) -> Self {
+        let adj_mat = (*self.adj_mat).add_color_coding(k);
+        Graph {
+            adj_mat: Box::new(adj_mat),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -151,8 +156,6 @@ mod tests {
     use crate::extensor::dense_hashmap::ExTensor;
     #[cfg(feature = "matrix_naive")]
     use crate::matrix::naive::Matrix;
-    #[cfg(feature = "matrix_naive_parallel")]
-    use crate::matrix::naive_parallel::Matrix;
     #[cfg(feature = "matrix_sparse_hash")]
     use crate::matrix::sparse_hash::Matrix;
     #[cfg(feature = "matrix_sparse_triples")]
