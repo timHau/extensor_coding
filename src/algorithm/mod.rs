@@ -59,7 +59,7 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
     sum / (t as f64)
 }
 
-pub fn color_coding(g: Graph) {}
+pub fn color_coding(_g: Graph) {}
 
 #[cfg(test)]
 mod tests {

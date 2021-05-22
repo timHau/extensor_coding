@@ -198,7 +198,7 @@ mod tests {
 
     #[test]
     fn sparse6() {
-        let g = Graph::from_sparse6("src/data/path10.s6");
+        let _g = Graph::from_sparse6("src/data/path10.s6");
     }
 
     #[test]

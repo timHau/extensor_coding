@@ -160,43 +160,6 @@ impl std::ops::Mul for ExTensor {
     }
 }
 
-impl std::ops::Mul<i64> for &ExTensor {
-    type Output = ExTensor;
-
-    fn mul(self, c: i64) -> ExTensor {
-        let data = self
-            .data
-            .iter()
-            .map(|(base, coeff)| (base.clone(), coeff.clone() * c))
-            .collect();
-        ExTensor { data }
-    }
-}
-
-impl std::ops::Mul<&ExTensor> for i64 {
-    type Output = ExTensor;
-
-    fn mul(self, t: &ExTensor) -> ExTensor {
-        t * self
-    }
-}
-
-impl std::ops::Sub for &ExTensor {
-    type Output = ExTensor;
-
-    fn sub(self, other: &ExTensor) -> ExTensor {
-        self + &(-1 * other)
-    }
-}
-
-impl std::ops::Sub for ExTensor {
-    type Output = ExTensor;
-
-    fn sub(self, other: ExTensor) -> ExTensor {
-        &self - &other
-    }
-}
-
 impl std::fmt::Display for ExTensor {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut res = String::from("");
@@ -253,24 +216,6 @@ mod tests {
         let sum = x_1 + x_2;
         let res = &ExTensor::new(&[0, 4, -4], &[vec![1, 3], vec![3, 4], vec![3, 9]]);
         assert_eq!(&sum, res, "tensors should add");
-    }
-
-    #[test]
-    fn extensor_sub() {
-        let x_1 = &ExTensor::new(&[3, 4], &[vec![1, 3], vec![3, 9]]);
-        let x_2 = &ExTensor::new(&[3, 4], &[vec![1, 3], vec![3, 9]]);
-        let sum = x_1 - x_2;
-        let res = &ExTensor::new(&[0, 0], &[vec![1, 3], vec![3, 9]]);
-        assert_eq!(&sum, res, "tensors should cancel each other");
-    }
-
-    #[test]
-    fn extensor_sub_2() {
-        let x_1 = &ExTensor::new(&[3, 4], &[vec![1, 3], vec![3, 9]]);
-        let x_2 = &ExTensor::new(&[3, -4], &[vec![1, 3], vec![3, 9]]);
-        let sum = x_1 - x_2;
-        let res = &ExTensor::new(&[0, 8], &[vec![1, 3], vec![3, 9]]);
-        assert_eq!(&sum, res, "tensors sub should work");
     }
 
     #[test]

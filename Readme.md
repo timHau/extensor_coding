@@ -18,7 +18,6 @@ Options are:
     * `dense_hashmap` - Basis as HashMap
 * Matrix
     * `naive` - as 1-D vec
-    * `naive_parallel` - (very) naive parallelization attempt
     * `sparse_hash` - as sparse HashMap
     * `sparse_triples` - as sparse vec of triples (row, col, value)
 
