@@ -4,7 +4,6 @@ use crate::extensor::bitvec::ExTensor;
 use crate::extensor::dense_hashmap::ExTensor;
 
 use num_traits::identities::{One, Zero};
-use rand::{distributions::Uniform, Rng};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -63,23 +62,6 @@ impl Matrix<u8> {
                 .map(|(to, _)| (*to, coding[*from].clone()))
                 .collect();
             data.insert(*from, v);
-        }
-
-        Matrix::from(self.nrows, self.ncols, data)
-    }
-
-    pub(crate) fn add_color_coding(&self, k: usize) -> Self {
-        let mut data = HashMap::with_capacity(self.nrows * self.ncols);
-
-        let rng = rand::thread_rng();
-        let colors: Vec<_> = rng
-            .sample_iter(&Uniform::new(1, k + 1))
-            .take(self.nrows)
-            .collect();
-
-        for (from, v) in self.data.iter() {
-            let v: Vec<_> = v.into_iter().map(|(to, val)| (colors[*to], *val)).collect();
-            data.insert(colors[*from], v);
         }
 
         Matrix::from(self.nrows, self.ncols, data)

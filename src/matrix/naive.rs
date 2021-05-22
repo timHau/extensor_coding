@@ -56,10 +56,6 @@ impl Matrix<u8> {
             data,
         }
     }
-
-    pub(crate) fn add_color_coding(&self, _k: usize) -> Self {
-        panic!("Not implemented yet");
-    }
 }
 
 impl<T> std::ops::Mul<Vec<T>> for &Matrix<T>

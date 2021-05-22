@@ -60,7 +60,7 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
 }
 
 pub fn color_coding(g: Graph, k: usize) {
-    g.color_coding(k);
+    let _g = g.color_coding(k);
 }
 
 #[cfg(test)]

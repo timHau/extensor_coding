@@ -12,10 +12,12 @@ use crate::matrix::sparse_triples::Matrix;
 
 use crate::utils;
 use num_traits::Zero;
+use rand::{distributions::Uniform, Rng};
 
 #[derive(Debug)]
 pub struct Graph {
     adj_mat: Box<Matrix<u8>>,
+    vert_data: Vec<usize>,
 }
 
 /// # Graph
@@ -55,16 +57,18 @@ impl Graph {
 
         Graph {
             adj_mat: Box::new(adj_mat),
+            vert_data: Vec::with_capacity(n),
         }
     }
 
     fn from_sparse6(path_str: &str) -> Self {
-        let (file, _n) = utils::file_n_from(path_str);
+        let (file, n) = utils::file_n_from(path_str);
 
         println!("TODO {:?}", file);
 
         Graph {
             adj_mat: Box::new(Matrix::new(0, 0, vec![])),
+            vert_data: Vec::with_capacity(n),
         }
     }
 
@@ -107,6 +111,7 @@ impl Graph {
 
         Graph {
             adj_mat: Box::new(adj_mat),
+            vert_data: Vec::with_capacity(n),
         }
     }
 
@@ -140,9 +145,16 @@ impl Graph {
     }
 
     pub fn color_coding(&self, k: usize) -> Self {
-        let adj_mat = (*self.adj_mat).add_color_coding(k);
+        let num_verts = (*self.adj_mat).ncols();
+        let rng = rand::thread_rng();
+        let colors: Vec<_> = rng
+            .sample_iter(&Uniform::new(1, k + 1))
+            .take(num_verts)
+            .collect();
+
         Graph {
-            adj_mat: Box::new(adj_mat),
+            adj_mat: self.adj_mat.clone(),
+            vert_data: colors,
         }
     }
 }
