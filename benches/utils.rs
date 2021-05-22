@@ -2,12 +2,12 @@ use plotters::prelude::*;
 use std::ops::Range;
 
 #[allow(dead_code)]
-pub fn join_runs(runs: Vec<Vec<u128>>) -> Vec<f64> {
+pub fn join_runs(runs: Vec<Vec<f64>>) -> Vec<f64> {
     let mut res = vec![0.0; runs[0].len()];
 
     for tv in runs.iter() {
         for (i, v) in tv.iter().enumerate() {
-            res[i] += *v as f64;
+            res[i] += *v;
         }
     }
 
@@ -21,7 +21,7 @@ pub fn plot_results(
     title: &str,
     axis: ((&str, Range<f32>), (&str, Range<f32>)),
     path: &str,
-    results: &Vec<(String, RGBColor, Vec<Vec<u128>>)>,
+    results: &Vec<(String, RGBColor, Vec<Vec<f64>>)>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let run_root = BitMapBackend::new(path, (1024, 640)).into_drawing_area();
     run_root.fill(&WHITE)?;
@@ -62,7 +62,6 @@ pub fn plot_results(
         .background_style(&WHITE.mix(0.5))
         .border_style(&BLACK)
         .draw()?;
-
 
     Ok(())
 }

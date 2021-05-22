@@ -1,10 +1,10 @@
 mod utils;
 
 use extensor_coding::{extensor::bitvec, extensor::dense_hashmap};
+use indicatif::{ProgressBar, ProgressStyle};
 use plotters::style;
 use rand::Rng;
 use std::time::Instant;
-use indicatif::{ProgressBar, ProgressStyle};
 
 fn rand_coeffs_and_basis(n: i32) -> (Vec<i64>, Vec<Vec<u8>>) {
     let mut rng = rand::thread_rng();
@@ -13,7 +13,7 @@ fn rand_coeffs_and_basis(n: i32) -> (Vec<i64>, Vec<Vec<u8>>) {
     (coeffs, basis)
 }
 
-fn bench_bitvec(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<u128>> {
+fn bench_bitvec(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
     let max_basis = 40;
     let bar = ProgressBar::new(num_iter);
@@ -31,7 +31,7 @@ fn bench_bitvec(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<u128>> {
 
             let now = Instant::now();
             let _ = ext_1 * ext_2;
-            let elapsed = now.elapsed().as_millis();
+            let elapsed = now.elapsed().as_millis() as f64;
 
             times_per_iter.push(elapsed);
         }
@@ -44,7 +44,7 @@ fn bench_bitvec(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<u128>> {
     times
 }
 
-fn bench_hashmap(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<u128>> {
+fn bench_hashmap(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
     let max_basis = 80;
     let bar = ProgressBar::new(num_iter);
@@ -62,7 +62,7 @@ fn bench_hashmap(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<u128>> {
 
             let now = Instant::now();
             let _ = ext_1 * ext_2;
-            let elapsed = now.elapsed().as_millis();
+            let elapsed = now.elapsed().as_millis() as f64;
 
             times_per_iter.push(elapsed);
         }

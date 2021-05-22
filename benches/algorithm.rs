@@ -1,11 +1,11 @@
 mod utils;
 
 use extensor_coding::{algorithm, graph::Graph};
+use indicatif::{ProgressBar, ProgressStyle};
 use plotters::style;
 use std::time::Instant;
-use indicatif::{ProgressBar, ProgressStyle};
 
-fn bench_c(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<u128>> {
+fn bench_c(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
     let max_k = 9;
     let bar = ProgressBar::new(num_iter);
@@ -20,7 +20,7 @@ fn bench_c(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<u128>> {
 
             let now = Instant::now();
             let _ = algorithm::c(g, k, eps);
-            let elapsed = now.elapsed().as_millis();
+            let elapsed = now.elapsed().as_millis() as f64;
 
             times_per_iter.push(elapsed);
         }
