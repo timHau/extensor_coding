@@ -150,8 +150,8 @@ pub(crate) fn has_intersection(a: &Vec<u8>, b: &Vec<u8>) -> bool {
     false
 }
 
-pub(crate) fn t_value(df: i32) -> f64 {
-    match df {
+pub(crate) fn t_value(degreesOfFreedom: i32) -> f64 {
+    match degreesOfFreedom {
         0..=4 => 3.747,
         5..=8 => 2.896,
         9..=16 => 2.583,
@@ -166,7 +166,7 @@ pub(crate) fn t_value(df: i32) -> f64 {
 ///
 /// Given an Vec `v` calculate all subsets
 /// from [here](https://users.rust-lang.org/t/power-set-of-a-vec/29874/2)
-pub(crate) fn powerset(v: &Vec<u8>) -> Vec<Vec<u8>> {
+pub(crate) fn powerset(v: &Vec<usize>) -> Vec<Vec<usize>> {
     v.iter().fold(vec![vec![]], |mut p, x| {
         let i = p.clone().into_iter().map(|mut s| {
             s.push(x.clone());

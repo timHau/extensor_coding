@@ -12,10 +12,33 @@ pub struct Matrix<T> {
     data: Vec<T>,
 }
 
+/// # Matrix
+///
+/// Create a Matrix that stores values of type `T`. `T` only needs to
+/// be clonable and must have a zero and a one element.
+/// Implemented via a flat vec to keep data "near" .
+///
+/// Example:
+///
+/// ```no code
+/// | 1 0 0 1 |                  
+/// | 0 0 1 0 |     ------>     vec![1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1]
+/// | 0 0 0 1 |                  
+/// ```
 impl<T> Matrix<T>
 where
     T: Clone + One + Zero,
 {
+    /// ## new
+    ///
+    /// Create a new Matrix.
+    ///
+    /// Arguments:
+    ///
+    /// `nrows`: number of rows
+    /// `ncols`: number of columns
+    /// `values`: Vec of values, size of Vec must be nrows*ncols
+    ///
     pub fn new(nrows: usize, ncols: usize, data: Vec<T>) -> Self {
         assert_eq!(
             data.len(),

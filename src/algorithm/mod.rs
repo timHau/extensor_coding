@@ -6,6 +6,11 @@ use num_traits::Zero;
 /// Given an Graph `g` and an i32 `k` as input, such that the number of `k`-paths in
 /// G is 0 or 1, decide if there is a `k`-path in `g`
 ///
+/// Arguments:
+///
+/// * `g`: Graph, where to decide if k-path exist
+/// * `k`: length of path
+///
 /// The algorithm is from [Brand, Dell and Husfeldt](https://arxiv.org/pdf/1804.09448.pdf)
 pub fn u(g: &Graph, k: usize) -> bool {
     let vandermonde_mapping = utils::create_vandermonde(g.num_vert(), k);
@@ -22,6 +27,12 @@ pub fn u(g: &Graph, k: usize) -> bool {
 /// ```not-a-test
 /// (1 - eps) * number of `k`-paths <= X <= (1 + eps) * number of `k`-paths
 /// ```
+///
+/// Arguments:
+///
+/// * `g`: Graph, where to find k-path
+/// * `k`: length of path
+/// * `eps`: approximation accuracy
 ///
 /// The algorithm is from [Brand, Dell and Husfeldt](https://arxiv.org/pdf/1804.09448.pdf)
 pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
@@ -56,6 +67,8 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
 
 pub fn color_coding(g: Graph, k: usize) {
     let g = g.color_coding(k);
+
+    for k in g.vert_data() {}
 }
 
 #[cfg(test)]

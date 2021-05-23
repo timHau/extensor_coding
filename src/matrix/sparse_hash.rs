@@ -13,10 +13,35 @@ pub struct Matrix<T> {
     data: HashMap<usize, Vec<(usize, T)>>,
 }
 
+/// # Matrix
+///
+/// Create a Matrix that stores values of type `T`. `T` only needs to
+/// be clonable and must have a zero and a one element.
+/// Implements a sparse Matrix based on a HashMap.
+/// Each row that has non zero elements corresponds to a vec in the HashMap
+/// The row Index is the key. The non zero value is stored in the Format (col index, value) as a value.
+///
+/// Example:
+///
+/// ```no code
+/// | 1 0 0 1 |                  0: vec![ (0, 1), (3, 1) ]
+/// | 0 0 1 0 |     ------>      1: vec![ (2, 1) ]
+/// | 0 0 0 1 |                  2: vec![ (3, 1) ]
+/// ```
 impl<T> Matrix<T>
 where
     T: Clone + One + Zero,
 {
+    /// ## new
+    ///
+    /// Create a new Matrix.
+    ///
+    /// Arguments:
+    ///
+    /// `nrows`: number of rows
+    /// `ncols`: number of columns
+    /// `values`: Vec of values, size of Vec must be nrows*ncols
+    ///
     pub fn new(nrows: usize, ncols: usize, values: Vec<T>) -> Self {
         assert_eq!(
             values.len(),

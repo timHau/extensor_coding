@@ -13,10 +13,34 @@ pub struct Matrix<T> {
     data: Vec<(usize, usize, T)>,
 }
 
+/// # Matrix
+///
+/// Create a Matrix that stores values of type `T`. `T` only needs to
+/// be clonable and must have a zero and a one element.
+/// Implements a sparse Matrix based on triples.
+/// The `(i, j)`-th Element with value `v` in the Matrix corresponds to the triple `(i, j, v)`.
+///
+/// Example:
+///
+/// ```no code
+/// | 1 0 0 1 |                 vec![ (0, 0, 1), (0, 3, 1)
+/// | 0 0 1 0 |     ------>           (1, 2, 1),
+/// | 0 0 0 1 |                       (2, 3, 1) ]
+/// ```
 impl<T> Matrix<T>
 where
     T: Clone + One + Zero,
 {
+    /// ## new
+    ///
+    /// Create a new Matrix.
+    ///
+    /// Arguments:
+    ///
+    /// `nrows`: number of rows
+    /// `ncols`: number of columns
+    /// `values`: Vec of values, size of Vec must be nrows*ncols
+    ///
     pub fn new(nrows: usize, ncols: usize, values: Vec<T>) -> Self {
         assert_eq!(
             values.len(),

@@ -140,11 +140,18 @@ impl Graph {
         res.into_iter().fold(ExTensor::zero(), |acc, v| acc + v)
     }
 
+    /// ## num_vert
+    ///
+    /// return the number of vertices / number of columns from the adjacency matrix
     pub(crate) fn num_vert(&self) -> usize {
         self.adj_mat.ncols()
     }
 
-    pub fn color_coding(&self, k: usize) -> Self {
+    /// ## color_coding
+    ///
+    /// add a color (number in 1..=k) to every vertex
+    /// the colors are stored in the `vert_data` field
+    pub(crate) fn color_coding(&self, k: usize) -> Self {
         let num_verts = (*self.adj_mat).ncols();
         let rng = rand::thread_rng();
         let colors: Vec<_> = rng
@@ -156,6 +163,13 @@ impl Graph {
             adj_mat: self.adj_mat.clone(),
             vert_data: colors,
         }
+    }
+
+    /// ## vert_data
+    ///
+    /// returns the data that is stored per vertex
+    pub(crate) fn vert_data(&self) -> Vec<usize> {
+        self.vert_data.clone()
     }
 }
 
