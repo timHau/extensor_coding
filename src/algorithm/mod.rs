@@ -25,7 +25,7 @@ pub fn u(g: &Graph, k: usize) -> bool {
 ///
 /// The algorithm is from [Brand, Dell and Husfeldt](https://arxiv.org/pdf/1804.09448.pdf)
 pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
-    let mut t = 0;
+    let mut t = 1;
     let mut sum = 0.0;
     let mut ssum = 0.0;
 
@@ -40,19 +40,14 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
         ssum += x_j * x_j;
         t += 1;
 
-        println!("t: {}", t);
-
         let n = t as f64;
-        if n > 10.0 {
-            let mean = sum / n;
-            let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
-            let t_val = utils::t_value(t - 1);
+        let mean = sum / n;
+        let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
+        let t_val = utils::t_value(t - 1);
 
-            println!("mean: {}, std_dev: {}", mean, std_dev);
-
-            if mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean {
-                return mean;
-            }
+        println!("mean: {}, std_dev: {}", mean, std_dev);
+        if mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean {
+            return mean;
         }
     }
 
@@ -60,7 +55,7 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
 }
 
 pub fn color_coding(g: Graph, k: usize) {
-    let _g = g.color_coding(k);
+    let g = g.color_coding(k);
 }
 
 #[cfg(test)]

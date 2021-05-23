@@ -114,7 +114,7 @@ pub(crate) fn factorial(k: usize) -> u64 {
 
 /// ## contains_element
 ///
-/// determine if a sorted vec `v` contains `target`
+/// determine if a sorted vec `v` contains `target`, use binary search
 pub(crate) fn contains_element(v: &Vec<u8>, target: &u8) -> bool {
     let mut l = 0usize;
     let mut r = v.len() - 1;
@@ -160,6 +160,21 @@ pub(crate) fn t_value(df: i32) -> f64 {
         65..=128 => 2.358,
         _ => 2.326,
     }
+}
+
+/// ## powerset
+///
+/// Given an Vec `v` calculate all subsets
+/// from [here](https://users.rust-lang.org/t/power-set-of-a-vec/29874/2)
+pub(crate) fn powerset(v: &Vec<u8>) -> Vec<Vec<u8>> {
+    v.iter().fold(vec![vec![]], |mut p, x| {
+        let i = p.clone().into_iter().map(|mut s| {
+            s.push(x.clone());
+            s
+        });
+        p.extend(i);
+        p
+    })
 }
 
 #[cfg(test)]
