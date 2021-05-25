@@ -92,8 +92,8 @@ fn main() {
     let _ = utils::plot_results(
         "wedge product comparison",
         (
-            ("Laufzeit (in ms)", 0f32..80f32),
-            ("Nummer von Basiselementen", 0f32..40f32),
+            ("Nummer von Basiselementen", 0f32..80f32),
+            ("Laufzeit (in ms)", 0f32..40f32),
         ),
         "benches/output/wedge_prod",
         &result,

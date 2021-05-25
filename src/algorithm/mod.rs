@@ -143,4 +143,26 @@ mod tests {
             "randomized counting algorithm c is inside bounds"
         );
     }
+
+    #[test]
+    fn c_3() {
+        let g = Graph::from_graph6("src/data/path6.g6");
+        let k = 6;
+        let eps = 0.5;
+        let now = std::time::Instant::now();
+        let res = algorithm::c(g, k, eps);
+        println!("algorihm c took: {}s", now.elapsed().as_secs());
+
+        let p = 2.;
+        let lower_bound = (1. - eps) * p;
+        let upper_bound = (1. + eps) * p;
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
+        );
+    }
 }
