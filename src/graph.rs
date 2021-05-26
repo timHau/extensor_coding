@@ -25,6 +25,19 @@ pub struct Graph {
 /// implementation of the Graph structure used
 /// currently a graph is just its adjacency matrix
 impl Graph {
+    /// ## from
+    ///
+    /// Construct a Graph with `n` vertices given an adjacency matrx `data`
+    pub fn from(n: usize, data: Vec<u8>) -> Self {
+        assert_eq!(data.len(), n * n, "data must correspond to a square matrix");
+        let adj_mat = Box::new(Matrix::new(n, n, data));
+
+        Graph {
+            adj_mat,
+            vert_data: vec![],
+        }
+    }
+
     /// ## from_graph6
     ///
     /// create a Graph from a .g6 file which is located at `path_str`.

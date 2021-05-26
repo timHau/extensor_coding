@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{graph::Graph, utils};
 use num_traits::Zero;
 
@@ -66,9 +68,39 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
 }
 
 pub fn color_coding(g: Graph, k: usize) {
-    let g = g.color_coding(k);
+    // let g = g.color_coding(k);
+}
 
-    for s in utils::powerset(&g.vert_data).iter() {}
+pub fn color_coding_rec(g: Graph, k: usize) -> f32 {
+    let mut res = 0;
+
+    let num_iter = f32::exp(k as f32) as u32;
+    for _ in 0..num_iter {
+        let g = g.color_coding(k);
+        for (v, col) in g.vert_data.iter().enumerate() {
+            res += color_coding_step(&g, v, *col, (1..=k).collect());
+        }
+    }
+
+    res as f32 / 2.0
+}
+
+fn color_coding_step(g: &Graph, v: usize, col: usize, s: Vec<usize>) -> u32 {
+    if s.len() == 1 {
+        if s[0] == col {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    let mut c = 0;
+    for u in g.neighbors_of(v).iter() {
+        let s_minus_col: Vec<usize> = s.clone().into_iter().filter(|c| *c != col).collect();
+        c += color_coding_step(g, *u, g.vert_data[*u], s_minus_col);
+    }
+
+    c
 }
 
 #[cfg(test)]
@@ -142,5 +174,13 @@ mod tests {
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
         );
+    }
+
+    #[test]
+    fn color_coding() {
+        let g = Graph::from(3, vec![0, 1, 0, 0, 0, 1, 0, 0, 0]);
+        let k = 2;
+        let res = algorithm::color_coding_rec(g, k);
+        println!("res {}", res);
     }
 }
