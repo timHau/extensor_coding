@@ -162,6 +162,10 @@ impl Graph {
             vert_data: colors,
         }
     }
+
+    pub(crate) fn neighbors_of(&self, i: usize) -> Vec<usize> {
+        self.adj_mat.neighbors_of(i)
+    }
 }
 
 #[cfg(test)]

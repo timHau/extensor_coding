@@ -82,6 +82,14 @@ impl Matrix<u8> {
             data,
         }
     }
+
+    pub(crate) fn neighbors_of(&self, i: usize) -> Vec<usize> {
+        self.data
+            .iter()
+            .filter(|(row, _col, _v)| *row == i)
+            .map(|(_row, col, _val)| *col)
+            .collect()
+    }
 }
 
 impl<T> std::ops::Mul<Vec<T>> for &Matrix<T>
@@ -137,23 +145,6 @@ impl<T> std::ops::IndexMut<(usize, usize)> for Matrix<T> {
 
         let (_x, _y, v) = self.data[index].borrow_mut();
         v
-    }
-}
-
-impl<T> std::fmt::Display for Matrix<T>
-where
-    T: Zero + std::fmt::Display,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let mut res = String::from("\n");
-
-        for (x, y, value) in self.data.iter() {
-            if !value.is_zero() {
-                res += &format!("({}, {}),  {} \n", x, y, value);
-            }
-        }
-
-        write!(f, "{}", res)
     }
 }
 
@@ -251,5 +242,23 @@ mod tests {
         );
 
         assert_eq!(n.data, expect.data, "add coding should work");
+    }
+
+    #[test]
+    fn neighbors() {
+        let m: Matrix<u8> = Matrix::new(4, 4, vec![0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0]);
+        let neighbors_0 = m.neighbors_of(0);
+        let expect_0 = vec![1];
+        let neighbors_1 = m.neighbors_of(1);
+        let expect_1 = vec![0, 2];
+        let neighbors_2 = m.neighbors_of(2);
+        let expect_2 = vec![1, 2, 3];
+        let neighbors_3 = m.neighbors_of(3);
+        let expect_3 = vec![];
+
+        assert_eq!(neighbors_0, expect_0);
+        assert_eq!(neighbors_1, expect_1);
+        assert_eq!(neighbors_2, expect_2);
+        assert_eq!(neighbors_3, expect_3);
     }
 }

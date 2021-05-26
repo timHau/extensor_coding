@@ -186,6 +186,7 @@ mod tests {
 
     use crate::utils::{
         contains_element, create_bernoulli, create_vandermonde, factorial, has_intersection,
+        powerset,
     };
 
     #[test]
@@ -249,5 +250,30 @@ mod tests {
         let v_3 = vec![7, 8, 9, 10, 11, 12];
         let res_2 = has_intersection(&v_1, &v_3);
         assert_eq!(res_2, false);
+    }
+
+    #[test]
+    fn power_set() {
+        let s: Vec<usize> = vec![1, 2, 3, 4];
+        let ps = powerset(&s);
+        let expect: Vec<Vec<usize>> = vec![
+            vec![],
+            vec![1],
+            vec![2],
+            vec![1, 2],
+            vec![3],
+            vec![1, 3],
+            vec![2, 3],
+            vec![1, 2, 3],
+            vec![4],
+            vec![1, 4],
+            vec![2, 4],
+            vec![1, 2, 4],
+            vec![3, 4],
+            vec![1, 3, 4],
+            vec![2, 3, 4],
+            vec![1, 2, 3, 4],
+        ];
+        assert_eq!(ps, expect, "powerset should work");
     }
 }

@@ -83,6 +83,23 @@ impl Matrix<u8> {
 
         Matrix::from(self.nrows, self.ncols, data)
     }
+
+    pub(crate) fn neighbors_of(&self, i: usize) -> Vec<usize> {
+        let row = self.data.get(&i);
+
+        match row {
+            None => vec![],
+            Some(row) => {
+                let mut res = vec![];
+
+                for (i, _val) in row.iter() {
+                    res.push(*i);
+                }
+
+                res
+            }
+        }
+    }
 }
 
 impl<T> std::ops::Mul<Vec<T>> for &Matrix<T>
@@ -206,5 +223,23 @@ mod tests {
         );
 
         assert_eq!(n.data, expect.data, "add coding should work");
+    }
+
+    #[test]
+    fn neighbors() {
+        let m: Matrix<u8> = Matrix::new(4, 4, vec![0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0]);
+        let neighbors_0 = m.neighbors_of(0);
+        let expect_0 = vec![1];
+        let neighbors_1 = m.neighbors_of(1);
+        let expect_1 = vec![0, 2];
+        let neighbors_2 = m.neighbors_of(2);
+        let expect_2 = vec![1, 2, 3];
+        let neighbors_3 = m.neighbors_of(3);
+        let expect_3 = vec![];
+
+        assert_eq!(neighbors_0, expect_0);
+        assert_eq!(neighbors_1, expect_1);
+        assert_eq!(neighbors_2, expect_2);
+        assert_eq!(neighbors_3, expect_3);
     }
 }
