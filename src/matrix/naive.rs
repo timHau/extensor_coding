@@ -7,9 +7,9 @@ use num_traits::identities::{One, Zero};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Matrix<T> {
-    nrows: usize,
-    ncols: usize,
-    data: Vec<T>,
+    pub nrows: usize,
+    pub ncols: usize,
+    pub data: Vec<T>,
 }
 
 /// # Matrix
@@ -47,14 +47,6 @@ where
         );
 
         Matrix { nrows, ncols, data }
-    }
-
-    pub(crate) fn data(&self) -> &Vec<T> {
-        &self.data
-    }
-
-    pub(crate) fn ncols(&self) -> usize {
-        self.ncols
     }
 }
 
@@ -190,7 +182,7 @@ mod tests {
             ],
         );
 
-        assert_eq!(n.data(), expect.data(), "add coding should work");
+        assert_eq!(n.data, expect.data, "add coding should work");
     }
 
     #[test]
@@ -216,6 +208,6 @@ mod tests {
             ],
         );
 
-        assert_eq!(n.data(), expect.data(), "add coding should work");
+        assert_eq!(n.data, expect.data, "add coding should work");
     }
 }

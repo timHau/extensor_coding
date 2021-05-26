@@ -17,7 +17,7 @@ use rand::{distributions::Uniform, Rng};
 #[derive(Debug)]
 pub struct Graph {
     adj_mat: Box<Matrix<u8>>,
-    vert_data: Vec<usize>,
+    pub vert_data: Vec<usize>,
 }
 
 /// # Graph
@@ -128,9 +128,7 @@ impl Graph {
         // add extensor coding to vertices and transform back to a matrix
         let a = (*self.adj_mat).add_coding(&coding);
 
-        let b = (0..a.ncols())
-            .map(|i| coding[i].clone())
-            .collect::<Vec<_>>();
+        let b = (0..a.ncols).map(|i| coding[i].clone()).collect::<Vec<_>>();
 
         let mut res = &a * b;
         for _ in 1..(k - 1) {
@@ -144,7 +142,7 @@ impl Graph {
     ///
     /// return the number of vertices / number of columns from the adjacency matrix
     pub(crate) fn num_vert(&self) -> usize {
-        self.adj_mat.ncols()
+        self.adj_mat.ncols
     }
 
     /// ## color_coding
@@ -152,7 +150,7 @@ impl Graph {
     /// add a color (number in 1..=k) to every vertex
     /// the colors are stored in the `vert_data` field
     pub(crate) fn color_coding(&self, k: usize) -> Self {
-        let num_verts = (*self.adj_mat).ncols();
+        let num_verts = (*self.adj_mat).ncols;
         let rng = rand::thread_rng();
         let colors: Vec<_> = rng
             .sample_iter(&Uniform::new(1, k + 1))
@@ -163,13 +161,6 @@ impl Graph {
             adj_mat: self.adj_mat.clone(),
             vert_data: colors,
         }
-    }
-
-    /// ## vert_data
-    ///
-    /// returns the data that is stored per vertex
-    pub(crate) fn vert_data(&self) -> Vec<usize> {
-        self.vert_data.clone()
     }
 }
 

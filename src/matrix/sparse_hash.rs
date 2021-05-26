@@ -8,9 +8,9 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Matrix<T> {
-    nrows: usize,
-    ncols: usize,
-    data: HashMap<usize, Vec<(usize, T)>>,
+    pub nrows: usize,
+    pub ncols: usize,
+    pub data: HashMap<usize, Vec<(usize, T)>>,
 }
 
 /// # Matrix
@@ -67,21 +67,13 @@ where
     pub(crate) fn from(nrows: usize, ncols: usize, data: HashMap<usize, Vec<(usize, T)>>) -> Self {
         Matrix { nrows, ncols, data }
     }
-
-    pub(crate) fn data(&self) -> &HashMap<usize, Vec<(usize, T)>> {
-        &self.data
-    }
-
-    pub(crate) fn ncols(&self) -> usize {
-        self.ncols
-    }
 }
 
 impl Matrix<u8> {
     pub(crate) fn add_coding(&self, coding: &Vec<ExTensor>) -> Matrix<ExTensor> {
         let mut data = HashMap::with_capacity(self.nrows * self.ncols);
 
-        for (from, v) in self.data().iter() {
+        for (from, v) in self.data.iter() {
             let v: Vec<_> = v
                 .into_iter()
                 .map(|(to, _)| (*to, coding[*from].clone()))
@@ -187,7 +179,7 @@ mod tests {
             ],
         );
 
-        assert_eq!(n.data(), expect.data(), "add coding should work");
+        assert_eq!(n.data, expect.data, "add coding should work");
     }
 
     #[test]
@@ -213,6 +205,6 @@ mod tests {
             ],
         );
 
-        assert_eq!(n.data(), expect.data(), "add coding should work");
+        assert_eq!(n.data, expect.data, "add coding should work");
     }
 }

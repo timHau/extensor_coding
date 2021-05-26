@@ -68,7 +68,7 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
 pub fn color_coding(g: Graph, k: usize) {
     let g = g.color_coding(k);
 
-    for k in g.vert_data() {}
+    for k in g.vert_data {}
 }
 
 #[cfg(test)]

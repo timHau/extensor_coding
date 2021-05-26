@@ -8,9 +8,9 @@ use std::borrow::BorrowMut;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Matrix<T> {
-    nrows: usize,
-    ncols: usize,
-    data: Vec<(usize, usize, T)>,
+    pub nrows: usize,
+    pub ncols: usize,
+    pub data: Vec<(usize, usize, T)>,
 }
 
 /// # Matrix
@@ -62,14 +62,6 @@ where
         }
 
         Matrix { nrows, ncols, data }
-    }
-
-    pub(crate) fn data(&self) -> &Vec<(usize, usize, T)> {
-        &self.data
-    }
-
-    pub(crate) fn ncols(&self) -> usize {
-        self.ncols
     }
 }
 
@@ -232,7 +224,7 @@ mod tests {
             ],
         );
 
-        assert_eq!(n.data(), expect.data(), "add coding should work");
+        assert_eq!(n.data, expect.data, "add coding should work");
     }
 
     #[test]
@@ -258,6 +250,6 @@ mod tests {
             ],
         );
 
-        assert_eq!(n.data(), expect.data(), "add coding should work");
+        assert_eq!(n.data, expect.data, "add coding should work");
     }
 }
