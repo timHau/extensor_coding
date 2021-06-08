@@ -231,6 +231,12 @@ mod tests {
         let v_2 = vec![2, 4, 6, 8, 10];
         let res = has_intersection(&v_1, &v_2);
         assert_eq!(res, true);
+        let v_3 = vec![];
+        let res_2 = has_intersection(&v_1, &v_3);
+        assert_eq!(res_2, false);
+        let v_4 = vec![11, 12, 13, 14];
+        let res_3 = has_intersection(&v_1, &v_4);
+        assert_eq!(res_3, false);
     }
 
     #[test]

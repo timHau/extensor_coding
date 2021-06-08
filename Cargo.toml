@@ -11,7 +11,7 @@ plotters = "^0.3.0"
 indicatif = "0.16.0"
 
 [features]
-default = ["extensor_dense_hashmap", "matrix_sparse_hash"]
+default = ["extensor_bitvec", "matrix_sparse_hash"]
 extensor_dense_hashmap = []
 extensor_bitvec = []
 matrix_naive = []

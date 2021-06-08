@@ -12,7 +12,10 @@ use crate::matrix::sparse_triples::Matrix;
 
 use crate::utils;
 use num_traits::Zero;
-use rand::{distributions::Uniform, Rng};
+use rand::{
+    distributions::{Bernoulli, Distribution, Uniform},
+    Rng,
+};
 
 #[derive(Debug)]
 pub struct Graph {
@@ -36,6 +39,21 @@ impl Graph {
             adj_mat,
             vert_data: vec![],
         }
+    }
+
+    /// # random_graph
+    ///
+    /// create a random graph with `n` vertices where each edge has probability `p`.
+    pub fn random_graph(n: usize, p: f64) -> Graph {
+        assert!(0.0 <= p && p <= 1.0, "Probability must be in (0,1)");
+
+        let mut rng = rand::thread_rng();
+        let bernoulli = Bernoulli::new(p).unwrap();
+        let data: Vec<u8> = (0..n * n)
+            .map(|_| if bernoulli.sample(&mut rng) { 1u8 } else { 0u8 })
+            .collect();
+
+        Graph::from(n, data)
     }
 
     /// ## from_graph6
