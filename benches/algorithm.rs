@@ -7,7 +7,7 @@ use std::time::Instant;
 
 fn bench_c(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
-    let max_k = 9;
+    let max_k = 10;
     let bar = ProgressBar::new(num_iter);
     bar.set_style(prog_style.clone());
 
@@ -34,7 +34,7 @@ fn bench_c(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
 }
 
 fn main() {
-    let num_iter = 10;
+    let num_iter = 1;
 
     let prog_style = ProgressStyle::default_bar()
         .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
@@ -45,7 +45,8 @@ fn main() {
     let result = vec![("algorithm c".to_string(), style::RED, times_algo_c)];
     let _ = utils::plot_results(
         "algorithm c (dense_hashmap, sparse matrix)",
-        (("k", 2f32..9f32), ("Zeit (in ns)", 0f32..600000f32)),
+        (("k", 2f32..11f32), ("Zeit (in ns)", 0f32..600000f32)),
+        2,
         "benches/output/algo",
         &result,
     );

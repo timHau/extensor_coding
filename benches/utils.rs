@@ -20,11 +20,12 @@ pub fn join_runs(runs: Vec<Vec<f64>>) -> Vec<f64> {
 pub fn plot_results(
     title: &str,
     axis: ((&str, Range<f32>), (&str, Range<f32>)),
+    offset: usize,
     path: &str,
     results: &Vec<(String, RGBColor, Vec<Vec<f64>>)>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let run_path = format!("{}.png", path);
-    let run_root = BitmapBackend::new(&run_path, (1024, 640)).into_drawing_area();
+    let run_root = BitMapBackend::new(&run_path, (1024, 640)).into_drawing_area();
     run_root.fill(&WHITE)?;
 
     let (x, y) = axis;
@@ -51,7 +52,7 @@ pub fn plot_results(
         let run = join_runs(res.to_vec());
         run_chart
             .draw_series(LineSeries::new(
-                (0..run.len()).map(|i| (i as f32, run[i] as f32)),
+                (0..run.len()).map(|i| ((offset + i) as f32, run[i] as f32)),
                 col.clone().to_owned(),
             ))?
             .label(name)

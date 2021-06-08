@@ -95,6 +95,7 @@ fn main() {
             ("Nummer von Basiselementen", 0f32..80f32),
             ("Laufzeit (in ms)", 0f32..40f32),
         ),
+        0,
         "benches/output/wedge_prod",
         &result,
     );
