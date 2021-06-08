@@ -178,7 +178,7 @@ mod tests {
 
     #[test]
     fn color_coding() {
-        let g = Graph::from(3, vec![0, 1, 0, 0, 0, 1, 0, 0, 0]);
+        let g = Graph::from_graph6("src/data/path3.g6");
         let k = 2;
         let res = algorithm::color_coding_rec(g, k);
         println!("res {}", res);
