@@ -23,8 +23,8 @@ pub fn plot_results(
     path: &str,
     results: &Vec<(String, RGBColor, Vec<Vec<f64>>)>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let run_path = format!("{}.svg", path);
-    let run_root = SVGBackend::new(&run_path, (1024, 640)).into_drawing_area();
+    let run_path = format!("{}.png", path);
+    let run_root = BitmapBackend::new(&run_path, (1024, 640)).into_drawing_area();
     run_root.fill(&WHITE)?;
 
     let (x, y) = axis;
