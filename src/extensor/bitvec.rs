@@ -47,15 +47,23 @@ impl ExTensor {
     /// Given the basis representation `a` and `b` of two ExTensors determine
     /// the sign of the permutation that will sort the union of `a` and `b`
     pub(crate) fn get_sign(a: &BitVec, b: &BitVec) -> i64 {
-        let mut sum: u32 = 0;
+        let mut num_perm = 0;
 
-        for i in 1..max(a.len(), b.len()) - 1 {
-            let mut a = a.clone();
-            a.shift_right(i);
-            sum += (&a & b).count_ones();
+        let indices_a = a.indices();
+        let indices_b = b.indices();
+
+        let mut i = 0;
+        let mut j = 0;
+        while i < indices_a.len() && j < indices_b.len() {
+            if indices_a[i] <= indices_b[j] {
+                i += 1;
+            } else {
+                j += 1;
+                num_perm += indices_a.len() - i;
+            }
         }
 
-        if sum % 2 == 0 {
+        if num_perm % 2 == 0 {
             1
         } else {
             -1
@@ -156,7 +164,8 @@ impl std::ops::Mul for &ExTensor {
                     // calculate the next basis bit vec, which can be done via bitwise or
                     let next_base = base_a ^ base_b;
                     // compute sign and multiply coefficients
-                    let sign = ExTensor::get_sign(base_b, base_a);
+                    let sign = ExTensor::get_sign(base_a, base_b);
+                    println!("sign: {}, a: {}, b: {}", sign, base_a, base_b);
                     let next_coeff: i64 = sign * coeff_a * coeff_b;
 
                     if data.contains_key(&next_base) {
@@ -251,11 +260,19 @@ mod tests {
         let x_2 = BitVec::from(&vec![2]);
         assert_eq!(ExTensor::get_sign(&x_1, &x_2), 1);
         let x_3 = BitVec::from(&vec![3]);
-        assert_eq!(ExTensor::get_sign(&x_1, &x_3), -1);
+        assert_eq!(ExTensor::get_sign(&x_1, &x_3), 1);
         let x_4 = BitVec::from(&vec![3, 4]);
         assert_eq!(ExTensor::get_sign(&x_1, &x_4), 1);
         let x_5 = BitVec::from(&vec![3, 4, 5]);
-        assert_eq!(ExTensor::get_sign(&x_1, &x_5), -1);
+        assert_eq!(ExTensor::get_sign(&x_1, &x_5), 1);
+    }
+
+    #[test]
+    fn get_sign_2() {
+        let x_1 = BitVec::from(&vec![1, 2, 4]);
+        let x_2 = BitVec::from(&vec![3, 5, 6]);
+        let sign = ExTensor::get_sign(&x_1, &x_2);
+        assert_eq!(sign, -1, "sign of simple permutation should be -1");
     }
 
     #[test]

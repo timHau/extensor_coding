@@ -1,33 +1,23 @@
-use std::cmp::{max, min};
 use std::hash::Hasher;
 
-#[derive(Debug, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub(crate) struct BitVec {
-    data: Vec<bool>,
+    data: [bool; 32],
 }
 
 impl BitVec {
     pub(crate) fn from(v: &Vec<u8>) -> Self {
-        let max_elem = v.iter().max().unwrap_or(&0);
-        let mut data = vec![false; 2 * (*max_elem as usize)];
+        let mut data = [false; 32];
 
         for i in v.iter() {
-            if *i > 0 {
-                data[(*i - 1) as usize] = true;
-            }
+            data[*i as usize] = true;
         }
 
         BitVec { data }
     }
 
-    pub(crate) fn shift_right(&mut self, by: usize) {
-        let mut pre = vec![false; by];
-
-        for b in self.data.iter() {
-            pre.push(*b);
-        }
-
-        self.data = pre;
+    pub(crate) fn shift_right(&mut self, k: usize) {
+        self.data.rotate_right(k)
     }
 
     pub(crate) fn len(&self) -> usize {
@@ -55,24 +45,30 @@ impl BitVec {
 
         false
     }
+
+    pub(crate) fn indices(&self) -> Vec<usize> {
+        let mut res = vec![];
+
+        for (i, b) in self.data.iter().enumerate() {
+            if *b {
+                res.push(i);
+            }
+        }
+
+        res
+    }
 }
 
 impl std::ops::BitXor for &BitVec {
     type Output = BitVec;
 
     fn bitxor(self, rhs: &BitVec) -> BitVec {
-        let mut data = vec![];
+        let mut data = [false; 32];
 
-        let max_len = max(self.data.len(), rhs.data.len());
-        for i in 0..max_len {
-            let b_1 = self.data.get(i).unwrap_or(&false);
-            let b_2 = rhs.data.get(i).unwrap_or(&false);
-
-            if (!b_1 && *b_2) || (*b_1 && !b_2) {
-                data.push(true)
-            } else {
-                data.push(false);
-            }
+        for i in 0..32 {
+            let b_1 = self.data[i];
+            let b_2 = rhs.data[i];
+            data[i] = (!b_1 && b_2) || (b_1 && !b_2);
         }
 
         BitVec { data }
@@ -83,19 +79,13 @@ impl std::ops::BitAnd for &BitVec {
     type Output = BitVec;
 
     fn bitand(self, rhs: &BitVec) -> BitVec {
-        let min_len = min(self.data.len(), rhs.data.len());
-        let mut data = Vec::with_capacity(min_len);
-        data.reserve(min_len);
+        let mut data = [false; 32];
 
-        for i in 0..min_len {
-            let b_1 = self.data.get(i).unwrap_or(&false);
-            let b_2 = rhs.data.get(i).unwrap_or(&false);
+        for i in 0..32 {
+            let b_1 = self.data[i];
+            let b_2 = rhs.data[i];
 
-            if *b_1 && *b_2 {
-                data.push(true)
-            } else {
-                data.push(false);
-            }
+            data[i] = b_1 && b_2;
         }
 
         BitVec { data }
@@ -107,18 +97,6 @@ impl std::ops::BitAnd for BitVec {
 
     fn bitand(self, rhs: BitVec) -> BitVec {
         &self & &rhs
-    }
-}
-
-impl std::cmp::PartialEq for BitVec {
-    fn eq(&self, rhs: &BitVec) -> bool {
-        for (b1, b2) in self.data.iter().zip(rhs.data.iter()) {
-            if *b1 != *b2 {
-                return false;
-            }
-        }
-
-        true
     }
 }
 
@@ -162,11 +140,11 @@ mod tests {
     fn create() {
         let v = vec![1, 3, 9, 12];
         let b = BitVec::from(&v);
-        let res = vec![
-            true, false, true, false, false, false, false, false, true, false, false, true, false,
-            false, false, false, false, false, false, false, false, false, false, false,
+        let res = [
+            false, true, false, true, false, false, false, false, false, true, false, false, true,
+            false, false, false, false, false, false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false,
         ];
-        println!("b: {:?}", b);
         assert_eq!(b.data, res, "bitvec init should work");
     }
 
@@ -208,7 +186,7 @@ mod tests {
     fn any() {
         let b_1 = BitVec::from(&vec![10]);
         assert_eq!(b_1.any(), true, "should be true if at least one bit is set");
-        let b_2 = BitVec::from(&vec![1, 10, 100]);
+        let b_2 = BitVec::from(&vec![1, 10, 20]);
         assert_eq!(b_2.any(), true, "should be true if at least one bit is set");
         let b_3 = BitVec::from(&vec![]);
         assert_eq!(b_3.any(), false, "should be false if no bit is set");
