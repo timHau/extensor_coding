@@ -15,7 +15,7 @@ fn rand_coeffs_and_basis(n: i32) -> (Vec<i64>, Vec<Vec<u8>>) {
 
 fn bench_bitvec(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
-    let max_basis = 40;
+    let max_basis = 31;
     let bar = ProgressBar::new(num_iter);
     bar.set_style(prog_style.clone());
 
