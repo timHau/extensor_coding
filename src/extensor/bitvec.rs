@@ -165,7 +165,6 @@ impl std::ops::Mul for &ExTensor {
                     let next_base = base_a ^ base_b;
                     // compute sign and multiply coefficients
                     let sign = ExTensor::get_sign(base_a, base_b);
-                    println!("sign: {}, a: {}, b: {}", sign, base_a, base_b);
                     let next_coeff: i64 = sign * coeff_a * coeff_b;
 
                     if data.contains_key(&next_base) {
