@@ -89,6 +89,7 @@ fn main() {
         ("k = 3".to_string(), style::GREEN, times_algo_c_n_k_3),
         ("k = 4".to_string(), style::RED, times_algo_c_n_k_4),
     ];
+    /*
     let _ = utils::plot_results(
         "random graph with n vertices (p=0.5)",
         (("n", 2f32..50f32), ("Zeit (in ns)", 0f32..600000f32)),
@@ -96,6 +97,7 @@ fn main() {
         "benches/output/algo_n",
         &result_n,
     );
+    */
 
     let times_algo_c_n_k_2_p = bench_c_grow_n(10, 2, 0.2, &prog_style);
     let times_algo_c_n_k_3_p = bench_c_grow_n(10, 3, 0.2, &prog_style);
@@ -105,6 +107,7 @@ fn main() {
         ("k = 3".to_string(), style::GREEN, times_algo_c_n_k_3_p),
         ("k = 4".to_string(), style::RED, times_algo_c_n_k_4_p),
     ];
+    /*
     let _ = utils::plot_results(
         "random graph with n vertices (p=0.2)",
         (("n", 2f32..50f32), ("Zeit (in ns)", 0f32..600000f32)),
@@ -112,4 +115,5 @@ fn main() {
         "benches/output/algo_n",
         &result_n,
     );
+    */
 }
