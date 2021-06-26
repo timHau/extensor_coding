@@ -51,8 +51,6 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
         let denom = utils::factorial(k) as f64;
         let x_j = coeffs.abs() as f64 / denom;
 
-        println!("coeffs {:?}", v_j.coeffs());
-
         sum += x_j;
         ssum += x_j * x_j;
         t += 1;
@@ -177,6 +175,36 @@ mod tests {
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
+        );
+    }
+
+    #[test]
+    fn c_3() {
+        let g = Graph::from_graph6("src/data/path6.g6");
+        let k = 3;
+        let eps = 0.5;
+        let p = 8.;
+        let lower_bound = (1. - eps) * p;
+        let upper_bound = (1. + eps) * p;
+        let res = algorithm::c(g, k, eps);
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
+    }
+
+    #[test]
+    fn c_4() {
+        let g = Graph::from_graph6("src/data/path6.g6");
+        let k = 4;
+        let eps = 0.5;
+        let p = 6.;
+        let lower_bound = (1. - eps) * p;
+        let upper_bound = (1. + eps) * p;
+        let res = algorithm::c(g, k, eps);
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
         );
     }
 

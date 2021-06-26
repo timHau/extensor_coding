@@ -35,7 +35,7 @@ fn bench_c(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
 
 fn bench_c_grow_n(num_iter: u64, k: usize, p: f64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
-    let max_n = 50usize;
+    let max_n = 80usize;
     let bar = ProgressBar::new(num_iter);
     bar.set_style(prog_style.clone());
 
@@ -81,39 +81,33 @@ fn main() {
     );
     */
 
-    let times_algo_c_n_k_2 = bench_c_grow_n(10, 2, 0.5, &prog_style);
-    let times_algo_c_n_k_3 = bench_c_grow_n(10, 3, 0.5, &prog_style);
-    let times_algo_c_n_k_4 = bench_c_grow_n(10, 4, 0.5, &prog_style);
+    let times_algo_c_n_k_8 = bench_c_grow_n(10, 2, 0.8, &prog_style);
+    let times_algo_c_n_k_4 = bench_c_grow_n(10, 2, 0.4, &prog_style);
+    let times_algo_c_n_k_2 = bench_c_grow_n(10, 2, 0.2, &prog_style);
+    let times_algo_c_n_k_1 = bench_c_grow_n(10, 2, 0.1, &prog_style);
     let result_n = vec![
-        ("k = 2".to_string(), style::BLUE, times_algo_c_n_k_2),
-        ("k = 3".to_string(), style::GREEN, times_algo_c_n_k_3),
-        ("k = 4".to_string(), style::RED, times_algo_c_n_k_4),
+        (
+            "p = 0.8, k = 2".to_string(),
+            style::BLUE,
+            times_algo_c_n_k_8,
+        ),
+        (
+            "p = 0.4, k = 2".to_string(),
+            style::GREEN,
+            times_algo_c_n_k_4,
+        ),
+        ("p = 0.2, k = 2".to_string(), style::RED, times_algo_c_n_k_2),
+        (
+            "p = 0.1, k = 2".to_string(),
+            style::RGBColor(120, 200, 228),
+            times_algo_c_n_k_1,
+        ),
     ];
-    /*
     let _ = utils::plot_results(
         "random graph with n vertices (p=0.5)",
-        (("n", 2f32..50f32), ("Zeit (in ns)", 0f32..600000f32)),
+        (("n", 2f32..80f32), ("Zeit (in ns)", 0f32..200f32)),
         2,
-        "benches/output/algo_n",
+        "benches/output/algo_n_0_5",
         &result_n,
     );
-    */
-
-    let times_algo_c_n_k_2_p = bench_c_grow_n(10, 2, 0.2, &prog_style);
-    let times_algo_c_n_k_3_p = bench_c_grow_n(10, 3, 0.2, &prog_style);
-    let times_algo_c_n_k_4_p = bench_c_grow_n(10, 4, 0.2, &prog_style);
-    let result_n = vec![
-        ("k = 2".to_string(), style::BLUE, times_algo_c_n_k_2_p),
-        ("k = 3".to_string(), style::GREEN, times_algo_c_n_k_3_p),
-        ("k = 4".to_string(), style::RED, times_algo_c_n_k_4_p),
-    ];
-    /*
-    let _ = utils::plot_results(
-        "random graph with n vertices (p=0.2)",
-        (("n", 2f32..50f32), ("Zeit (in ns)", 0f32..600000f32)),
-        2,
-        "benches/output/algo_n",
-        &result_n,
-    );
-    */
 }
