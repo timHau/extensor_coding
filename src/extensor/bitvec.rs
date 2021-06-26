@@ -1,6 +1,5 @@
 use crate::bitvec::BitVec;
 use num_traits::{One, Zero};
-use std::cmp::max;
 use std::collections::HashMap;
 
 #[derive(Debug, PartialEq, Default, Clone)]

@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::{graph::Graph, utils};
 use num_traits::Zero;
 
@@ -67,7 +65,7 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
     sum / (t as f64)
 }
 
-pub fn color_coding(g: Graph, k: usize) {
+pub fn color_coding(_g: Graph, _k: usize) {
     // let g = g.color_coding(k);
 }
 

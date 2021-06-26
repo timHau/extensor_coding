@@ -4,7 +4,8 @@ use rand::distributions::Bernoulli;
 use rand::Rng;
 use std::ops::Range;
 
-pub fn rand_graph(n: usize, p: f64) -> Graph {
+#[allow(dead_code)]
+pub(crate) fn rand_graph(n: usize, p: f64) -> Graph {
     let bernoulli = Bernoulli::new(p).unwrap();
     let rand: Vec<u8> = rand::thread_rng()
         .sample_iter(&bernoulli)
@@ -15,7 +16,7 @@ pub fn rand_graph(n: usize, p: f64) -> Graph {
 }
 
 #[allow(dead_code)]
-pub fn join_runs(runs: Vec<Vec<f64>>) -> Vec<f64> {
+pub(crate) fn join_runs(runs: Vec<Vec<f64>>) -> Vec<f64> {
     let mut res = vec![0.0; runs[0].len()];
 
     for tv in runs.iter() {
