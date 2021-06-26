@@ -166,9 +166,7 @@ mod tests {
     #[cfg(feature = "extensor_dense_hashmap")]
     use crate::extensor::dense_hashmap::ExTensor;
 
-    use crate::utils::{
-        create_bernoulli, create_vandermonde, factorial, has_intersection, powerset,
-    };
+    use crate::utils::{create_bernoulli, factorial, has_intersection, powerset};
 
     #[test]
     #[cfg(feature = "extensor_dense_hashmap")]

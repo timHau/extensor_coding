@@ -35,7 +35,7 @@ fn bench_c(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
 
 fn bench_c_grow_n(num_iter: u64, k: usize, p: f64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
-    let max_n = 100usize;
+    let max_n = 50usize;
     let bar = ProgressBar::new(num_iter);
     bar.set_style(prog_style.clone());
 
@@ -68,6 +68,7 @@ fn main() {
         .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
         .progress_chars("=>-");
 
+    /*
     let times_algo_c = bench_c(num_iter, &prog_style);
 
     let result = vec![("algorithm c".to_string(), style::RED, times_algo_c)];
@@ -78,6 +79,7 @@ fn main() {
         "benches/output/algo",
         &result,
     );
+    */
 
     let times_algo_c_n_k_2 = bench_c_grow_n(10, 2, 0.5, &prog_style);
     let times_algo_c_n_k_3 = bench_c_grow_n(10, 3, 0.5, &prog_style);
@@ -89,7 +91,7 @@ fn main() {
     ];
     let _ = utils::plot_results(
         "random graph with n vertices (p=0.5)",
-        (("n", 2f32..100f32), ("Zeit (in ns)", 0f32..600000f32)),
+        (("n", 2f32..50f32), ("Zeit (in ns)", 0f32..600000f32)),
         2,
         "benches/output/algo_n",
         &result_n,
@@ -105,7 +107,7 @@ fn main() {
     ];
     let _ = utils::plot_results(
         "random graph with n vertices (p=0.2)",
-        (("n", 2f32..100f32), ("Zeit (in ns)", 0f32..600000f32)),
+        (("n", 2f32..50f32), ("Zeit (in ns)", 0f32..600000f32)),
         2,
         "benches/output/algo_n",
         &result_n,
