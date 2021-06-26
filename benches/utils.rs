@@ -1,5 +1,18 @@
+use extensor_coding::graph::Graph;
 use plotters::prelude::*;
+use rand::distributions::Bernoulli;
+use rand::Rng;
 use std::ops::Range;
+
+pub fn rand_graph(n: usize, p: f64) -> Graph {
+    let bernoulli = Bernoulli::new(p).unwrap();
+    let rand: Vec<u8> = rand::thread_rng()
+        .sample_iter(&bernoulli)
+        .take(n * n)
+        .map(|v| if v { 1 } else { 0 })
+        .collect();
+    Graph::from(n, rand)
+}
 
 #[allow(dead_code)]
 pub fn join_runs(runs: Vec<Vec<f64>>) -> Vec<f64> {

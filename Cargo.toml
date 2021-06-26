@@ -24,13 +24,13 @@ debug = true
 [profile.release]
 debug = true
 
-[[bench]]
-name = "wedge_product"
-harness = false
+#[[bench]]
+#name = "wedge_product"
+#harness = false
 
-[[bench]]
-name = "matrix_vec"
-harness = false
+#[[bench]]
+#name = "matrix_vec"
+#harness = false
 
 [[bench]]
 name = "algorithm"
