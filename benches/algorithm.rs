@@ -102,7 +102,7 @@ fn main() {
         ),
     ];
     let _ = utils::plot_results(
-        "random graph with n vertices (p=0.5)",
+        "random graph with n vertices, probability p",
         (("n", 2f32..80f32), ("Zeit (in ns)", 0f32..200f32)),
         2,
         "benches/output/algo_n_0_5",
