@@ -68,7 +68,6 @@ fn main() {
         .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
         .progress_chars("=>-");
 
-    /*
     let times_algo_c = bench_c(num_iter, &prog_style);
 
     let result = vec![("algorithm c".to_string(), style::RED, times_algo_c)];
@@ -79,7 +78,6 @@ fn main() {
         "benches/output/algo",
         &result,
     );
-    */
 
     let times_algo_c_n_k_8 = bench_c_grow_n(10, 2, 0.8, &prog_style);
     let times_algo_c_n_k_4 = bench_c_grow_n(10, 2, 0.4, &prog_style);

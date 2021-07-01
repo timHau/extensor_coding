@@ -73,18 +73,35 @@ pub fn color_coding(_g: Graph, _k: usize) {
     // let g = g.color_coding(k);
 }
 
-pub fn color_coding_rec(g: Graph, k: usize) -> f32 {
-    let mut res = 0;
+pub fn color_coding_rec(g: Graph, k: usize, eps: f64) -> f64 {
+    let mut t = 1;
+    let mut sum = 0;
+    let mut ssum = 0;
 
-    let num_iter = f32::exp(k as f32) as u32;
-    for _ in 0..num_iter {
+    while t < f32::exp(k as f32) as u32 {
+        let mut res = 0;
+
         let g = g.color_coding(k);
         for (v, col) in g.vert_data.iter().enumerate() {
             res += color_coding_step(&g, v, *col, (1..=k).collect());
         }
+
+        sum += res;
+        ssum += res * res;
+        t += 1;
+
+        let n = t as f64;
+        let mean = sum as f64 / n;
+        let std_dev = ((ssum as f64 - mean * mean * n) / (n - 1.0)).sqrt();
+        let t_val = utils::t_value((t - 1) as i32);
+
+        println!("mean: {}, std_dev: {}", mean, std_dev);
+        if mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean {
+            return mean;
+        }
     }
 
-    res as f32 / 2.0
+    sum as f64 / (2.0 * t as f64)
 }
 
 fn color_coding_step(g: &Graph, v: usize, col: usize, s: Vec<usize>) -> u32 {
@@ -139,10 +156,7 @@ mod tests {
         let g = Graph::from_graph6("src/data/path3.g6");
         let k = 2;
         let eps = 0.5;
-        let now = std::time::Instant::now();
         let res = algorithm::c(g, k, eps);
-        println!("algorihm c took: {}s", now.elapsed().as_secs());
-
         let p = 4.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
@@ -161,17 +175,10 @@ mod tests {
         let g = Graph::from_graph6("src/data/path3.g6");
         let k = 3;
         let eps = 0.5;
-        let now = std::time::Instant::now();
         let res = algorithm::c(g, k, eps);
-        println!("algorihm c took: {}s", now.elapsed().as_secs());
-
         let p = 2.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
-        println!(
-            "lower: {}, res: {}, upper: {}",
-            lower_bound, res, upper_bound
-        );
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
@@ -187,9 +194,9 @@ mod tests {
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
         let res = algorithm::c(g, k, eps);
-        println!(
-            "lower: {}, res: {}, upper: {}",
-            lower_bound, res, upper_bound
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
         );
     }
 
@@ -202,9 +209,9 @@ mod tests {
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
         let res = algorithm::c(g, k, eps);
-        println!(
-            "lower: {}, res: {}, upper: {}",
-            lower_bound, res, upper_bound
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
         );
     }
 
@@ -212,7 +219,18 @@ mod tests {
     fn color_coding() {
         let g = Graph::from_graph6("src/data/path3.g6");
         let k = 2;
-        let res = algorithm::color_coding_rec(g, k);
-        println!("res {}", res);
+        let eps = 0.9;
+        let p = 4.;
+        let lower_bound = (1. - eps) * p;
+        let upper_bound = (1. + eps) * p;
+        let res = algorithm::color_coding_rec(g, k, eps);
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
+        );
     }
 }
