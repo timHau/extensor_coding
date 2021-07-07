@@ -63,7 +63,11 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
         let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
         let t_val = utils::t_value(t - 1);
 
-        if mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean {
+        println!(
+            "mean: {}, std_dev: {}, x_j: {}, coeffs: {:?}",
+            mean, std_dev, x_j, coeffs
+        );
+        if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && t > 20) {
             return mean;
         }
     }
@@ -237,6 +241,76 @@ mod tests {
         let p = 6.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
+        let res = algorithm::c(g, k, eps);
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
+        );
+    }
+
+    #[test]
+    fn c_tree() {
+        // test algorithm c on the following binary tree
+        //          o
+        //         / \
+        //        /   \
+        //       o     o
+        //      / \   / \
+        //     /   \ /   \
+        //    o    o o    o
+        // edges are directed and point on "down"
+        let g = Graph::from(
+            7,
+            vec![
+                0, 1, 0, 0, 1, 0, 0, // root
+                0, 0, 1, 1, 0, 0, 0, //
+                0, 0, 0, 0, 0, 0, 0, //
+                0, 0, 0, 0, 0, 0, 0, //
+                0, 0, 0, 0, 0, 1, 1, //
+                0, 0, 0, 0, 0, 0, 0, //
+                0, 0, 0, 0, 0, 0, 0, //
+            ],
+        );
+        let k = 2;
+        let eps = 0.2;
+        let expect = 6.;
+        let lower_bound = (1. - eps) * expect;
+        let upper_bound = (1. + eps) * expect;
+        let res = algorithm::c(g, k, eps);
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
+        );
+    }
+
+    #[test]
+    fn c_tree_2() {
+        // test algorithm c on the following binary tree
+        //          o
+        //         / \
+        //        /   \
+        //       o     o
+        //      / \   / \
+        //     /   \ /   \
+        //    o    o o    o
+        // edges are directed and point on "down"
+        let g = Graph::from(
+            7,
+            vec![
+                0, 1, 0, 0, 1, 0, 0, // root
+                0, 0, 1, 1, 0, 0, 0, //
+                0, 0, 0, 0, 0, 0, 0, //
+                0, 0, 0, 0, 0, 0, 0, //
+                0, 0, 0, 0, 0, 1, 1, //
+                0, 0, 0, 0, 0, 0, 0, //
+                0, 0, 0, 0, 0, 0, 0, //
+            ],
+        );
+        let k = 3;
+        let eps = 0.2;
+        let expect = 4.;
+        let lower_bound = (1. - eps) * expect;
+        let upper_bound = (1. + eps) * expect;
         let res = algorithm::c(g, k, eps);
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
