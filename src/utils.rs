@@ -144,21 +144,6 @@ pub(crate) fn t_value(degrees_of_freedom: i32) -> f64 {
     }
 }
 
-/// ## powerset
-///
-/// Given an Vec `v` calculate all subsets
-/// from [here](https://users.rust-lang.org/t/power-set-of-a-vec/29874/2)
-pub(crate) fn powerset(v: &Vec<usize>) -> Vec<Vec<usize>> {
-    v.iter().fold(vec![vec![]], |mut p, x| {
-        let i = p.clone().into_iter().map(|mut s| {
-            s.push(x.clone());
-            s
-        });
-        p.extend(i);
-        p
-    })
-}
-
 #[cfg(test)]
 mod tests {
     #[cfg(feature = "extensor_bitvec")]
@@ -166,10 +151,9 @@ mod tests {
     #[cfg(feature = "extensor_dense_hashmap")]
     use crate::extensor::dense_hashmap::ExTensor;
 
-    use crate::utils::{create_bernoulli, factorial, has_intersection, powerset};
+    use crate::utils::{create_bernoulli, create_vandermonde, factorial, has_intersection};
 
     #[test]
-    #[cfg(feature = "extensor_dense_hashmap")]
     fn vandermonde() {
         let k = 5;
         let n = 5;
@@ -235,30 +219,5 @@ mod tests {
         let v_4 = vec![11, 12, 13, 14];
         let res_3 = has_intersection(&v_1, &v_4);
         assert_eq!(res_3, false);
-    }
-
-    #[test]
-    fn power_set() {
-        let s: Vec<usize> = vec![1, 2, 3, 4];
-        let ps = powerset(&s);
-        let expect: Vec<Vec<usize>> = vec![
-            vec![],
-            vec![1],
-            vec![2],
-            vec![1, 2],
-            vec![3],
-            vec![1, 3],
-            vec![2, 3],
-            vec![1, 2, 3],
-            vec![4],
-            vec![1, 4],
-            vec![2, 4],
-            vec![1, 2, 4],
-            vec![3, 4],
-            vec![1, 3, 4],
-            vec![2, 3, 4],
-            vec![1, 2, 3, 4],
-        ];
-        assert_eq!(ps, expect, "powerset should work");
     }
 }

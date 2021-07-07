@@ -2,8 +2,8 @@ use extensor_coding::{algorithm, graph::Graph};
 use std::time::Instant;
 
 fn main() {
-    let g = Graph::from_graph6("src/data/path6.g6");
-    let k = 2;
+    let g = Graph::from_tsv("src/data/out.moreno_kangaroo_kangaroo");
+    let k = 4;
     let eps = 0.1;
 
     let now = Instant::now();

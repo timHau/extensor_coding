@@ -1,4 +1,7 @@
+use std::collections::HashMap;
+
 use crate::{graph::Graph, utils};
+use itertools::Itertools;
 use num_traits::Zero;
 
 /// # Algorithm U
@@ -60,7 +63,6 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
         let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
         let t_val = utils::t_value(t - 1);
 
-        println!("mean: {}, std_dev: {}", mean, std_dev);
         if mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean {
             return mean;
         }
@@ -69,44 +71,71 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
     sum / (t as f64)
 }
 
-pub fn color_coding(_g: Graph, _k: usize) {
-    // let g = g.color_coding(k);
-}
+pub fn color_coding(g: Graph, k: usize) -> f64 {
+    let mut dp_table = HashMap::new();
+    let g = g.color_coding(k);
+    let color_set: Vec<usize> = (1..=k).collect();
 
-pub fn color_coding_rec(g: Graph, k: usize, eps: f64) -> f64 {
-    let mut t = 1;
-    let mut sum = 0;
-    let mut ssum = 0;
+    for set in color_set.iter().powerset() {
+        match set.len() {
+            0 => continue,
+            1 => {
+                for (v, color) in g.vert_data.iter().enumerate() {
+                    if set[0] == color {
+                        dp_table.insert((set.clone(), v), 1);
+                    } else {
+                        dp_table.insert((set.clone(), v), 0);
+                    }
+                }
+            }
+            _ => {
+                for (v, color) in g.vert_data.iter().enumerate() {
+                    let set_minus_color: Vec<&usize> =
+                        set.clone().into_iter().filter(|c| *c != color).collect();
 
-    while t < f32::exp(k as f32) as u32 {
-        let mut res = 0;
+                    let mut value = 0;
+                    for u in g.neighbors_of(v).iter() {
+                        let neighbor_value =
+                            dp_table.get(&(set_minus_color.clone(), *u)).unwrap_or(&0);
+                        value = value + *neighbor_value;
+                    }
 
-        let g = g.color_coding(k);
-        for (v, col) in g.vert_data.iter().enumerate() {
-            res += color_coding_step(&g, v, *col, (1..=k).collect());
-        }
-
-        sum += res;
-        ssum += res * res;
-        t += 1;
-
-        let n = t as f64;
-        let mean = sum as f64 / n;
-        let std_dev = ((ssum as f64 - mean * mean * n) / (n - 1.0)).sqrt();
-        let t_val = utils::t_value((t - 1) as i32);
-
-        println!("mean: {}, std_dev: {}", mean, std_dev);
-        if mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean {
-            return mean;
+                    dp_table.insert((set_minus_color.clone(), v), value);
+                }
+            }
         }
     }
+    println!("dp_table: {:?}", dp_table);
 
-    sum as f64 / (2.0 * t as f64)
+    let mut res = 0.0;
+    for ((s, _v), value) in dp_table.into_iter() {
+        println!("s {:?}, val: {}", s, value);
+        if s.len() == k - 1 {
+            res += value as f64;
+        }
+    }
+    res
 }
 
-fn color_coding_step(g: &Graph, v: usize, col: usize, s: Vec<usize>) -> u32 {
+pub fn color_coding_rec(g: Graph, k: usize) -> f64 {
+    let mut sum = 0.0;
+    let num_iter = f64::exp(k as f64);
+    for _ in 0..num_iter as u32 {
+        let mut res = 0.;
+        let g = g.color_coding(k);
+        for (v, color) in g.vert_data.iter().enumerate() {
+            res += color_coding_step(&g, v, *color, (1..=k).collect()) as f64;
+        }
+        res *= 2.0;
+        sum += res;
+    }
+
+    sum / (num_iter as f64)
+}
+
+fn color_coding_step(g: &Graph, v: usize, color: usize, s: Vec<usize>) -> u32 {
     if s.len() == 1 {
-        if s[0] == col {
+        if s[0] == color {
             return 1;
         } else {
             return 0;
@@ -115,7 +144,7 @@ fn color_coding_step(g: &Graph, v: usize, col: usize, s: Vec<usize>) -> u32 {
 
     let mut c = 0;
     for u in g.neighbors_of(v).iter() {
-        let s_minus_col: Vec<usize> = s.clone().into_iter().filter(|c| *c != col).collect();
+        let s_minus_col: Vec<usize> = s.clone().into_iter().filter(|c| *c != color).collect();
         c += color_coding_step(g, *u, g.vert_data[*u], s_minus_col);
     }
 
@@ -223,14 +252,31 @@ mod tests {
         let p = 4.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
-        let res = algorithm::color_coding_rec(g, k, eps);
-        println!(
-            "lower: {}, res: {}, upper: {}",
-            lower_bound, res, upper_bound
-        );
+        let res = algorithm::color_coding_rec(g, k);
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
         );
+    }
+
+    #[test]
+    fn color_coding_2() {
+        let source = "src/data/path6.g6";
+        let g = Graph::from_graph6(source);
+        let k = 2;
+        let eps = 0.2;
+        let _p = 10.;
+        let res = algorithm::color_coding_rec(g, k);
+        let g2 = Graph::from_graph6(source);
+        let res_2 = algorithm::c(g2, k, eps);
+        println!("c: {}, coding: {}", res_2, res);
+    }
+
+    #[test]
+    fn dp_color_coding() {
+        let g = Graph::from_graph6("src/data/path6.g6");
+        let k = 3;
+        let res = algorithm::color_coding(g, k);
+        println!("res: {}", res);
     }
 }

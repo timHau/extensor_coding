@@ -89,15 +89,7 @@ impl Matrix<u8> {
 
         match row {
             None => vec![],
-            Some(row) => {
-                let mut res = vec![];
-
-                for (i, _val) in row.iter() {
-                    res.push(*i);
-                }
-
-                res
-            }
+            Some(row) => row.iter().map(|(i, _val)| *i).collect(),
         }
     }
 }

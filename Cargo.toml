@@ -9,6 +9,7 @@ rand = "0.8.0"
 num-traits = "0.2.14"
 plotters = "^0.3.0"
 indicatif = "0.16.0"
+itertools = "0.10.1"
 
 [features]
 default = ["extensor_bitvec", "matrix_sparse_hash"]
