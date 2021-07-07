@@ -5,7 +5,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 use plotters::style;
 use std::time::Instant;
 
-fn bench_c(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
+fn bench_c(num_iter: u64, path_str: &str, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
     let max_k = 10;
     let bar = ProgressBar::new(num_iter);
@@ -15,7 +15,7 @@ fn bench_c(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
         let mut times_per_iter = Vec::new();
 
         for k in 2..=max_k {
-            let g = Graph::from_graph6("src/data/path10.g6");
+            let g = Graph::from_graph6(path_str);
             let eps = 0.9;
 
             let now = Instant::now();
@@ -62,15 +62,25 @@ fn bench_c_grow_n(num_iter: u64, k: usize, p: f64, prog_style: &ProgressStyle) -
 }
 
 fn main() {
-    let num_iter = 1;
-
     let prog_style = ProgressStyle::default_bar()
         .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
         .progress_chars("=>-");
 
-    let times_algo_c = bench_c(num_iter, &prog_style);
+    let times_algo_c_10 = bench_c(2, "src/data/path10.g6", &prog_style);
+    let times_algo_c_tutte = bench_c(2, "src/data/tutte_graph.g6", &prog_style);
 
-    let result = vec![("algorithm c".to_string(), style::RED, times_algo_c)];
+    let result = vec![
+        (
+            "algorithm c (path 10)".to_string(),
+            style::RED,
+            times_algo_c_10,
+        ),
+        (
+            "algorithm c (tutte graph)".to_string(),
+            style::GREEN,
+            times_algo_c_tutte,
+        ),
+    ];
     let _ = utils::plot_results(
         "algorithm c (dense_hashmap, sparse matrix)",
         (("k", 2f32..11f32), ("Zeit (in ns)", 0f32..600000f32)),
