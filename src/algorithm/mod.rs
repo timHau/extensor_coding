@@ -319,6 +319,87 @@ mod tests {
     }
 
     #[test]
+    fn c_triangle() {
+        // test algorithm c on the following binary tree
+        //          o
+        //         / \
+        //        /   \
+        //       o --- o
+        // edges form a "circle"
+        let g = Graph::from(
+            3,
+            vec![
+                0, 1, 0, // first node
+                0, 0, 1, // second node
+                1, 0, 0,
+            ],
+        );
+        let k = 2;
+        let eps = 0.2;
+        let expect = 3.;
+        let lower_bound = (1. - eps) * expect;
+        let upper_bound = (1. + eps) * expect;
+        let res = algorithm::c(g, k, eps);
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
+        );
+    }
+
+    #[test]
+    fn c_triangle_2() {
+        // test algorithm c on the following binary tree
+        //          o
+        //         / \
+        //        /   \
+        //       o --- o
+        // edges form a "circle"
+        let g = Graph::from(
+            3,
+            vec![
+                0, 1, 0, // first node
+                0, 0, 1, // second node
+                1, 0, 0,
+            ],
+        );
+        let k = 3;
+        let eps = 0.2;
+        let expect = 3.;
+        let lower_bound = (1. - eps) * expect;
+        let upper_bound = (1. + eps) * expect;
+        let res = algorithm::c(g, k, eps);
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
+        );
+    }
+
+    #[test]
+    fn c_triangle_3() {
+        // test algorithm c on the following binary tree
+        //          o
+        //         / \
+        //        /   \
+        //       o --- o
+        // edges form a "circle"
+        let g = Graph::from(
+            3,
+            vec![
+                0, 1, 0, // first node
+                0, 0, 1, // second node
+                1, 0, 0,
+            ],
+        );
+        let k = 4;
+        let eps = 0.2;
+        let res = algorithm::c(g, k, eps);
+        assert_eq!(
+            res, 0.0,
+            "algorithm c vanishes when path contains a vertex twice"
+        );
+    }
+
+    #[test]
     fn color_coding() {
         let g = Graph::from_graph6("src/data/path3.g6");
         let k = 2;
