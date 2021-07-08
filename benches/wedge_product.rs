@@ -93,7 +93,7 @@ fn main() {
         "wedge product comparison",
         (
             ("Nummer von Basiselementen", 0f32..60f32),
-            ("Laufzeit (in ms)", 0f32..0.2f32),
+            ("Laufzeit (in ms)", 0f32..0.1f32),
         ),
         0,
         "benches/output/wedge_prod",

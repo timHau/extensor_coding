@@ -67,6 +67,7 @@ fn main() {
         .progress_chars("=>-");
 
     let times_algo_c_10 = bench_c(2, "src/data/path10.g6", &prog_style);
+    let times_algo_c_100 = bench_c(2, "src/data/path100.g6", &prog_style);
     let times_algo_c_tutte = bench_c(2, "src/data/tutte_graph.g6", &prog_style);
 
     let result = vec![
@@ -74,6 +75,11 @@ fn main() {
             "algorithm c (path 10)".to_string(),
             style::RED,
             times_algo_c_10,
+        ),
+        (
+            "algorithm c (path 100)".to_string(),
+            style::BLUE,
+            times_algo_c_100,
         ),
         (
             "algorithm c (tutte graph)".to_string(),
@@ -112,8 +118,8 @@ fn main() {
         ),
     ];
     let _ = utils::plot_results(
-        "random graph with n vertices, probability p",
-        (("n", 2f32..80f32), ("Zeit (in ns)", 0f32..200f32)),
+        "algorithm c on random graph with n vertices, probability p",
+        (("n", 2f32..80f32), ("Zeit (in ns)", 0f32..120f32)),
         2,
         "benches/output/algo_n_0_5",
         &result_n,
