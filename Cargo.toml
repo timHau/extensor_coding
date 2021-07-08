@@ -12,7 +12,7 @@ indicatif = "0.16.0"
 itertools = "0.10.1"
 
 [features]
-default = ["extensor_bitvec", "matrix_sparse_hash"]
+default = ["extensor_dense_hashmap", "matrix_sparse_hash"]
 extensor_dense_hashmap = []
 extensor_bitvec = []
 matrix_naive = []
@@ -26,10 +26,10 @@ debug = true
 name = "wedge_product"
 harness = false
 
-[[bench]]
-name = "matrix_vec"
-harness = false
+#[[bench]]
+#name = "matrix_vec"
+#harness = false
 
-[[bench]]
-name = "algorithm"
-harness = false
+#[[bench]]
+#name = "algorithm"
+#harness = false

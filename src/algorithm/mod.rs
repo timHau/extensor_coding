@@ -419,12 +419,15 @@ mod tests {
         let source = "src/data/path6.g6";
         let g = Graph::from_graph6(source);
         let k = 2;
-        let eps = 0.2;
-        let _p = 10.;
+        let eps = 0.5;
+        let p = 10.;
+        let lower_bound = (1. - eps) * p;
+        let upper_bound = (1. + eps) * p;
         let res = algorithm::color_coding_rec(g, k);
-        let g2 = Graph::from_graph6(source);
-        let res_2 = algorithm::c(g2, k, eps);
-        println!("c: {}, coding: {}", res_2, res);
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
+        );
     }
 
     #[test]

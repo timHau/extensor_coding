@@ -46,7 +46,7 @@ fn bench_bitvec(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
 
 fn bench_hashmap(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
-    let max_basis = 80;
+    let max_basis = 60;
     let bar = ProgressBar::new(num_iter);
     bar.set_style(prog_style.clone());
 
@@ -92,8 +92,8 @@ fn main() {
     let _ = utils::plot_results(
         "wedge product comparison",
         (
-            ("Nummer von Basiselementen", 0f32..80f32),
-            ("Laufzeit (in ms)", 0f32..1.6f32),
+            ("Nummer von Basiselementen", 0f32..60f32),
+            ("Laufzeit (in ms)", 0f32..0.2f32),
         ),
         0,
         "benches/output/wedge_prod",

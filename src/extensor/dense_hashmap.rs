@@ -160,6 +160,7 @@ impl std::ops::Mul for ExTensor {
     }
 }
 
+// optional trait implementation for debugging
 impl std::fmt::Display for ExTensor {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut res = String::from("");

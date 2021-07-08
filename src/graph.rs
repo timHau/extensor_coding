@@ -93,14 +93,22 @@ impl Graph {
     }
 
     fn from_sparse6(path_str: &str) -> Self {
+        todo!("Not implemented yet");
+
+        /*
         let (file, n) = utils::file_n_from(path_str);
 
-        println!("TODO {:?}", file);
+        // let mut buffer = Vec::new();
+        file.into_iter().for_each(|b| {
+            let v = b as i32 - 63;
+            println!("v: {}", v);
+        });
 
         Graph {
             adj_mat: Box::new(Matrix::new(0, 0, vec![])),
             vert_data: Vec::with_capacity(n),
         }
+        */
     }
 
     /// ## from_tsv
@@ -254,10 +262,12 @@ mod tests {
         );
     }
 
+    /*
     #[test]
     fn sparse6() {
         let _g = Graph::from_sparse6("src/data/path10.s6");
     }
+    */
 
     #[test]
     fn tutte_graph() {
