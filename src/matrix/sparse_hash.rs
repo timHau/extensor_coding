@@ -54,7 +54,7 @@ where
         for (i, val) in values.into_iter().enumerate() {
             if !val.is_zero() {
                 let row_index = i / ncols;
-                let col_index = i % nrows;
+                let col_index = i % ncols;
 
                 let row_vals = data.entry(row_index).or_insert(Vec::new());
                 row_vals.push((col_index, val));
@@ -130,6 +130,50 @@ mod tests {
     use crate::matrix::sparse_hash::Matrix;
     use crate::utils;
     use num_traits::identities::Zero;
+    use std::collections::HashMap;
+
+    #[test]
+    fn create() {
+        let m = Matrix::new(2, 2, vec![1, 1, 0, 1]);
+        let mut expect = HashMap::new();
+        expect.insert(0, vec![(0, 1), (1, 1)]);
+        expect.insert(1, vec![(1, 1)]);
+        assert_eq!(m.data, expect, "Matrix should be created correctly");
+    }
+
+    #[test]
+    fn create_rect() {
+        let m = Matrix::new(
+            2,
+            5,
+            vec![
+                0, 1, 2, 3, 4, // first row
+                5, 6, 7, 8, 9, // second row
+            ],
+        );
+        let mut expect = HashMap::new();
+        expect.insert(0, vec![(1, 1), (2, 2), (3, 3), (4, 4)]);
+        expect.insert(1, vec![(0, 5), (1, 6), (2, 7), (3, 8), (4, 9)]);
+        assert_eq!(m.data, expect, "Matrix should be created correctly");
+    }
+
+    #[test]
+    fn create_simple() {
+        let m = Matrix::new(
+            3,
+            4,
+            vec![
+                1, 0, 0, 1, //
+                0, 0, 1, 0, //
+                0, 0, 0, 1, //
+            ],
+        );
+        let mut expect = HashMap::new();
+        expect.insert(0, vec![(0, 1), (3, 1)]);
+        expect.insert(1, vec![(2, 1)]);
+        expect.insert(2, vec![(3, 1)]);
+        assert_eq!(m.data, expect, "Matrix should be created correctly");
+    }
 
     #[test]
     fn mat_vec_mul() {

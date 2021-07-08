@@ -55,7 +55,7 @@ where
         for (i, val) in values.into_iter().enumerate() {
             if !val.is_zero() {
                 let row_index = i / ncols;
-                let col_index = i % nrows;
+                let col_index = i % ncols;
 
                 data.push((row_index, col_index, val));
             }
@@ -158,6 +158,52 @@ mod tests {
     use crate::matrix::sparse_triples::Matrix;
     use crate::utils;
     use num_traits::identities::Zero;
+
+    #[test]
+    fn create() {
+        let m = Matrix::new(2, 2, vec![1, 1, 0, 1]);
+        let expect = vec![(0, 0, 1), (0, 1, 1), (1, 1, 1)];
+        assert_eq!(m.data, expect, "Matrix should be created correctly");
+    }
+
+    #[test]
+    fn create_rect() {
+        let m = Matrix::new(
+            2,
+            5,
+            vec![
+                0, 1, 2, 3, 4, // first row
+                5, 6, 7, 8, 9, // second row
+            ],
+        );
+        let expect = vec![
+            (0, 1, 1),
+            (0, 2, 2),
+            (0, 3, 3),
+            (0, 4, 4),
+            (1, 0, 5),
+            (1, 1, 6),
+            (1, 2, 7),
+            (1, 3, 8),
+            (1, 4, 9),
+        ];
+        assert_eq!(m.data, expect, "Matrix should be created correctly");
+    }
+
+    #[test]
+    fn create_simple() {
+        let m = Matrix::new(
+            3,
+            4,
+            vec![
+                1, 0, 0, 1, //
+                0, 0, 1, 0, //
+                0, 0, 0, 1, //
+            ],
+        );
+        let expect = vec![(0, 0, 1), (0, 3, 1), (1, 2, 1), (2, 3, 1)];
+        assert_eq!(m.data, expect, "Matrix should be created correctly");
+    }
 
     #[test]
     fn index() {

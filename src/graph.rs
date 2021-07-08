@@ -92,7 +92,7 @@ impl Graph {
         }
     }
 
-    fn from_sparse6(path_str: &str) -> Self {
+    fn from_sparse6(_path_str: &str) -> Self {
         todo!("Not implemented yet");
 
         /*
