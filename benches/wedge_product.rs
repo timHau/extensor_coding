@@ -9,7 +9,7 @@ use std::time::Instant;
 fn rand_coeffs_and_basis(n: i32) -> (Vec<i64>, Vec<Vec<u8>>) {
     let mut rng = rand::thread_rng();
     let coeffs: Vec<i64> = (0..n).map(|_| rng.gen::<i16>() as i64).collect();
-    let basis: Vec<Vec<u8>> = (1..=n).map(|i| vec![i as u8]).collect();
+    let basis: Vec<Vec<u8>> = (1..=n).map(|i| vec![i as u8]).collect(); // TODO
     (coeffs, basis)
 }
 

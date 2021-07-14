@@ -45,7 +45,7 @@ impl Graph {
     ///
     /// create a random graph with `n` vertices where each edge has probability `p`.
     pub fn random_graph(n: usize, p: f64) -> Graph {
-        assert!(0.0 <= p && p <= 1.0, "Probability must be in (0,1)");
+        assert!(0.0 <= p && p <= 1.0, "Probability must be in (0,1]");
 
         let mut rng = rand::thread_rng();
         let bernoulli = Bernoulli::new(p).unwrap();

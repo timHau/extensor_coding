@@ -2,7 +2,10 @@ mod utils;
 
 use extensor_coding::{algorithm, graph::Graph};
 use indicatif::{ProgressBar, ProgressStyle};
-use plotters::style;
+use plotters::{
+    prelude::{IntoLogRange, LogRange},
+    style,
+};
 use std::time::Instant;
 
 fn bench_c(num_iter: u64, path_str: &str, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
@@ -87,14 +90,18 @@ fn main() {
             times_algo_c_tutte,
         ),
     ];
-    let _ = utils::plot_results(
+    let _ = utils::plot_results_log(
         "algorithm c (dense_hashmap, sparse matrix)",
-        (("k", 2f32..11f32), ("Zeit (in ns)", 0f32..600000f32)),
+        (
+            ("k", 2f32..11f32),
+            ("Zeit (in ns)", (0f32..80000f32).log_scale()),
+        ),
         2,
         "benches/output/algo",
         &result,
     );
 
+    /*
     let times_algo_c_n_k_8 = bench_c_grow_n(10, 2, 0.8, &prog_style);
     let times_algo_c_n_k_4 = bench_c_grow_n(10, 2, 0.4, &prog_style);
     let times_algo_c_n_k_2 = bench_c_grow_n(10, 2, 0.2, &prog_style);
@@ -124,4 +131,5 @@ fn main() {
         "benches/output/algo_n_0_5",
         &result_n,
     );
+    */
 }
