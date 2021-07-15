@@ -2,15 +2,12 @@ mod utils;
 
 use extensor_coding::{algorithm, graph::Graph};
 use indicatif::{ProgressBar, ProgressStyle};
-use plotters::{
-    prelude::{IntoLogRange, LogRange},
-    style,
-};
+use plotters::{prelude::IntoLogRange, style};
 use std::time::Instant;
 
 fn bench_c(num_iter: u64, path_str: &str, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
-    let max_k = 10;
+    let max_k = 9;
     let bar = ProgressBar::new(num_iter);
     bar.set_style(prog_style.clone());
 
@@ -26,6 +23,7 @@ fn bench_c(num_iter: u64, path_str: &str, prog_style: &ProgressStyle) -> Vec<Vec
             let elapsed = now.elapsed().as_millis() as f64;
 
             times_per_iter.push(elapsed);
+            println!("k: {}", k);
         }
 
         times.push(times_per_iter);
@@ -69,12 +67,12 @@ fn main() {
         .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
         .progress_chars("=>-");
 
-    let times_algo_c_10 = bench_c(2, "src/data/path10.g6", &prog_style);
-    let times_algo_c_100 = bench_c(2, "src/data/path100.g6", &prog_style);
+    //   let times_algo_c_10 = bench_c(2, "src/data/path10.g6", &prog_style);
+    //    let times_algo_c_100 = bench_c(2, "src/data/path100.g6", &prog_style);
     let times_algo_c_tutte = bench_c(2, "src/data/tutte_graph.g6", &prog_style);
 
     let result = vec![
-        (
+        /*       (
             "algorithm c (path 10)".to_string(),
             style::RED,
             times_algo_c_10,
@@ -83,7 +81,7 @@ fn main() {
             "algorithm c (path 100)".to_string(),
             style::BLUE,
             times_algo_c_100,
-        ),
+        ), */
         (
             "algorithm c (tutte graph)".to_string(),
             style::GREEN,
@@ -94,7 +92,7 @@ fn main() {
         "algorithm c (dense_hashmap, sparse matrix)",
         (
             ("k", 2f32..11f32),
-            ("Zeit (in ns)", (0f32..80000f32).log_scale()),
+            ("Zeit (in ns)", (0.1f32..800000f32).log_scale()),
         ),
         2,
         "benches/output/algo",

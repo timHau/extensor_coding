@@ -173,8 +173,9 @@ mod tests {
         let k = 3;
         let n = 5;
         let coding = create_bernoulli(n, k);
-        for _i in 0..n {
-            let vert_val = &coding[4];
+        for i in 0..n {
+            let vert_val = &coding[i];
+            println!("v: {}", vert_val);
             for coeff in vert_val.coeffs() {
                 assert!(
                     coeff == 1 || coeff == -1,

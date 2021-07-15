@@ -43,7 +43,7 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
     let mut sum = 0.0;
     let mut ssum = 0.0;
 
-    while t < 4 * (k as f64 / eps.powf(2.0)) as i32 {
+    while t < 100 * ((k as f64).powf(3.0) / eps.powf(2.0)) as i32 {
         let bernoulli_mapping = utils::create_bernoulli(g.num_vert(), k);
         let v_j = g.compute_walk_sum(k, bernoulli_mapping);
         let coeffs = if v_j.coeffs().is_empty() {
@@ -52,7 +52,7 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
             v_j.coeffs()[0] as f64
         };
         let denom = utils::factorial(k) as f64;
-        let x_j = coeffs.abs() as f64 / denom;
+        let x_j = (coeffs.abs() as f64) / denom;
 
         sum += x_j;
         ssum += x_j * x_j;

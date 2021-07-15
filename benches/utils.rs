@@ -105,7 +105,7 @@ pub fn plot_results_log(
         .margin(20)
         .x_label_area_size(50)
         .y_label_area_size(50)
-        .build_cartesian_2d(x_range.clone(), y_range.clone())?;
+        .build_cartesian_2d(x_range, y_range)?;
 
     run_chart
         .configure_mesh()
