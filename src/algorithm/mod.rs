@@ -43,7 +43,7 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
     let mut sum = 0.0;
     let mut ssum = 0.0;
 
-    while t < 100 * ((k as f64).powf(3.0) / eps.powf(2.0)) as i32 {
+    while t < 100 * ((k as f64).powf(3.0) / eps.powf(2.0)) as u32 {
         let bernoulli_mapping = utils::create_bernoulli(g.num_vert(), k);
         let v_j = g.compute_walk_sum(k, bernoulli_mapping);
         let coeffs = if v_j.coeffs().is_empty() {
@@ -73,6 +73,44 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
     }
 
     sum / (t as f64)
+}
+
+/// only used for benchmarking, returns the number of iterations
+pub fn c_count_iterations(g: Graph, k: usize, eps: f64) -> u32 {
+    let mut t = 1u32;
+    let mut sum = 0.0;
+    let mut ssum = 0.0;
+
+    while t < 100 * ((k as f64).powf(3.0) / eps.powf(2.0)) as u32 {
+        let bernoulli_mapping = utils::create_bernoulli(g.num_vert(), k);
+        let v_j = g.compute_walk_sum(k, bernoulli_mapping);
+        let coeffs = if v_j.coeffs().is_empty() {
+            0.0
+        } else {
+            v_j.coeffs()[0] as f64
+        };
+        let denom = utils::factorial(k) as f64;
+        let x_j = (coeffs.abs() as f64) / denom;
+
+        sum += x_j;
+        ssum += x_j * x_j;
+        t += 1;
+
+        let n = t as f64;
+        let mean = sum / n;
+        let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
+        let t_val = utils::t_value(t - 1);
+
+        println!(
+            "mean: {}, std_dev: {}, x_j: {}, coeffs: {:?}",
+            mean, std_dev, x_j, coeffs
+        );
+        if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && t > 20) {
+            return t;
+        }
+    }
+
+    t
 }
 
 pub fn color_coding(g: Graph, k: usize) -> f64 {

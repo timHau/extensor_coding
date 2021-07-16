@@ -132,7 +132,7 @@ pub(crate) fn has_intersection(a: &Vec<u8>, b: &Vec<u8>) -> bool {
     false
 }
 
-pub(crate) fn t_value(degrees_of_freedom: i32) -> f64 {
+pub(crate) fn t_value(degrees_of_freedom: u32) -> f64 {
     match degrees_of_freedom {
         0..=4 => 3.747,
         5..=8 => 2.896,

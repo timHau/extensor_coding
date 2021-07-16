@@ -62,11 +62,41 @@ fn bench_c_grow_n(num_iter: u64, k: usize, p: f64, prog_style: &ProgressStyle) -
     times
 }
 
+fn count_iterations() -> Vec<u32> {
+    let max_k = 4;
+    let mut iterations = Vec::new();
+
+    for k in 2..=max_k {
+        let g = utils::rand_graph(1000, 0.3);
+        let eps = 0.9;
+
+        let n = algorithm::c_count_iterations(g, k, eps);
+        iterations.push(n);
+    }
+
+    iterations
+}
+
 fn main() {
     let prog_style = ProgressStyle::default_bar()
         .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
         .progress_chars("=>-");
 
+    let num_iterations = count_iterations();
+    let result = (
+        "number of iterations".to_string(),
+        style::RED,
+        num_iterations,
+    );
+    let _ = utils::box_plot(
+        "number of iterations",
+        (("k", 2u32..11u32), ("iterations", 1u32..200u32)),
+        2,
+        "benches/output/iterations",
+        &result,
+    );
+
+    /*
     //   let times_algo_c_10 = bench_c(2, "src/data/path10.g6", &prog_style);
     //    let times_algo_c_100 = bench_c(2, "src/data/path100.g6", &prog_style);
     let times_algo_c_tutte = bench_c(1, "src/data/path100.g6", &prog_style);
@@ -99,7 +129,6 @@ fn main() {
         &result,
     );
 
-    /*
     let times_algo_c_n_k_8 = bench_c_grow_n(10, 2, 0.8, &prog_style);
     let times_algo_c_n_k_4 = bench_c_grow_n(10, 2, 0.4, &prog_style);
     let times_algo_c_n_k_2 = bench_c_grow_n(10, 2, 0.2, &prog_style);
