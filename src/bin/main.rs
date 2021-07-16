@@ -4,7 +4,7 @@ use std::time::Instant;
 fn main() {
     let g = Graph::from_tsv("src/data/out.moreno_kangaroo_kangaroo");
     // let g = Graph::from_graph6("src/data/path10.g6");
-    let k = 2;
+    let k = 4;
     let eps = 0.2;
 
     let now = Instant::now();

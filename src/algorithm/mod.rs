@@ -64,8 +64,11 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
         let t_val = utils::t_value(t - 1);
 
         println!(
-            "mean: {}, std_dev: {}, x_j: {}, coeffs: {:?}",
-            mean, std_dev, x_j, coeffs
+            "mean: {}, std_dev: {}, quot: {}, step: {}",
+            mean,
+            std_dev,
+            std_dev / mean,
+            t
         );
         if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && t > 20) {
             return mean;
@@ -101,10 +104,7 @@ pub fn c_count_iterations(g: Graph, k: usize, eps: f64) -> u32 {
         let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
         let t_val = utils::t_value(t - 1);
 
-        println!(
-            "mean: {}, std_dev: {}, x_j: {}, coeffs: {:?}",
-            mean, std_dev, x_j, coeffs
-        );
+        println!("step: {}", t);
         if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && t > 20) {
             return t;
         }
@@ -440,10 +440,11 @@ mod tests {
     #[test]
     fn c_graph() {
         // test algorithm x on this (undirected) graph
-        // 1        6
-        //  \2____4/
-        //  /      \
-        // 3        5
+        // 1            5
+        //  \          /
+        //   2 ------ 4
+        //  /          \
+        // 3            6
         let g = Graph::from(
             6,
             vec![
@@ -470,10 +471,11 @@ mod tests {
     #[test]
     fn c_graph_2() {
         // test algorithm x on this (undirected) graph
-        // 1        6
-        //  \2____4/
-        //  /      \
-        // 3        5
+        // 1            5
+        //  \          /
+        //   2 ------ 4
+        //  /          \
+        // 3            6
         let g = Graph::from(
             6,
             vec![

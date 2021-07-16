@@ -67,7 +67,7 @@ pub fn box_plot(
         .draw_series(
             Histogram::vertical(&run_chart)
                 .style((*col).mix(0.5).filled())
-                .data(res.iter().map(|x| (*x, res.len() as u32))),
+                .data(res.iter().map(|x| (*x, 1))),
         )?
         .label(name);
 
