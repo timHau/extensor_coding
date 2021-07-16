@@ -304,7 +304,6 @@ mod tests {
         let a = &ExTensor::new(&[2, 3], &[vec![3], vec![4]]);
         // (2 e_1 + 3 e_2) ^ (2 e_3 + 3 e_4) = 4 e_1 ^ e_3 + 6 e_2 ^ e_3  + 6 e_1 ^ e_4 + 9 e_2 ^ e_4
         // (2, 3, 0, 0).T ^ (0, 0, 2, 3).T = (2 e_1 + 3 e_2 + 0 e_3 + 0_e_4) ^ (0 e_1 + 0 e_2 + 2 e_3 + 3 e_4)
-        println!("l: {:?}", l);
         assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
     }
 
@@ -323,6 +322,18 @@ mod tests {
         );
         let prod_1 = &(x_1 * x_1);
         assert_eq!(prod_1.is_zero(), true, "x wedge x vanishes");
+    }
+
+    #[test]
+    fn extensor_vanish_3() {
+        let x_1 = &ExTensor::new(&[1], &[vec![1, 2]]);
+        let x_2 = &ExTensor::new(&[8], &[vec![1, 5]]);
+        let prod_1 = &(x_1 * x_2);
+        assert_eq!(
+            prod_1.is_zero(),
+            true,
+            "vanishes when basis shares common element"
+        );
     }
 
     #[test]

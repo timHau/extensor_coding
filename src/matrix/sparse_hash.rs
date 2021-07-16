@@ -215,6 +215,36 @@ mod tests {
     }
 
     #[test]
+    fn mat_vec_mul_4() {
+        let m = Matrix::new(3, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        let v = vec![1, 2, 3];
+        let r = &m * v;
+        assert_eq!(r, vec![14, 32, 50], "simple Matrix Vector multiplication");
+    }
+
+    #[test]
+    fn mat_vec_mul_5() {
+        let m = Matrix::new(
+            2,
+            2,
+            vec![
+                ExTensor::new(&[1], &[vec![1, 2]]),
+                ExTensor::new(&[2], &[vec![3, 4]]),
+                ExTensor::new(&[3], &[vec![1, 2]]),
+                ExTensor::new(&[4], &[vec![3, 4]]),
+            ],
+        );
+        let v = vec![
+            ExTensor::new(&[9], &[vec![1]]),
+            ExTensor::new(&[8], &[vec![3]]),
+        ];
+        let r = &m * v;
+        assert_eq!(r.len(), 2, "dimensions match");
+        assert_eq!(r[0].is_zero(), true, "first entry vanishes");
+        assert_eq!(r[1].is_zero(), true, "second entry vanishes");
+    }
+
+    #[test]
     fn coding() {
         let k = 2;
         let n = 2;

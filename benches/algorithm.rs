@@ -69,7 +69,7 @@ fn main() {
 
     //   let times_algo_c_10 = bench_c(2, "src/data/path10.g6", &prog_style);
     //    let times_algo_c_100 = bench_c(2, "src/data/path100.g6", &prog_style);
-    let times_algo_c_tutte = bench_c(2, "src/data/tutte_graph.g6", &prog_style);
+    let times_algo_c_tutte = bench_c(1, "src/data/path100.g6", &prog_style);
 
     let result = vec![
         /*       (

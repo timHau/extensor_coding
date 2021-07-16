@@ -108,7 +108,7 @@ where
         let mut res = vec![T::zero(); self.nrows];
 
         for (x, y, v) in self.data.iter() {
-            res[*x] = res[*x].clone() + rhs[*y].clone() * v.clone();
+            res[*x] = res[*x].clone() + v.clone() * rhs[*y].clone();
         }
 
         res
@@ -241,6 +241,59 @@ mod tests {
         let v = vec![1, 1, 1];
         let r = &m * v;
         assert_eq!(r, vec![6, 15], "simple Matrix Vector multiplication");
+    }
+
+    #[test]
+    fn mat_vec_mul_3() {
+        let m = Matrix::new(
+            2,
+            2,
+            vec![
+                ExTensor::new(&[1], &[vec![1]]),
+                ExTensor::new(&[2], &[vec![2]]),
+                ExTensor::new(&[3], &[vec![5]]),
+                ExTensor::new(&[4], &[vec![6]]),
+            ],
+        );
+        let v = vec![
+            ExTensor::new(&[5], &[vec![3]]),
+            ExTensor::new(&[6], &[vec![4]]),
+        ];
+        let res = vec![
+            ExTensor::new(&[5, 12], &[vec![1, 3], vec![2, 4]]),
+            ExTensor::new(&[-15, -24], &[vec![3, 5], vec![4, 6]]),
+        ];
+        assert_eq!(&m * v, res);
+    }
+
+    #[test]
+    fn mat_vec_mul_4() {
+        let m = Matrix::new(3, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        let v = vec![1, 2, 3];
+        let r = &m * v;
+        assert_eq!(r, vec![14, 32, 50], "simple Matrix Vector multiplication");
+    }
+
+    #[test]
+    fn mat_vec_mul_5() {
+        let m = Matrix::new(
+            2,
+            2,
+            vec![
+                ExTensor::new(&[1], &[vec![1, 2]]),
+                ExTensor::new(&[2], &[vec![3, 4]]),
+                ExTensor::new(&[3], &[vec![1, 2]]),
+                ExTensor::new(&[4], &[vec![3, 4]]),
+            ],
+        );
+        let v = vec![
+            ExTensor::new(&[9], &[vec![1]]),
+            ExTensor::new(&[8], &[vec![3]]),
+        ];
+        let r = &m * v;
+        assert_eq!(r.len(), 2, "dimensions match");
+        assert_eq!(r[0].is_zero(), true, "first entry vanishes");
+        assert_eq!(r[1].is_zero(), true, "second entry vanishes");
     }
 
     #[test]

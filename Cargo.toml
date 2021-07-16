@@ -12,7 +12,7 @@ indicatif = "0.16.0"
 itertools = "0.10.1"
 
 [features]
-default = ["extensor_dense_hashmap", "matrix_sparse_triples"]
+default = ["extensor_dense_hashmap", "matrix_sparse_hash"]
 extensor_dense_hashmap = []
 extensor_bitvec = []
 matrix_naive = []
