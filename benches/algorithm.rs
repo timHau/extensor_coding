@@ -63,15 +63,16 @@ fn bench_c_grow_n(num_iter: u64, k: usize, p: f64, prog_style: &ProgressStyle) -
 }
 
 fn count_iterations() -> Vec<u32> {
-    let max_k = 4;
+    let max_k = 5;
     let mut iterations = Vec::new();
 
     for k in 2..=max_k {
-        let g = utils::rand_graph(1000, 0.3);
-        let eps = 0.9;
+        let g = utils::rand_graph(10, 0.3);
+        let eps = 0.7;
 
         let n = algorithm::c_count_iterations(g, k, eps);
         iterations.push(n);
+        println!("k: {}, n: {}", k, n);
     }
 
     iterations
@@ -90,7 +91,7 @@ fn main() {
     );
     let _ = utils::box_plot(
         "number of iterations",
-        (("k", 2u32..11u32), ("iterations", 1u32..200u32)),
+        (("k", 2u32..11u32), ("iterations", 1u32..800u32)),
         2,
         "benches/output/iterations",
         &result,

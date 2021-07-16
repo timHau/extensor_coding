@@ -387,10 +387,10 @@ mod tests {
     #[test]
     fn c_triangle_2() {
         // test algorithm c on the following binary tree
-        //          o
+        //          1
         //         / \
         //        /   \
-        //       o --- o
+        //       2 --- 3
         // edges form a "circle"
         let g = Graph::from(
             3,
@@ -415,10 +415,10 @@ mod tests {
     #[test]
     fn c_triangle_3() {
         // test algorithm c on the following binary tree
-        //          o
+        //          1
         //         / \
         //        /   \
-        //       o --- o
+        //       2 --- 3
         // edges form a "circle"
         let g = Graph::from(
             3,
@@ -434,6 +434,66 @@ mod tests {
         assert_eq!(
             res, 0.0,
             "algorithm c vanishes when path contains a vertex twice"
+        );
+    }
+
+    #[test]
+    fn c_graph() {
+        // test algorithm x on this (undirected) graph
+        // 1        6
+        //  \2____4/
+        //  /      \
+        // 3        5
+        let g = Graph::from(
+            6,
+            vec![
+                0, 1, 0, 0, 0, 0, //
+                1, 0, 1, 1, 0, 0, //
+                0, 1, 0, 0, 0, 0, //
+                0, 1, 0, 0, 1, 1, //
+                0, 0, 0, 1, 0, 0, //
+                0, 0, 0, 1, 0, 0, //
+            ],
+        );
+        let k = 3;
+        let eps = 0.3;
+        let res = algorithm::c(g, k, eps);
+        let expect = 12.0;
+        let lower_bound = (1. - eps) * expect;
+        let upper_bound = (1. + eps) * expect;
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
+        );
+    }
+
+    #[test]
+    fn c_graph_2() {
+        // test algorithm x on this (undirected) graph
+        // 1        6
+        //  \2____4/
+        //  /      \
+        // 3        5
+        let g = Graph::from(
+            6,
+            vec![
+                0, 1, 0, 0, 0, 0, //
+                1, 0, 1, 1, 0, 0, //
+                0, 1, 0, 0, 0, 0, //
+                0, 1, 0, 0, 1, 1, //
+                0, 0, 0, 1, 0, 0, //
+                0, 0, 0, 1, 0, 0, //
+            ],
+        );
+        let k = 4;
+        let eps = 0.3;
+        let res = algorithm::c(g, k, eps);
+        let expect = 8.0;
+        let lower_bound = (1. - eps) * expect;
+        let upper_bound = (1. + eps) * expect;
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
         );
     }
 

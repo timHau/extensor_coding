@@ -51,7 +51,7 @@ pub fn box_plot(
         .margin(20)
         .x_label_area_size(50)
         .y_label_area_size(50)
-        .build_cartesian_2d(x_range.clone().into_segmented(), y_range.clone())?;
+        .build_cartesian_2d(x_range.clone(), y_range.clone())?;
 
     run_chart
         .configure_mesh()
@@ -67,7 +67,7 @@ pub fn box_plot(
         .draw_series(
             Histogram::vertical(&run_chart)
                 .style((*col).mix(0.5).filled())
-                .data(res.iter().map(|x| (*x, 1))),
+                .data(res.iter().map(|x| (*x, res.len() as u32))),
         )?
         .label(name);
 
