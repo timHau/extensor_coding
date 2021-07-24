@@ -62,17 +62,21 @@ fn bench_c_grow_n(num_iter: u64, k: usize, p: f64, prog_style: &ProgressStyle) -
     times
 }
 
-fn count_iterations() -> Vec<u32> {
-    let max_k = 5;
+fn count_iterations(num_iter: u64) -> Vec<Vec<f64>> {
+    let max_k = 10;
     let mut iterations = Vec::new();
 
-    for k in 2..=max_k {
-        let g = utils::rand_graph(10, 0.3);
-        let eps = 0.7;
+    for _j in 0..num_iter {
+        let mut iter = Vec::new();
+        for k in 2..=max_k {
+            let g = utils::rand_graph(10, 0.3);
+            let eps = 0.7;
 
-        let n = algorithm::c_count_iterations(g, k, eps);
-        iterations.push(n);
-        println!("k: {}, n: {}", k, n);
+            let n = algorithm::c_count_iterations(g, k, eps);
+            iter.push(n as f64);
+            println!("k: {}, n: {}", k, n);
+        }
+        iterations.push(iter)
     }
 
     iterations
@@ -83,15 +87,15 @@ fn main() {
         .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
         .progress_chars("=>-");
 
-    let num_iterations = count_iterations();
-    let result = (
+    let num_iterations = count_iterations(20);
+    let result = vec![(
         "number of iterations".to_string(),
         style::RED,
         num_iterations,
-    );
-    let _ = utils::box_plot(
+    )];
+    let _ = utils::plot_results(
         "number of iterations",
-        (("k", 2u32..11u32), ("iterations", 1u32..800u32)),
+        (("k", 2f32..11f32), ("iterations", 1f32..800f32)),
         2,
         "benches/output/iterations",
         &result,

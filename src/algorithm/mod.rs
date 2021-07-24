@@ -500,6 +500,69 @@ mod tests {
     }
 
     #[test]
+    fn c_graph_3() {
+        // test algorithm x on this (undirected) graph
+        // 1-------2-------3
+        //  \     / \     /
+        //   \   /   \   /
+        //     4 ----- 5
+        //      \     /
+        //       \   /
+        //         6
+        let g = Graph::from(
+            6,
+            vec![
+                0, 1, 0, 1, 0, 0, //
+                1, 0, 1, 1, 1, 0, //
+                0, 1, 0, 0, 1, 0, //
+                1, 1, 0, 0, 1, 1, //
+                0, 1, 1, 1, 0, 1, //
+                0, 0, 0, 1, 1, 0, //
+            ],
+        );
+        let k = 2;
+        let eps = 0.1;
+        let res = algorithm::c(g, k, eps);
+        let expect = 18.0;
+        let lower_bound = (1. - eps) * expect;
+        let upper_bound = (1. + eps) * expect;
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
+        );
+    }
+
+    #[test]
+    fn c_graph_4() {
+        // test algorithm x on this (undirected) graph
+        // 1-------2-------3
+        //  \     / \     /
+        //   \   /   \   /
+        //     4 ----- 5
+        //      \     /
+        //       \   /
+        //         6
+        let g = Graph::from(
+            6,
+            vec![
+                0, 1, 0, 1, 0, 0, //
+                1, 0, 1, 1, 1, 0, //
+                0, 1, 0, 0, 1, 0, //
+                1, 1, 0, 0, 1, 1, //
+                0, 1, 1, 1, 0, 1, //
+                0, 0, 0, 1, 1, 0, //
+            ],
+        );
+        let k = 6;
+        let eps = 0.2;
+        let res = algorithm::c(g, k, eps);
+        println!("res: {}", res);
+        let expect = 18.0;
+        let lower_bound = (1. - eps) * expect;
+        let upper_bound = (1. + eps) * expect;
+    }
+
+    #[test]
     fn color_coding() {
         let g = Graph::from_graph6("src/data/path3.g6");
         let k = 2;
