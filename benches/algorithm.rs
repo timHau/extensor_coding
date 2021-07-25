@@ -62,11 +62,10 @@ fn bench_c_grow_n(num_iter: u64, k: usize, p: f64, prog_style: &ProgressStyle) -
     times
 }
 
-fn count_iterations(num_iter: u64, gr: Graph) -> Vec<Vec<f64>> {
+fn count_iterations(num_iter: u64, g: Graph) -> Vec<Vec<f64>> {
     let max_k = 5;
     let mut iterations = Vec::new();
 
-    let g = Graph::from_tsv("src/data/out.ego-gplus");
     for _j in 0..num_iter {
         let mut iter = Vec::new();
         for k in 2..=max_k {
@@ -92,6 +91,9 @@ fn main() {
     let g_revolution = Graph::from_tsv("src/data/out.brunson_revolution_revolution");
     let num_iterations_rev = count_iterations(1, g_revolution);
 
+    let g_gplus = Graph::from_tsv("src/data/out.ego-gplus");
+    let num_iterations_gplus = count_iterations(1, g_gplus);
+
     let result = vec![
         (
             "random graph (20 vertices, p = 0.5)".to_string(),
@@ -102,6 +104,11 @@ fn main() {
             "(real world) graph revolution".to_string(),
             style::BLUE,
             num_iterations_rev,
+        ),
+        (
+            "(real world) graph google plus".to_string(),
+            style::GREEN,
+            num_iterations_gplus,
         ),
     ];
     let _ = utils::plot_results(
