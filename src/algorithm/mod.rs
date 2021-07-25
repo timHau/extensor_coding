@@ -42,6 +42,7 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
     let mut t = 1;
     let mut sum = 0.0;
     let mut ssum = 0.0;
+    let mut values = Vec::new();
 
     while t < 100 * ((k as f64).powf(3.0) / eps.powf(2.0)) as u32 {
         let bernoulli_mapping = utils::create_bernoulli(g.num_vert(), k);
@@ -56,6 +57,7 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
 
         sum += x_j;
         ssum += x_j * x_j;
+        values.push(x_j);
         t += 1;
 
         let n = t as f64;
@@ -71,10 +73,12 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
             t
         );
         if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && t > 20) {
+            println!("values: {:?}", values);
             return mean;
         }
     }
 
+    println!("values: {:?}", values);
     sum / (t as f64)
 }
 
@@ -104,93 +108,13 @@ pub fn c_count_iterations(g: Graph, k: usize, eps: f64) -> u32 {
         let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
         let t_val = utils::t_value(t - 1);
 
-        println!("step: {}", t);
+        println!("step: {}, mean: {}", t, mean);
         if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && t > 20) {
             return t;
         }
     }
 
     t
-}
-
-pub fn color_coding(g: Graph, k: usize) -> f64 {
-    let mut dp_table = HashMap::new();
-    let g = g.color_coding(k);
-    let color_set: Vec<usize> = (1..=k).collect();
-
-    for set in color_set.iter().powerset() {
-        match set.len() {
-            0 => continue,
-            1 => {
-                for (v, color) in g.vert_data.iter().enumerate() {
-                    if set[0] == color {
-                        dp_table.insert((set.clone(), v), 1);
-                    } else {
-                        dp_table.insert((set.clone(), v), 0);
-                    }
-                }
-            }
-            _ => {
-                for (v, color) in g.vert_data.iter().enumerate() {
-                    let set_minus_color: Vec<&usize> =
-                        set.clone().into_iter().filter(|c| *c != color).collect();
-
-                    let mut value = 0;
-                    for u in g.neighbors_of(v).iter() {
-                        let neighbor_value =
-                            dp_table.get(&(set_minus_color.clone(), *u)).unwrap_or(&0);
-                        value = value + *neighbor_value;
-                    }
-
-                    dp_table.insert((set_minus_color.clone(), v), value);
-                }
-            }
-        }
-    }
-    println!("dp_table: {:?}", dp_table);
-
-    let mut res = 0.0;
-    for ((s, _v), value) in dp_table.into_iter() {
-        println!("s {:?}, val: {}", s, value);
-        if s.len() == k - 1 {
-            res += value as f64;
-        }
-    }
-    res
-}
-
-pub fn color_coding_rec(g: Graph, k: usize) -> f64 {
-    let mut sum = 0.0;
-    let num_iter = f64::exp(k as f64);
-    for _ in 0..num_iter as u32 {
-        let mut res = 0.;
-        let g = g.color_coding(k);
-        for (v, color) in g.vert_data.iter().enumerate() {
-            res += color_coding_step(&g, v, *color, (1..=k).collect()) as f64;
-        }
-        res *= 2.0;
-        sum += res;
-    }
-
-    sum / (num_iter as f64)
-}
-
-fn color_coding_step(g: &Graph, v: usize, color: usize, s: Vec<usize>) -> u32 {
-    if s.len() == 1 {
-        if s[0] == color {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
-
-    let mut c = 0;
-    for u in g.neighbors_of(v).iter() {
-        let s_minus_col: Vec<usize> = s.clone().into_iter().filter(|c| *c != color).collect();
-        c += color_coding_step(g, *u, g.vert_data[*u], s_minus_col);
-    }
-
-    c
 }
 
 #[cfg(test)]
@@ -553,51 +477,15 @@ mod tests {
                 0, 0, 0, 1, 1, 0, //
             ],
         );
-        let k = 6;
+        let k = 4;
         let eps = 0.2;
         let res = algorithm::c(g, k, eps);
-        println!("res: {}", res);
-        let expect = 18.0;
+        let expect = 76.0;
         let lower_bound = (1. - eps) * expect;
         let upper_bound = (1. + eps) * expect;
-    }
-
-    #[test]
-    fn color_coding() {
-        let g = Graph::from_graph6("src/data/path3.g6");
-        let k = 2;
-        let eps = 0.9;
-        let p = 4.;
-        let lower_bound = (1. - eps) * p;
-        let upper_bound = (1. + eps) * p;
-        let res = algorithm::color_coding_rec(g, k);
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
         );
-    }
-
-    #[test]
-    fn color_coding_2() {
-        let source = "src/data/path6.g6";
-        let g = Graph::from_graph6(source);
-        let k = 2;
-        let eps = 0.5;
-        let p = 10.;
-        let lower_bound = (1. - eps) * p;
-        let upper_bound = (1. + eps) * p;
-        let res = algorithm::color_coding_rec(g, k);
-        assert!(
-            lower_bound <= res.abs() && res.abs() <= upper_bound,
-            "randomized counting algorithm c is inside bounds"
-        );
-    }
-
-    #[test]
-    fn dp_color_coding() {
-        let g = Graph::from_graph6("src/data/path6.g6");
-        let k = 3;
-        let res = algorithm::color_coding(g, k);
-        println!("res: {}", res);
     }
 }

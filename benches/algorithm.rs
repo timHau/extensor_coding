@@ -74,7 +74,25 @@ fn count_iterations(num_iter: u64, g: Graph) -> Vec<Vec<f64>> {
             iter.push(n as f64);
             println!("k: {}, n: {}", k, n);
         }
-        iterations.push(iter)
+        iterations.push(iter);
+    }
+
+    iterations
+}
+
+fn iterations_eps(num_iter: u64) -> Vec<Vec<f64>> {
+    let mut iterations = Vec::new();
+
+    for _j in 0..num_iter {
+        let mut iter = Vec::new();
+        for i in 1..=10 {
+            let eps = 1.0 / (i as f64);
+            let g = utils::rand_graph(20, 0.5);
+            let n = algorithm::c_count_iterations(g, 4, eps);
+            iter.push(n as f64);
+            println!(" n: {}", n);
+        }
+        iterations.push(iter);
     }
 
     iterations
@@ -85,25 +103,18 @@ fn main() {
         .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
         .progress_chars("=>-");
 
-    let g_rand = utils::rand_graph(20, 0.5);
+    /*
+    let g_rand = utils::rand_graph(200, 0.5);
     let num_iterations_rand = count_iterations(1, g_rand);
-
-    let g_revolution = Graph::from_tsv("src/data/out.brunson_revolution_revolution");
-    let num_iterations_rev = count_iterations(1, g_revolution);
 
     let g_gplus = Graph::from_tsv("src/data/out.ego-gplus");
     let num_iterations_gplus = count_iterations(1, g_gplus);
 
     let result = vec![
         (
-            "random graph (20 vertices, p = 0.5)".to_string(),
+            "random graph (200 vertices, p = 0.5)".to_string(),
             style::RED,
             num_iterations_rand,
-        ),
-        (
-            "(real world) graph revolution".to_string(),
-            style::BLUE,
-            num_iterations_rev,
         ),
         (
             "(real world) graph google plus".to_string(),
@@ -113,10 +124,21 @@ fn main() {
     ];
     let _ = utils::plot_results(
         "number of iterations",
-        (("k", 2f32..11f32), ("iterations", 1f32..800f32)),
+        (("k", 2f32..11f32), ("iterations", 1f32..200f32)),
         2,
         "benches/output/iterations",
         &result,
+    );
+    */
+
+    let iter_eps = iterations_eps(1);
+    let results = vec![("".to_string(), style::RED, iter_eps)];
+    let _ = utils::plot_results(
+        "iterations vs epsilon",
+        (("epsilon^-1", 1f32..10f32), ("iterations", 1f32..200f32)),
+        1,
+        "benches/output/iterations_eps",
+        &results,
     );
 
     /*
