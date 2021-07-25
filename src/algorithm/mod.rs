@@ -478,9 +478,9 @@ mod tests {
             ],
         );
         let k = 4;
-        let eps = 0.2;
+        let eps = 0.5;
         let res = algorithm::c(g, k, eps);
-        let expect = 76.0;
+        let expect = 66.0;
         let lower_bound = (1. - eps) * expect;
         let upper_bound = (1. + eps) * expect;
         assert!(
