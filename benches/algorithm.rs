@@ -62,17 +62,15 @@ fn bench_c_grow_n(num_iter: u64, k: usize, p: f64, prog_style: &ProgressStyle) -
     times
 }
 
-fn count_iterations(num_iter: u64) -> Vec<Vec<f64>> {
+fn count_iterations(num_iter: u64, g: Graph) -> Vec<Vec<f64>> {
     let max_k = 10;
     let mut iterations = Vec::new();
 
     for _j in 0..num_iter {
         let mut iter = Vec::new();
         for k in 2..=max_k {
-            let g = utils::rand_graph(10, 0.3);
             let eps = 0.7;
-
-            let n = algorithm::c_count_iterations(g, k, eps);
+            let n = algorithm::c_count_iterations(g.clone(), k, eps);
             iter.push(n as f64);
             println!("k: {}, n: {}", k, n);
         }
@@ -87,12 +85,24 @@ fn main() {
         .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
         .progress_chars("=>-");
 
-    let num_iterations = count_iterations(20);
-    let result = vec![(
-        "number of iterations".to_string(),
-        style::RED,
-        num_iterations,
-    )];
+    let g_rand = utils::rand_graph(20, 0.5);
+    let num_iterations_rand = count_iterations(1, g_rand);
+
+    let g_revolution = Graph::from_tsv("src/data/out.brunson_revolution_revolution");
+    let num_iterations_rev = count_iterations(1, g_revolution);
+
+    let result = vec![
+        (
+            "random graph (20 vertices, p = 0.5)".to_string(),
+            style::RED,
+            num_iterations_rand,
+        ),
+        (
+            "(real world) graph revolution".to_string(),
+            style::BLUE,
+            num_iterations_rev,
+        ),
+    ];
     let _ = utils::plot_results(
         "number of iterations",
         (("k", 2f32..11f32), ("iterations", 1f32..800f32)),

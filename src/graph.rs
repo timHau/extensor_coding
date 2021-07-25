@@ -17,7 +17,7 @@ use rand::{
     Rng,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Graph {
     adj_mat: Box<Matrix<u8>>,
     pub vert_data: Vec<usize>,
