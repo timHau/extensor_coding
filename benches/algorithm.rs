@@ -62,10 +62,11 @@ fn bench_c_grow_n(num_iter: u64, k: usize, p: f64, prog_style: &ProgressStyle) -
     times
 }
 
-fn count_iterations(num_iter: u64, g: Graph) -> Vec<Vec<f64>> {
-    let max_k = 10;
+fn count_iterations(num_iter: u64, gr: Graph) -> Vec<Vec<f64>> {
+    let max_k = 5;
     let mut iterations = Vec::new();
 
+    let g = Graph::from_tsv("src/data/out.ego-gplus");
     for _j in 0..num_iter {
         let mut iter = Vec::new();
         for k in 2..=max_k {

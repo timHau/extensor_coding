@@ -126,7 +126,7 @@ impl Graph {
         let dim = lines
             .nth(1)
             .unwrap()
-            .split(" ")
+            .split_whitespace()
             .filter(|v| *v != "%")
             .map(|v| (*v).parse::<usize>().unwrap())
             .collect::<Vec<_>>();
@@ -138,7 +138,7 @@ impl Graph {
         for line in lines {
             if !line.starts_with("%") {
                 let splited: Vec<_> = line
-                    .split(" ")
+                    .split_whitespace()
                     .take(2)
                     .map(|v| (*v).parse::<i32>().unwrap())
                     .collect();
