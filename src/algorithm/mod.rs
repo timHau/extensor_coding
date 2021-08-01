@@ -37,11 +37,10 @@ pub fn u(g: &Graph, k: usize) -> bool {
 /// The algorithm is from [Brand, Dell and Husfeldt](https://arxiv.org/pdf/1804.09448.pdf)
 pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
     let mut step = 1;
-    let mut sum = 0.0;
-    let mut ssum = 0.0;
+    let mut mean = f64::INFINITY;
     let mut values = Vec::new();
 
-    while step < 100 * ((k as f64).powf(3.0) / eps.powf(2.0)) as u32 {
+    while step < ((k as f64).powf(2.0) / eps.powf(2.0)) as u32 {
         let bernoulli_mapping = utils::create_bernoulli(g.num_vert, k);
         let v_j = g.compute_walk_sum(k, bernoulli_mapping);
         let coeffs = if v_j.coeffs().is_empty() {
@@ -51,26 +50,23 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
         };
         let denom = utils::factorial(k) as f64;
         let x_j = (coeffs.abs() as f64) / denom;
-
-        sum += x_j;
-        ssum += x_j * x_j;
         values.push(x_j);
-        step += 1;
 
-        let n = step as f64;
-        let mean = sum / n;
-        let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
+        mean = utils::mean(&values);
+        let std_dev = utils::std_dev(&values);
+
+        println!("mean: {}, std_dev: {}, step: {}", mean, std_dev, step);
+        /*
         let t_val = utils::t_value(step - 1);
-
-        println!("mean: {},  step: {}", mean, step);
-        if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && step > 20)
+        if ((mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || std_dev == 0.0) && step > 30
         {
-            println!("values: {:?}", values);
             return mean;
         }
+        */
+        step += 1;
     }
 
-    sum / (step as f64)
+    mean
 }
 
 /// only used for benchmarking, returns the number of iterations
@@ -142,11 +138,9 @@ pub fn c_values_std_dev(g: Graph, k: usize, eps: f64) -> Vec<f64> {
 // only used for debugging / benchmarking. Returns "history" of values
 pub fn c_values_t_test(g: Graph, k: usize, eps: f64) -> Vec<f64> {
     let mut step = 1;
-    let mut sum = 0.0;
-    let mut ssum = 0.0;
     let mut values = Vec::new();
 
-    while step < 500 {
+    while step < 100 * ((k as f64).powf(3.0) / eps.powf(2.0)) as u32 {
         let bernoulli_mapping = utils::create_bernoulli(g.num_vert, k);
         let v_j = g.compute_walk_sum(k, bernoulli_mapping);
         let coeffs = if v_j.coeffs().is_empty() {
@@ -156,22 +150,21 @@ pub fn c_values_t_test(g: Graph, k: usize, eps: f64) -> Vec<f64> {
         };
         let denom = utils::factorial(k) as f64;
         let x_j = (coeffs.abs() as f64) / denom;
-
-        sum += x_j;
-        ssum += x_j * x_j;
         values.push(x_j);
-        step += 1;
 
         let n = step as f64;
-        let mean = sum / n;
-        let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
+        let mean = utils::mean(&values);
+        let std_dev = utils::std_dev(&values);
         let t_val = utils::t_value(step - 1);
 
-        println!("mean: {}, step: {}", mean, step);
+        println!("mean: {}, std_dev: {}, step: {}", mean, std_dev, step);
+        /*
         if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && step > 20)
         {
             return values;
         }
+        */
+        step += 1;
     }
 
     values
@@ -234,6 +227,10 @@ mod tests {
         let p = 2.;
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
@@ -249,6 +246,10 @@ mod tests {
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
         let res = algorithm::c(g, k, eps);
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
@@ -264,6 +265,10 @@ mod tests {
         let lower_bound = (1. - eps) * p;
         let upper_bound = (1. + eps) * p;
         let res = algorithm::c(g, k, eps);
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
@@ -299,6 +304,10 @@ mod tests {
         let lower_bound = (1. - eps) * expect;
         let upper_bound = (1. + eps) * expect;
         let res = algorithm::c(g, k, eps);
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
@@ -334,6 +343,10 @@ mod tests {
         let lower_bound = (1. - eps) * expect;
         let upper_bound = (1. + eps) * expect;
         let res = algorithm::c(g, k, eps);
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
@@ -362,6 +375,10 @@ mod tests {
         let lower_bound = (1. - eps) * expect;
         let upper_bound = (1. + eps) * expect;
         let res = algorithm::c(g, k, eps);
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
@@ -390,6 +407,10 @@ mod tests {
         let lower_bound = (1. - eps) * expect;
         let upper_bound = (1. + eps) * expect;
         let res = algorithm::c(g, k, eps);
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
@@ -446,6 +467,10 @@ mod tests {
         let expect = 12.0;
         let lower_bound = (1. - eps) * expect;
         let upper_bound = (1. + eps) * expect;
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
@@ -477,6 +502,10 @@ mod tests {
         let expect = 8.0;
         let lower_bound = (1. - eps) * expect;
         let upper_bound = (1. + eps) * expect;
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
@@ -510,6 +539,10 @@ mod tests {
         let expect = 18.0;
         let lower_bound = (1. - eps) * expect;
         let upper_bound = (1. + eps) * expect;
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"
@@ -543,6 +576,10 @@ mod tests {
         let expect = 66.0;
         let lower_bound = (1. - eps) * expect;
         let upper_bound = (1. + eps) * expect;
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
         assert!(
             lower_bound <= res.abs() && res.abs() <= upper_bound,
             "randomized counting algorithm c is inside bounds"

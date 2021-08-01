@@ -4,11 +4,14 @@ use std::io::Write;
 use std::path::Path;
 
 fn main() {
-    // let g = Graph::from_tsv("src/data/out.arenas-jazz");
+    //let g = Graph::from_tsv("src/data/out.arenas-jazz");
     let g = Graph::from_tsv("src/data/out.brunson_revolution_revolution");
     // let g = Graph::from_graph6("src/data/path10.g6");
     let k = 4;
-    let eps = 0.1;
+    let eps = 0.2;
+
+    // let r = algorithm::c(g, k, eps);
+    // println!("res: {}", r);
 
     let values = algorithm::c_values_t_test(g, k, eps);
 
