@@ -13,7 +13,7 @@ use num_traits::Zero;
 ///
 /// The algorithm is from [Brand, Dell and Husfeldt](https://arxiv.org/pdf/1804.09448.pdf)
 pub fn u(g: &Graph, k: usize) -> bool {
-    let vandermonde_mapping = utils::create_vandermonde(g.num_vert(), k);
+    let vandermonde_mapping = utils::create_vandermonde(g.num_vert, k);
     let res = g.compute_walk_sum(k, vandermonde_mapping);
     !res.is_zero()
 }
@@ -42,7 +42,7 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
     let mut values = Vec::new();
 
     while t < 100 * ((k as f64).powf(3.0) / eps.powf(2.0)) as u32 {
-        let bernoulli_mapping = utils::create_bernoulli(g.num_vert(), k);
+        let bernoulli_mapping = utils::create_bernoulli(g.num_vert, k);
         let v_j = g.compute_walk_sum(k, bernoulli_mapping);
         let coeffs = if v_j.coeffs().is_empty() {
             0.0
@@ -62,20 +62,13 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
         let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
         let t_val = utils::t_value(t - 1);
 
-        println!(
-            "mean: {}, std_dev: {}, quot: {}, step: {}",
-            mean,
-            std_dev,
-            std_dev / mean,
-            t
-        );
+        println!("mean: {},  step: {}", mean, t);
         if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && t > 20) {
             println!("values: {:?}", values);
             return mean;
         }
     }
 
-    println!("values: {:?}", values);
     sum / (t as f64)
 }
 
@@ -86,7 +79,7 @@ pub fn c_count_iterations(g: Graph, k: usize, eps: f64) -> u32 {
     let mut ssum = 0.0;
 
     while t < 100 * ((k as f64).powf(3.0) / eps.powf(2.0)) as u32 {
-        let bernoulli_mapping = utils::create_bernoulli(g.num_vert(), k);
+        let bernoulli_mapping = utils::create_bernoulli(g.num_vert, k);
         let v_j = g.compute_walk_sum(k, bernoulli_mapping);
         let coeffs = if v_j.coeffs().is_empty() {
             0.0
@@ -112,6 +105,44 @@ pub fn c_count_iterations(g: Graph, k: usize, eps: f64) -> u32 {
     }
 
     t
+}
+
+// only used for debugging / benchmarking. Returns "history" of values
+pub fn c_values(g: Graph, k: usize, eps: f64) -> Vec<f64> {
+    let mut t = 1;
+    let mut sum = 0.0;
+    let mut ssum = 0.0;
+    let mut values = Vec::new();
+
+    while t < 100 * ((k as f64).powf(3.0) / eps.powf(2.0)) as u32 {
+        let bernoulli_mapping = utils::create_bernoulli(g.num_vert, k);
+        let v_j = g.compute_walk_sum(k, bernoulli_mapping);
+        let coeffs = if v_j.coeffs().is_empty() {
+            0.0
+        } else {
+            v_j.coeffs()[0] as f64
+        };
+        let denom = utils::factorial(k) as f64;
+        let x_j = (coeffs.abs() as f64) / denom;
+
+        sum += x_j;
+        ssum += x_j * x_j;
+        values.push(x_j);
+        t += 1;
+
+        let n = t as f64;
+        let mean = sum / n;
+        let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
+        let t_val = utils::t_value(t - 1);
+
+        println!("mean: {},  step: {}", mean, t);
+        if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && t > 20) {
+            println!("values: {:?}", values);
+            return values;
+        }
+    }
+
+    values
 }
 
 #[cfg(test)]

@@ -2,3 +2,4 @@
 /.idea
 /.vscode
 flamegraph.svg
+/debug

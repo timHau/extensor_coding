@@ -21,6 +21,7 @@ use rand::{
 pub struct Graph {
     adj_mat: Box<Matrix<u8>>,
     pub vert_data: Vec<usize>,
+    pub num_vert: usize,
 }
 
 /// # Graph
@@ -38,6 +39,7 @@ impl Graph {
         Graph {
             adj_mat,
             vert_data: vec![],
+            num_vert: n,
         }
     }
 
@@ -89,6 +91,7 @@ impl Graph {
         Graph {
             adj_mat: Box::new(adj_mat),
             vert_data: Vec::with_capacity(n),
+            num_vert: n,
         }
     }
 
@@ -155,6 +158,7 @@ impl Graph {
         Graph {
             adj_mat: Box::new(adj_mat),
             vert_data: Vec::with_capacity(nrows * ncols),
+            num_vert: ncols + nrows,
         }
     }
 
@@ -181,28 +185,22 @@ impl Graph {
         res.into_iter().fold(ExTensor::zero(), |acc, v| acc + v)
     }
 
-    /// ## num_vert
-    ///
-    /// return the number of vertices / number of columns from the adjacency matrix
-    pub(crate) fn num_vert(&self) -> usize {
-        self.adj_mat.ncols
-    }
-
     /// ## color_coding
     ///
     /// add a color (number in 1..=k) to every vertex
     /// the colors are stored in the `vert_data` field
     pub(crate) fn color_coding(&self, k: usize) -> Self {
-        let num_verts = (*self.adj_mat).ncols;
+        let num_vert = (*self.adj_mat).ncols;
         let rng = rand::thread_rng();
         let colors: Vec<_> = rng
             .sample_iter(&Uniform::new(1, k + 1))
-            .take(num_verts)
+            .take(num_vert)
             .collect();
 
         Graph {
             adj_mat: self.adj_mat.clone(),
             vert_data: colors,
+            num_vert,
         }
     }
 
@@ -479,7 +477,7 @@ mod tests {
     fn compute_walk() {
         let g = Graph::from_graph6("src/data/path10.g6");
         let k = 3;
-        let res = g.compute_walk_sum(k, utils::create_vandermonde(g.num_vert(), k));
+        let res = g.compute_walk_sum(k, utils::create_vandermonde(g.num_vert, k));
         let zero = ExTensor::zero();
         assert_ne!(
             res, zero,
@@ -491,7 +489,7 @@ mod tests {
     fn compute_walk_2() {
         let g = Graph::from_graph6("src/data/path10.g6");
         let k = 5;
-        let res = g.compute_walk_sum(k, utils::create_vandermonde(g.num_vert(), k));
+        let res = g.compute_walk_sum(k, utils::create_vandermonde(g.num_vert, k));
         let zero = ExTensor::zero();
         assert_ne!(
             res, zero,
@@ -503,7 +501,7 @@ mod tests {
     fn compute_walk_3() {
         let g = Graph::from_graph6("src/data/path3.g6");
         let k = 5;
-        let res = g.compute_walk_sum(k, utils::create_vandermonde(g.num_vert(), k));
+        let res = g.compute_walk_sum(k, utils::create_vandermonde(g.num_vert, k));
         assert_eq!(
             res.is_zero(),
             true,
