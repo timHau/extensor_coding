@@ -2,7 +2,7 @@ mod utils;
 
 use extensor_coding::{algorithm, graph::Graph};
 use indicatif::{ProgressBar, ProgressStyle};
-use plotters::{prelude::IntoLogRange, style};
+use plotters::style;
 use std::time::Instant;
 
 fn bench_c(num_iter: u64, path_str: &str, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
