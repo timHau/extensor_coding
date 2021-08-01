@@ -1,7 +1,6 @@
 mod utils;
 
 use extensor_coding::{extensor::bitvec, extensor::dense_hashmap};
-use indicatif::{ProgressBar, ProgressStyle};
 use plotters::style;
 use rand::Rng;
 use std::time::Instant;
@@ -13,11 +12,9 @@ fn rand_coeffs_and_basis(n: i32) -> (Vec<i64>, Vec<Vec<u8>>) {
     (coeffs, basis)
 }
 
-fn bench_bitvec(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
+fn bench_bitvec(num_iter: u64) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
     let max_basis = 31;
-    let bar = ProgressBar::new(num_iter);
-    bar.set_style(prog_style.clone());
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
@@ -37,18 +34,14 @@ fn bench_bitvec(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
         }
 
         times.push(times_per_iter);
-        bar.inc(1);
     }
-    bar.finish();
 
     times
 }
 
-fn bench_hashmap(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
+fn bench_hashmap(num_iter: u64) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
     let max_basis = 60;
-    let bar = ProgressBar::new(num_iter);
-    bar.set_style(prog_style.clone());
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
@@ -68,9 +61,7 @@ fn bench_hashmap(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
         }
 
         times.push(times_per_iter);
-        bar.inc(1);
     }
-    bar.finish();
 
     times
 }
@@ -78,12 +69,8 @@ fn bench_hashmap(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
 fn main() {
     let num_iter = 50;
 
-    let prog_style = ProgressStyle::default_bar()
-        .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
-        .progress_chars("=>-");
-
-    let times_bitvec = bench_bitvec(num_iter, &prog_style);
-    let times_hashmap = bench_hashmap(num_iter, &prog_style);
+    let times_bitvec = bench_bitvec(num_iter);
+    let times_hashmap = bench_hashmap(num_iter);
 
     let result = vec![
         ("bitvec".to_string(), style::RED, times_bitvec),

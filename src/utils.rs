@@ -135,7 +135,7 @@ pub(crate) fn has_intersection(a: &Vec<u8>, b: &Vec<u8>) -> bool {
 pub(crate) fn mean(values: &Vec<f64>) -> f64 {
     match values.len() {
         0 => 0.0,
-        _ => values.iter().sum::<f64>() / (values.len() as f64),
+        _ => values.iter().sum::<f64>() / (values.len() as f64 - 1.0),
     }
 }
 

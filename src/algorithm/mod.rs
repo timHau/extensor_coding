@@ -36,12 +36,12 @@ pub fn u(g: &Graph, k: usize) -> bool {
 ///
 /// The algorithm is from [Brand, Dell and Husfeldt](https://arxiv.org/pdf/1804.09448.pdf)
 pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
-    let mut t = 1;
+    let mut step = 1;
     let mut sum = 0.0;
     let mut ssum = 0.0;
     let mut values = Vec::new();
 
-    while t < 100 * ((k as f64).powf(3.0) / eps.powf(2.0)) as u32 {
+    while step < 100 * ((k as f64).powf(3.0) / eps.powf(2.0)) as u32 {
         let bernoulli_mapping = utils::create_bernoulli(g.num_vert, k);
         let v_j = g.compute_walk_sum(k, bernoulli_mapping);
         let coeffs = if v_j.coeffs().is_empty() {
@@ -55,29 +55,30 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
         sum += x_j;
         ssum += x_j * x_j;
         values.push(x_j);
-        t += 1;
+        step += 1;
 
-        let n = t as f64;
+        let n = step as f64;
         let mean = sum / n;
         let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
-        let t_val = utils::t_value(t - 1);
+        let t_val = utils::t_value(step - 1);
 
-        println!("mean: {},  step: {}", mean, t);
-        if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && t > 20) {
+        println!("mean: {},  step: {}", mean, step);
+        if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && step > 20)
+        {
             println!("values: {:?}", values);
             return mean;
         }
     }
 
-    sum / (t as f64)
+    sum / (step as f64)
 }
 
 /// only used for benchmarking, returns the number of iterations
 pub fn c_count_iterations(g: Graph, k: usize, eps: f64) -> u32 {
-    let mut t = 1u32;
+    let mut step = 1u32;
     let mut values = Vec::new();
 
-    while t < 100 * ((k as f64).powf(3.0) / eps.powf(2.0)) as u32 {
+    while step < 100 * ((k as f64).powf(3.0) / eps.powf(2.0)) as u32 {
         let bernoulli_mapping = utils::create_bernoulli(g.num_vert, k);
         let v_j = g.compute_walk_sum(k, bernoulli_mapping);
         let coeffs = if v_j.coeffs().is_empty() {
@@ -89,29 +90,30 @@ pub fn c_count_iterations(g: Graph, k: usize, eps: f64) -> u32 {
         let x_j = (coeffs.abs() as f64) / denom;
         values.push(x_j);
 
-        t += 1;
+        step += 1;
 
-        let n = t as f64;
+        let n = step as f64;
         let mean = utils::mean(&values);
         let std_dev = utils::std_dev(&values);
-        let t_val = utils::t_value(t - 1);
+        let t_val = utils::t_value(step - 1);
 
-        println!("step: {}, mean: {}", t, mean);
-        if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && t > 20) {
-            return t;
+        println!("step: {}, mean: {}", step, mean);
+        if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && step > 20)
+        {
+            return step;
         }
     }
 
-    t
+    step
 }
 
 // only used for debugging / benchmarking. Returns "history" of values
-pub fn c_values(g: Graph, k: usize, eps: f64) -> Vec<f64> {
-    let mut t = 1;
+pub fn c_values_std_dev(g: Graph, k: usize, eps: f64) -> Vec<f64> {
+    let mut step = 1;
     let mut values = Vec::new();
     let mut std_dev = f64::INFINITY;
 
-    while std_dev > eps {
+    while std_dev > eps && step < 500 {
         let bernoulli_mapping = utils::create_bernoulli(g.num_vert, k);
         let v_j = g.compute_walk_sum(k, bernoulli_mapping);
         let coeffs = if v_j.coeffs().is_empty() {
@@ -124,9 +126,52 @@ pub fn c_values(g: Graph, k: usize, eps: f64) -> Vec<f64> {
         values.push((values.iter().sum::<f64>() + x_j) / (values.len() + 1) as f64);
 
         std_dev = utils::std_dev(&values);
-        println!("std_dev: {}, step: {}", std_dev, t);
+        println!(
+            "std_dev: {}, mean: {}, step: {}",
+            std_dev,
+            utils::mean(&values),
+            step
+        );
 
-        t += 1;
+        step += 1;
+    }
+
+    values
+}
+
+// only used for debugging / benchmarking. Returns "history" of values
+pub fn c_values_t_test(g: Graph, k: usize, eps: f64) -> Vec<f64> {
+    let mut step = 1;
+    let mut sum = 0.0;
+    let mut ssum = 0.0;
+    let mut values = Vec::new();
+
+    while step < 500 {
+        let bernoulli_mapping = utils::create_bernoulli(g.num_vert, k);
+        let v_j = g.compute_walk_sum(k, bernoulli_mapping);
+        let coeffs = if v_j.coeffs().is_empty() {
+            0.0
+        } else {
+            v_j.coeffs()[0] as f64
+        };
+        let denom = utils::factorial(k) as f64;
+        let x_j = (coeffs.abs() as f64) / denom;
+
+        sum += x_j;
+        ssum += x_j * x_j;
+        values.push(x_j);
+        step += 1;
+
+        let n = step as f64;
+        let mean = sum / n;
+        let std_dev = ((ssum - mean * mean * n) / (n - 1.0)).sqrt();
+        let t_val = utils::t_value(step - 1);
+
+        println!("mean: {}, step: {}", mean, step);
+        if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && step > 20)
+        {
+            return values;
+        }
     }
 
     values

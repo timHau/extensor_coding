@@ -1,7 +1,6 @@
 mod utils;
 
 use extensor_coding::{matrix::naive, matrix::sparse_hash, matrix::sparse_triples};
-use indicatif::{ProgressBar, ProgressStyle};
 use plotters::style;
 use rand::Rng;
 use std::time::Instant;
@@ -11,11 +10,9 @@ fn rand_vec(n: i32) -> Vec<i32> {
     (0..n).map(|_| rng.gen_range(0..1)).collect()
 }
 
-fn bench_naive(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
+fn bench_naive(num_iter: u64) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
     let max_n = 500;
-    let bar = ProgressBar::new(num_iter);
-    bar.set_style(prog_style.clone());
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
@@ -32,18 +29,14 @@ fn bench_naive(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
         }
 
         times.push(times_per_iter);
-        bar.inc(1);
     }
-    bar.finish();
 
     times
 }
 
-fn bench_triples(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
+fn bench_triples(num_iter: u64) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
     let max_n = 500;
-    let bar = ProgressBar::new(num_iter);
-    bar.set_style(prog_style.clone());
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
@@ -60,18 +53,14 @@ fn bench_triples(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
         }
 
         times.push(times_per_iter);
-        bar.inc(1);
     }
-    bar.finish();
 
     times
 }
 
-fn bench_hash(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
+fn bench_hash(num_iter: u64) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
     let max_n = 500;
-    let bar = ProgressBar::new(num_iter);
-    bar.set_style(prog_style.clone());
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
@@ -88,9 +77,7 @@ fn bench_hash(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
         }
 
         times.push(times_per_iter);
-        bar.inc(1);
     }
-    bar.finish();
 
     times
 }
@@ -98,13 +85,9 @@ fn bench_hash(num_iter: u64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
 fn main() {
     let num_iter = 50;
 
-    let prog_style = ProgressStyle::default_bar()
-        .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
-        .progress_chars("=>-");
-
-    let times_naive = bench_naive(num_iter, &prog_style);
-    let times_triples = bench_triples(num_iter, &prog_style);
-    let times_hash = bench_hash(num_iter, &prog_style);
+    let times_naive = bench_naive(num_iter);
+    let times_triples = bench_triples(num_iter);
+    let times_hash = bench_hash(num_iter);
 
     let result = vec![
         ("naive".to_string(), style::RED, times_naive),

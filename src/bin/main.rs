@@ -5,11 +5,12 @@ use std::path::Path;
 
 fn main() {
     // let g = Graph::from_tsv("src/data/out.arenas-jazz");
-    let g = Graph::from_graph6("src/data/path10.g6");
+    let g = Graph::from_tsv("src/data/out.brunson_revolution_revolution");
+    // let g = Graph::from_graph6("src/data/path10.g6");
     let k = 4;
-    let eps = 0.2;
+    let eps = 0.1;
 
-    let values = algorithm::c_values(g, k, eps);
+    let values = algorithm::c_values_t_test(g, k, eps);
 
     let path = Path::new("debug/debug.txt");
 

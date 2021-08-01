@@ -1,15 +1,12 @@
 mod utils;
 
 use extensor_coding::{algorithm, graph::Graph};
-use indicatif::{ProgressBar, ProgressStyle};
 use plotters::style;
 use std::time::Instant;
 
-fn bench_c(num_iter: u64, path_str: &str, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
+fn bench_c(num_iter: u64, path_str: &str) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
     let max_k = 9;
-    let bar = ProgressBar::new(num_iter);
-    bar.set_style(prog_style.clone());
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
@@ -27,18 +24,14 @@ fn bench_c(num_iter: u64, path_str: &str, prog_style: &ProgressStyle) -> Vec<Vec
         }
 
         times.push(times_per_iter);
-        bar.inc(1);
     }
-    bar.finish();
 
     times
 }
 
-fn bench_c_grow_n(num_iter: u64, k: usize, p: f64, prog_style: &ProgressStyle) -> Vec<Vec<f64>> {
+fn bench_c_grow_n(num_iter: u64, k: usize, p: f64) -> Vec<Vec<f64>> {
     let mut times = Vec::new();
     let max_n = 80usize;
-    let bar = ProgressBar::new(num_iter);
-    bar.set_style(prog_style.clone());
 
     for _j in 0..num_iter {
         let mut times_per_iter = Vec::new();
@@ -55,9 +48,7 @@ fn bench_c_grow_n(num_iter: u64, k: usize, p: f64, prog_style: &ProgressStyle) -
         }
 
         times.push(times_per_iter);
-        bar.inc(1);
     }
-    bar.finish();
 
     times
 }
@@ -99,10 +90,6 @@ fn iterations_eps(num_iter: u64) -> Vec<Vec<f64>> {
 }
 
 fn main() {
-    let prog_style = ProgressStyle::default_bar()
-        .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}")
-        .progress_chars("=>-");
-
     /*
     let g_rand = utils::rand_graph(200, 0.5);
     let num_iterations_rand = count_iterations(1, g_rand);
@@ -142,9 +129,9 @@ fn main() {
     );
 
     /*
-    //   let times_algo_c_10 = bench_c(2, "src/data/path10.g6", &prog_style);
-    //    let times_algo_c_100 = bench_c(2, "src/data/path100.g6", &prog_style);
-    let times_algo_c_tutte = bench_c(1, "src/data/path100.g6", &prog_style);
+    //   let times_algo_c_10 = bench_c(2, "src/data/path10.g6");
+    //    let times_algo_c_100 = bench_c(2, "src/data/path100.g6");
+    let times_algo_c_tutte = bench_c(1, "src/data/path100.g6");
 
     let result = vec![
         /*       (
@@ -174,10 +161,10 @@ fn main() {
         &result,
     );
 
-    let times_algo_c_n_k_8 = bench_c_grow_n(10, 2, 0.8, &prog_style);
-    let times_algo_c_n_k_4 = bench_c_grow_n(10, 2, 0.4, &prog_style);
-    let times_algo_c_n_k_2 = bench_c_grow_n(10, 2, 0.2, &prog_style);
-    let times_algo_c_n_k_1 = bench_c_grow_n(10, 2, 0.1, &prog_style);
+    let times_algo_c_n_k_8 = bench_c_grow_n(10, 2, 0.8);
+    let times_algo_c_n_k_4 = bench_c_grow_n(10, 2, 0.4);
+    let times_algo_c_n_k_2 = bench_c_grow_n(10, 2, 0.2);
+    let times_algo_c_n_k_1 = bench_c_grow_n(10, 2, 0.1);
     let result_n = vec![
         (
             "p = 0.8, k = 2".to_string(),
