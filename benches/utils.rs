@@ -78,6 +78,7 @@ pub fn plot_results(
     run_chart
         .configure_series_labels()
         .background_style(&WHITE.mix(0.5))
+        .position(SeriesLabelPosition::UpperRight)
         .border_style(&BLACK)
         .draw()?;
 

@@ -75,6 +75,7 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
 pub fn c_count_iterations(g: Graph, k: usize, eps: f64) -> u32 {
     let mut step = 1u32;
     let mut values = Vec::new();
+    let mut means = Vec::new();
 
     while step < 100 * ((k as f64).powf(3.0) / eps.powf(2.0)) as u32 {
         let bernoulli_mapping = utils::create_bernoulli(g.num_vert, k);
@@ -88,11 +89,10 @@ pub fn c_count_iterations(g: Graph, k: usize, eps: f64) -> u32 {
         let x_j = (coeffs.abs() as f64) / denom;
         values.push(x_j);
 
-        step += 1;
-
         let n = step as f64;
         let mean = utils::mean(&values);
-        let std_dev = utils::std_dev(&values);
+        means.push(mean);
+        let std_dev = utils::std_dev(&means);
         let t_val = utils::t_value(step - 1);
 
         println!("step: {}, mean: {}", step, mean);
@@ -100,6 +100,7 @@ pub fn c_count_iterations(g: Graph, k: usize, eps: f64) -> u32 {
         {
             return step;
         }
+        step += 1;
     }
 
     step
@@ -109,6 +110,7 @@ pub fn c_count_iterations(g: Graph, k: usize, eps: f64) -> u32 {
 pub fn c_values_std_dev(g: Graph, k: usize, eps: f64) -> Vec<f64> {
     let mut step = 1;
     let mut values = Vec::new();
+    let mut means = Vec::new();
     let mut std_dev = f64::INFINITY;
 
     while std_dev > eps {
@@ -123,13 +125,10 @@ pub fn c_values_std_dev(g: Graph, k: usize, eps: f64) -> Vec<f64> {
         let x_j = (coeffs.abs() as f64) / denom;
         values.push((values.iter().sum::<f64>() + x_j) / (values.len() + 1) as f64);
 
-        std_dev = utils::std_dev(&values);
-        println!(
-            "std_dev: {}, mean: {}, step: {}",
-            std_dev,
-            utils::mean(&values),
-            step
-        );
+        let mean = utils::mean(&values);
+        std_dev = utils::std_dev(&means);
+
+        println!("std_dev: {}, mean: {}, step: {}", std_dev, mean, step);
 
         step += 1;
     }
