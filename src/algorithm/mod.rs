@@ -51,6 +51,7 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
         let denom = utils::factorial(k) as f64;
         let x_j = (coeffs.abs() as f64) / denom;
         values.push(x_j);
+        // values.push((values.iter().sum::<f64>() + x_j) / (values.len() + 1) as f64);
 
         mean = utils::mean(&values);
         let std_dev = utils::std_dev(&values);
@@ -158,12 +159,10 @@ pub fn c_values_t_test(g: Graph, k: usize, eps: f64) -> Vec<f64> {
         let t_val = utils::t_value(step - 1);
 
         println!("mean: {}, std_dev: {}, step: {}", mean, std_dev, step);
-        /*
         if (mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || (std_dev == 0.0 && step > 20)
         {
             return values;
         }
-        */
         step += 1;
     }
 

@@ -20,14 +20,14 @@ matrix_sparse_triples = []
 [profile.bench]
 debug = true
 
-#[[bench]]
-#name = "wedge_product"
-#harness = false
+[[bench]]
+name = "wedge_product"
+harness = false
 
 #[[bench]]
 #name = "matrix_vec"
 #harness = false
 
-[[bench]]
-name = "algorithm"
-harness = false
+#[[bench]]
+#name = "algorithm"
+#harness = false

@@ -122,7 +122,7 @@ fn main() {
     let results = vec![("".to_string(), style::RED, iter_eps)];
     let _ = utils::plot_results(
         "iterations vs epsilon",
-        (("epsilon^-1", 1f32..10f32), ("iterations", 1f32..200f32)),
+        (("epsilon^-1", 1f32..10f32), ("iterations", 1f32..20f32)),
         1,
         "benches/output/iterations_eps",
         &results,

@@ -48,9 +48,9 @@ pub fn plot_results(
 
     let mut run_chart = ChartBuilder::on(&run_root)
         .caption(title, ("sans-serif", 20).into_font())
-        .margin(20)
+        .margin(50)
         .x_label_area_size(50)
-        .y_label_area_size(50)
+        .y_label_area_size(90)
         .build_cartesian_2d(x_range.clone(), y_range.clone())?;
 
     run_chart
