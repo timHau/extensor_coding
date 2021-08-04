@@ -83,7 +83,7 @@ fn bench_hash(num_iter: u64) -> Vec<Vec<f64>> {
 }
 
 fn main() {
-    let num_iter = 50;
+    let num_iter = 100;
 
     let times_naive = bench_naive(num_iter);
     let times_triples = bench_triples(num_iter);
