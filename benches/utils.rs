@@ -85,6 +85,55 @@ pub fn plot_results(
 }
 
 #[allow(dead_code)]
+pub fn plot_results_histogram(
+    title: &str,
+    axis: ((&str, Range<u32>), (&str, Range<u32>)),
+    path: &str,
+    results: &Vec<(String, RGBColor, Vec<Vec<f64>>)>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let run_path = format!("{}.png", path);
+    let run_root = BitMapBackend::new(&run_path, (1024, 640)).into_drawing_area();
+    run_root.fill(&WHITE)?;
+
+    let (x, y) = axis;
+    let (x_name, x_range) = x;
+    let (y_name, y_range) = y;
+
+    let mut run_chart = ChartBuilder::on(&run_root)
+        .caption(title, ("sans-serif", 20).into_font())
+        .margin(50)
+        .x_label_area_size(50)
+        .y_label_area_size(90)
+        .build_cartesian_2d(x_range.clone().into_segmented(), y_range.clone())?;
+
+    run_chart
+        .configure_mesh()
+        .x_labels(10)
+        .y_labels(10)
+        .x_desc(x_name)
+        .y_desc(y_name)
+        .light_line_style(&WHITE.mix(0.8))
+        .draw()?;
+
+    for (name, col, res) in results.iter() {
+        let run: Vec<f32> = join_runs(res.to_vec())
+            .iter()
+            .map(|v: &f64| *v as f32)
+            .collect();
+
+        run_chart
+            .draw_series(
+                Histogram::vertical(&run_chart)
+                    .style(col.mix(0.5).filled())
+                    .data(run.iter().map(|x: &f32| (*x as u32, 1))),
+            )?
+            .label(name);
+    }
+
+    Ok(())
+}
+
+#[allow(dead_code)]
 pub fn plot_results_log(
     title: &str,
     axis: ((&str, Range<f32>), (&str, LogRange<f32>)),
