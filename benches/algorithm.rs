@@ -93,8 +93,8 @@ fn main() {
     let g_rand = utils::rand_graph(200, 0.5);
     let num_iterations_rand = count_iterations(1, g_rand);
 
-    let g_gplus = Graph::from_tsv("src/data/out.ego-gplus");
-    let num_iterations_gplus = count_iterations(1, g_gplus);
+    let g_arenas_jazz = Graph::from_tsv("src/data/out.arenas-jazz");
+    let num_iterations_arenas = count_iterations(1, g_arenas_jazz);
 
     let result = vec![
         (
@@ -103,9 +103,9 @@ fn main() {
             num_iterations_rand,
         ),
         (
-            "(real world) graph google plus".to_string(),
+            "(real world) graph arenas-jazz".to_string(),
             style::GREEN,
-            num_iterations_gplus,
+            num_iterations_arenas,
         ),
     ];
     let _ = utils::plot_results(
