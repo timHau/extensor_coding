@@ -28,6 +28,6 @@ debug = true
 name = "matrix_vec"
 harness = false
 
-#[[bench]]
-#name = "algorithm"
-#harness = false
+[[bench]]
+name = "algorithm"
+harness = false

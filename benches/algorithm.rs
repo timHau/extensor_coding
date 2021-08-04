@@ -1,7 +1,7 @@
 mod utils;
 
 use extensor_coding::{algorithm, graph::Graph};
-use plotters::style;
+use plotters::{prelude::*, style};
 use std::time::Instant;
 
 fn bench_c(num_iter: u64, path_str: &str) -> Vec<Vec<f64>> {
@@ -90,7 +90,6 @@ fn iterations_eps(num_iter: u64) -> Vec<Vec<f64>> {
 }
 
 fn main() {
-    /*
     let g_rand = utils::rand_graph(200, 0.5);
     let num_iterations_rand = count_iterations(1, g_rand);
 
@@ -116,11 +115,10 @@ fn main() {
         "benches/output/iterations",
         &result,
     );
-    */
 
     let iter_eps = iterations_eps(1);
     let results = vec![("".to_string(), style::RED, iter_eps)];
-    let _ = utils::plot_results(
+    let _1 = utils::plot_results(
         "iterations vs epsilon",
         (("epsilon^-1", 1f32..10f32), ("iterations", 1f32..20f32)),
         1,
@@ -128,7 +126,6 @@ fn main() {
         &results,
     );
 
-    /*
     //   let times_algo_c_10 = bench_c(2, "src/data/path10.g6");
     //    let times_algo_c_100 = bench_c(2, "src/data/path100.g6");
     let times_algo_c_tutte = bench_c(1, "src/data/path100.g6");
@@ -150,7 +147,7 @@ fn main() {
             times_algo_c_tutte,
         ),
     ];
-    let _ = utils::plot_results_log(
+    let _2 = utils::plot_results_log(
         "algorithm c (dense_hashmap, sparse matrix)",
         (
             ("k", 2f32..11f32),
@@ -190,5 +187,4 @@ fn main() {
         "benches/output/algo_n_0_5",
         &result_n,
     );
-    */
 }
