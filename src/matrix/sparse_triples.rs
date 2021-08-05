@@ -99,12 +99,6 @@ where
     type Output = Vec<T>;
 
     fn mul(self, rhs: Vec<T>) -> Vec<T> {
-        assert_eq!(
-            self.ncols,
-            rhs.len(),
-            "dimensions of vector and matrix do not match"
-        );
-
         let mut res = vec![T::zero(); self.nrows];
 
         for (x, y, v) in self.data.iter() {

@@ -71,15 +71,14 @@ fn count_iterations(num_iter: u64, g: Graph) -> Vec<Vec<f64>> {
     iterations
 }
 
-fn iterations_eps(num_iter: u64) -> Vec<Vec<f64>> {
+fn iterations_eps(num_iter: u64, g: Graph) -> Vec<Vec<f64>> {
     let mut iterations = Vec::new();
 
     for _j in 0..num_iter {
         let mut iter = Vec::new();
         for i in 1..=10 {
             let eps = 1.0 / (i as f64);
-            let g = utils::rand_graph(20, 0.5);
-            let n = algorithm::c_count_iterations(g, 4, eps);
+            let n = algorithm::c_count_iterations(g.clone(), 4, eps);
             iter.push(n as f64);
             println!(" n: {}", n);
         }
@@ -94,8 +93,9 @@ fn main() {
     let num_iterations_rand = count_iterations(1, g_rand);
 
     let g_arenas_jazz = Graph::from_tsv("src/data/out.arenas-jazz");
-    let num_iterations_arenas = count_iterations(1, g_arenas_jazz);
+    let num_iterations_arenas = count_iterations(1, g_arenas_jazz.clone());
 
+    /*
     let result = vec![
         (
             "random graph (200 vertices, p = 0.5)".to_string(),
@@ -115,8 +115,9 @@ fn main() {
         "benches/output/iterations",
         &result,
     );
+    */
 
-    let iter_eps = iterations_eps(1);
+    let iter_eps = iterations_eps(10, g_arenas_jazz.clone());
     let results = vec![("".to_string(), style::RED, iter_eps)];
     let _1 = utils::plot_results(
         "iterations vs epsilon",
@@ -126,6 +127,7 @@ fn main() {
         &results,
     );
 
+    /*
     //   let times_algo_c_10 = bench_c(2, "src/data/path10.g6");
     //    let times_algo_c_100 = bench_c(2, "src/data/path100.g6");
     let times_algo_c_tutte = bench_c(1, "src/data/path100.g6");
@@ -187,4 +189,5 @@ fn main() {
         "benches/output/algo_n_0_5",
         &result_n,
     );
+    */
 }
