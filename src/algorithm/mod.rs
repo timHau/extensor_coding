@@ -53,18 +53,16 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
         let x_j = (coeffs.abs() as f64) / denom;
         values.push(x_j);
 
+        let n = step as f64;
         mean = utils::mean(&values);
         means.push(mean);
         let std_dev = utils::std_dev(&means);
 
-        println!("mean: {}, std_dev: {}, step: {}", mean, std_dev, step);
-        /*
         let t_val = utils::t_value(step - 1);
         if ((mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || std_dev == 0.0) && step > 30
         {
             return mean;
         }
-        */
         step += 1;
     }
 
@@ -171,6 +169,67 @@ pub fn c_values_t_test(g: Graph, k: usize, eps: f64) -> Vec<f64> {
     means
 }
 
+// only used for debugging / benchmarking. Returns "history" of values
+pub fn c_values_std_dev(g: Graph, k: usize, eps: f64) -> Vec<f64> {
+    let mut step = 1;
+    let mut values = Vec::new();
+    let mut means = Vec::new();
+    let mut std_dev = f64::INFINITY;
+
+    while std_dev > eps {
+        let bernoulli_mapping = utils::create_bernoulli(g.num_vert, k);
+        let v_j = g.compute_walk_sum(k, bernoulli_mapping);
+        let coeffs = if v_j.coeffs().is_empty() {
+            0.0
+        } else {
+            v_j.coeffs()[0] as f64
+        };
+        let denom = utils::factorial(k) as f64;
+        let x_j = (coeffs.abs() as f64) / denom;
+        values.push(x_j);
+
+        let mean = utils::mean(&values);
+        means.push(mean);
+        std_dev = utils::std_dev(&means);
+
+        println!("mean: {}, std_dev: {}, step: {}", mean, std_dev, step);
+        step += 1;
+    }
+
+    means
+}
+
+pub fn c_std_dev(g: Graph, k: usize, eps: f64) -> Vec<f64> {
+    let mut step = 1;
+    let mut values = Vec::new();
+    let mut means = Vec::new();
+    let mut std_devs = Vec::new();
+
+    while step < 4000 {
+        let bernoulli_mapping = utils::create_bernoulli(g.num_vert, k);
+        let v_j = g.compute_walk_sum(k, bernoulli_mapping);
+        let coeffs = if v_j.coeffs().is_empty() {
+            0.0
+        } else {
+            v_j.coeffs()[0] as f64
+        };
+        let denom = utils::factorial(k) as f64;
+        let x_j = (coeffs.abs() as f64) / denom;
+        values.push(x_j);
+
+        let mean = utils::mean(&values);
+        means.push(mean);
+        let std_dev = utils::std_dev(&means);
+        std_devs.push(std_dev);
+
+        println!("std_dev: {}, step: {}", std_dev, step);
+
+        step += 1;
+    }
+
+    std_devs
+}
+
 #[cfg(test)]
 mod tests {
     use crate::algorithm;
@@ -223,7 +282,7 @@ mod tests {
     fn c_2() {
         let g = Graph::from_graph6("src/data/path3.g6");
         let k = 3;
-        let eps = 0.5;
+        let eps = 0.9;
         let res = algorithm::c(g, k, eps);
         let p = 2.;
         let lower_bound = (1. - eps) * p;
@@ -339,7 +398,7 @@ mod tests {
             ],
         );
         let k = 3;
-        let eps = 0.2;
+        let eps = 0.4;
         let expect = 4.;
         let lower_bound = (1. - eps) * expect;
         let upper_bound = (1. + eps) * expect;
@@ -371,7 +430,7 @@ mod tests {
             ],
         );
         let k = 2;
-        let eps = 0.2;
+        let eps = 0.5;
         let expect = 3.;
         let lower_bound = (1. - eps) * expect;
         let upper_bound = (1. + eps) * expect;
@@ -403,7 +462,7 @@ mod tests {
             ],
         );
         let k = 3;
-        let eps = 0.2;
+        let eps = 0.5;
         let expect = 3.;
         let lower_bound = (1. - eps) * expect;
         let upper_bound = (1. + eps) * expect;
@@ -535,7 +594,7 @@ mod tests {
             ],
         );
         let k = 2;
-        let eps = 0.1;
+        let eps = 0.3;
         let res = algorithm::c(g, k, eps);
         let expect = 18.0;
         let lower_bound = (1. - eps) * expect;
