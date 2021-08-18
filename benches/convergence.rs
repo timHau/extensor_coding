@@ -57,9 +57,9 @@ fn bench_std_dev(num_iter: u64, g: Graph) -> Vec<Vec<f64>> {
 
 fn main() {
     let num_iter_t_test = 1;
-    let g = Graph::from_tsv("src/data/out.brunson_revolution_revolution");
+    // let g = Graph::from_tsv("src/data/out.brunson_revolution_revolution");
+    let g = Graph::from_tsv("src/data/out.arenas-jazz");
 
-    /*
     let values_t_test = bench_convergence_t_test(num_iter_t_test, g.clone());
     let result_t_test = vec![(
         "graph: brunson_revolution, k = 4".to_string(),
@@ -90,6 +90,7 @@ fn main() {
         &result_t_test_hist,
     );
 
+    /*
     let num_iter_naive = 15;
     let values_naive = bench_convergence_naive(num_iter_naive, g.clone());
     let result_naive = vec![(
@@ -151,7 +152,6 @@ fn main() {
         "benches/output/convergence_histogram_std_dev",
         &result_std_dev_hist,
     );
-    */
     let num_iter_std_dev_2 = 10;
     let values_std_dev_2 = bench_std_dev(num_iter_std_dev_2, g.clone());
     let result_std_dev_2 = vec![(
@@ -170,4 +170,5 @@ fn main() {
         "benches/output/convergence_std_dev_val",
         &result_std_dev_2,
     );
+    */
 }
