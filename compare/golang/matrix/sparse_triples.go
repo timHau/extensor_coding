@@ -1,0 +1,49 @@
+package matrix
+
+import (
+	"github.com/timHau/extensor_coding/extensor"
+)
+
+type Triple struct {
+	rowIndex int
+	colIndex int
+	value    *extensor.Extensor
+}
+
+type Matrix struct {
+	NumRows int
+	NumCols int
+	Data    []*Triple
+}
+
+func New(NumRows int, NumCols int, Coding []*extensor.Extensor) *Matrix {
+	data := []*Triple{}
+
+	for i, v := range Coding {
+		if !v.IsZero() {
+			rowIndex := i / NumCols
+			colIndex := i % NumCols
+			data = append(data, &Triple{
+				rowIndex: rowIndex,
+				colIndex: colIndex,
+				value:    Coding[i],
+			})
+		}
+	}
+
+	return &Matrix{
+		NumRows: NumRows,
+		NumCols: NumCols,
+		Data:    data,
+	}
+}
+
+func (m *Matrix) Mul(other []*extensor.Extensor) []extensor.Extensor {
+	data := make([]extensor.Extensor, m.NumRows)
+
+	for _, v := range m.Data {
+		data[v.rowIndex] = *data[v.rowIndex].Add(v.value.Mul(other[v.colIndex]))
+	}
+
+	return data
+}
