@@ -6,7 +6,7 @@ type Matrix struct {
 	Data    []int
 }
 
-func NewMatrix(NumRows int, NumCols int, Data []int) *Matrix {
+func New(NumRows int, NumCols int, Data []int) *Matrix {
 	return &Matrix{
 		NumRows: NumRows,
 		NumCols: NumCols,

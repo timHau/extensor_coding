@@ -274,6 +274,16 @@ mod tests {
     }
 
     #[test]
+    fn lifted() {
+        let x = &ExTensor::new(&[2, 3], &[vec![1], vec![2]]);
+        let l = x.lift(2);
+        let a = &ExTensor::new(&[2, 3], &[vec![3], vec![4]]);
+        // (2 e_1 + 3 e_2) ^ (2 e_3 + 3 e_4) = 4 e_1 ^ e_3 + 6 e_2 ^ e_3  + 6 e_1 ^ e_4 + 9 e_2 ^ e_4
+        // (2, 3, 0, 0).T ^ (0, 0, 2, 3).T = (2 e_1 + 3 e_2 + 0 e_3 + 0_e_4) ^ (0 e_1 + 0 e_2 + 2 e_3 + 3 e_4)
+        assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
+    }
+
+    #[test]
     fn wedge_prod() {
         let x_1 = ExTensor::new(&[2, 3], &[vec![1, 2], vec![3, 4]]);
         let x_2 = ExTensor::new(&[4, 5], &[vec![2, 6], vec![4, 7]]);

@@ -8,10 +8,10 @@ import (
 )
 
 func main() {
-	m := matrix.NewMatrix(2, 2, []int{1, 2, 3, 4})
+	m := matrix.New(2, 2, []int{1, 2, 3, 4})
 	fmt.Println(m)
 
-	e := extensor.NewExtensor([]int{1, 2, 3}, [][]uint8{{1}, {2}, {3}})
+	e := extensor.New([]int{1, 2, 3}, [][]uint8{{1}, {2}, {3}})
 
 	fmt.Println(e)
 }
