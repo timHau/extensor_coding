@@ -68,7 +68,6 @@ func C(graphPath string, k int, eps float64) float64 {
 		v_j := g.ComputeWalkSum(k, coding)
 		denom := float64(Factorial(k))
 		x_j := math.Abs(float64(v_j)) / denom
-		fmt.Println(v_j)
 		values = append(values, x_j)
 
 		mean = Mean(values)

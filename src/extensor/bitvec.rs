@@ -189,25 +189,15 @@ impl std::ops::Mul for ExTensor {
     }
 }
 
-/*
 impl std::fmt::Display for ExTensor {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut res = String::from("\n");
 
         for (i, (base, coeff)) in self.data.iter().enumerate() {
             if coeff != &0 {
-                res += &format!("{} ", coeff);
-                for (j, b) in base.iter().enumerate() {
-                    if *b {
-                        if j < base.len() {
-                            res += &format!("e_{}∧", j + 1);
-                        } else {
-                            res += &format!("e_{}", j + 1);
-                        }
-                    }
-                }
+                res += &format!("{} {}", coeff, base);
                 if i < self.data.len() - 1 {
-                    res += "  +  ";
+                    res += "+";
                 }
             }
         }
@@ -215,7 +205,6 @@ impl std::fmt::Display for ExTensor {
         write!(f, "{}", res)
     }
 }
-*/
 
 #[cfg(test)]
 mod tests {

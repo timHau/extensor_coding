@@ -6,7 +6,7 @@ use std::path::Path;
 fn main() {
     let g = Graph::from_tsv("src/data/out.brunson_southern-women_southern-women");
     let k = 4;
-    let eps = 0.01;
+    let eps = 0.1;
     let res = algorithm::c(g, k, eps);
     println!("res: {}", res);
 

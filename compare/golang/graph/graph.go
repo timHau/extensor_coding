@@ -2,7 +2,6 @@ package graph
 
 import (
 	"bufio"
-	"fmt"
 	"math/rand"
 	"os"
 	"strconv"
@@ -87,7 +86,7 @@ func AdjMatFromTsv(path string) (int, int, []uint8) {
 	return nrows, ncols, adjMat
 }
 
-func NewWithCoding(k int, nrows int, ncols int, data []uint8) (*Graph, []extensor.Extensor) {
+func NewWithCoding(k int, nrows int, ncols int, data []uint8) (*Graph, []*extensor.Extensor) {
 	coding := createBernoulli(ncols, k)
 
 	adjMat := make([]*extensor.Extensor, len(data))
@@ -98,23 +97,21 @@ func NewWithCoding(k int, nrows int, ncols int, data []uint8) (*Graph, []extenso
 		}
 	}
 
-	coding_into := make([]extensor.Extensor, len(coding))
-	for i, v := range coding {
-		coding_into[i] = *v
-	}
-
 	return &Graph{
 		AdjMat: matrix.New(nrows, ncols, adjMat),
-	}, coding_into
+	}, coding
 }
 
-func (g *Graph) ComputeWalkSum(k int, coding []extensor.Extensor) int {
-	b := g.AdjMat.Mul(coding)
+func (g *Graph) ComputeWalkSum(k int, coding []*extensor.Extensor) int {
+	b := make([]extensor.Extensor, len(coding))
+	for i, c := range coding {
+		b[i] = *c
+	}
+
+	b = g.AdjMat.Mul(b)
 	for i := 1; i < k-1; i++ {
 		b = g.AdjMat.Mul(b)
 	}
-
-	fmt.Println(coding)
 
 	resExt := extensor.Zero()
 	for _, e := range b {

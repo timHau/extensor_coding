@@ -21,10 +21,18 @@ func BitvecFromBasis(basis []uint8) bitvector.Len32 {
 	return b
 }
 
+func Reverse(s string) string {
+	runes := []rune(s)
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+	return string(runes)
+}
+
 func GetIndices(bv *bitvector.Len32) []int {
 	indices := []int{}
 
-	for i, v := range bv.String() {
+	for i, v := range Reverse(bv.String()) {
 		if v == '1' {
 			indices = append(indices, i)
 		}
@@ -42,7 +50,7 @@ func GetSign(a *bitvector.Len32, b *bitvector.Len32) int {
 	i := 0
 	j := 0
 	for i < len(indicesA) && j < len(indicesB) {
-		if indicesA[i] >= indicesB[j] {
+		if indicesA[i] <= indicesB[j] {
 			i += 1
 		} else {
 			j += 1
@@ -117,7 +125,16 @@ func (e *Extensor) Mul(other Extensor) *Extensor {
 }
 
 func (e *Extensor) IsZero() bool {
-	return e == nil || len(e.Data) == 0
+	if e == nil || len(e.Data) == 0 {
+		return true
+	}
+	allCoeffsZero := true
+	for _, v := range e.Data {
+		if v != 0 {
+			allCoeffsZero = false
+		}
+	}
+	return allCoeffsZero
 }
 
 func Zero() *Extensor {
