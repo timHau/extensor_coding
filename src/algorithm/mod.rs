@@ -58,6 +58,8 @@ pub fn c(g: Graph, k: usize, eps: f64) -> f64 {
         means.push(mean);
         let std_dev = utils::std_dev(&means);
 
+        println!("std_dev: {}, mean: {}, step: {}", std_dev, mean, step);
+
         let t_val = utils::t_value(step - 1);
         if ((mean - t_val * std_dev / n.sqrt() > (1.0 - eps) * mean) || std_dev == 0.0) && step > 30
         {

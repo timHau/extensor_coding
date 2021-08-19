@@ -189,25 +189,15 @@ impl std::ops::Mul for ExTensor {
     }
 }
 
-/*
 impl std::fmt::Display for ExTensor {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut res = String::from("\n");
 
         for (i, (base, coeff)) in self.data.iter().enumerate() {
             if coeff != &0 {
-                res += &format!("{} ", coeff);
-                for (j, b) in base.iter().enumerate() {
-                    if *b {
-                        if j < base.len() {
-                            res += &format!("e_{}∧", j + 1);
-                        } else {
-                            res += &format!("e_{}", j + 1);
-                        }
-                    }
-                }
+                res += &format!("{} {}", coeff, base);
                 if i < self.data.len() - 1 {
-                    res += "  +  ";
+                    res += "+";
                 }
             }
         }
@@ -215,7 +205,6 @@ impl std::fmt::Display for ExTensor {
         write!(f, "{}", res)
     }
 }
-*/
 
 #[cfg(test)]
 mod tests {
@@ -271,6 +260,16 @@ mod tests {
         let x_2 = BitVec::from(&vec![3, 5, 6]);
         let sign = ExTensor::get_sign(&x_1, &x_2);
         assert_eq!(sign, -1, "sign of simple permutation should be -1");
+    }
+
+    #[test]
+    fn lifted() {
+        let x = &ExTensor::new(&[2, 3], &[vec![1], vec![2]]);
+        let l = x.lift(2);
+        let a = &ExTensor::new(&[2, 3], &[vec![3], vec![4]]);
+        // (2 e_1 + 3 e_2) ^ (2 e_3 + 3 e_4) = 4 e_1 ^ e_3 + 6 e_2 ^ e_3  + 6 e_1 ^ e_4 + 9 e_2 ^ e_4
+        // (2, 3, 0, 0).T ^ (0, 0, 2, 3).T = (2 e_1 + 3 e_2 + 0 e_3 + 0_e_4) ^ (0 e_1 + 0 e_2 + 2 e_3 + 3 e_4)
+        assert_eq!(l, x * a, "lift is (x, 0)^T wedge (0, x)^T");
     }
 
     #[test]

@@ -261,6 +261,23 @@ mod tests {
     }
 
     #[test]
+    fn mat_vec_mul_tmp() {
+        let v = vec![
+            ExTensor::new(&[1, -1], &[vec![1], vec![2]]).lift(4),
+            ExTensor::new(&[-1, 1], &[vec![1], vec![2]]).lift(4),
+        ];
+        let m = Matrix::new(
+            2,
+            2,
+            vec![v[0].clone(), v[0].clone(), v[1].clone(), v[1].clone()],
+        );
+        let p = &m * v;
+        for e in p.iter() {
+            assert!(e.is_zero());
+        }
+    }
+
+    #[test]
     fn mat_vec_mul_4() {
         let m = Matrix::new(3, 3, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);
         let v = vec![1, 2, 3];
