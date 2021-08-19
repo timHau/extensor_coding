@@ -120,6 +120,22 @@ func (e *Extensor) IsZero() bool {
 	return len(e.Data) == 0
 }
 
+func Zero() *Extensor {
+	return &Extensor{
+		Data: make(map[bitvector.Len32]int),
+	}
+}
+
+func (e *Extensor) Coeffs() []int {
+	res := []int{}
+
+	for _, v := range e.Data {
+		res = append(res, v)
+	}
+
+	return res
+}
+
 func (e *Extensor) Lift(k uint8) *Extensor {
 	data := make(map[bitvector.Len32]int)
 

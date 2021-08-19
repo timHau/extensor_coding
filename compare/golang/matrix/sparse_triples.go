@@ -16,17 +16,17 @@ type Matrix struct {
 	Data    []*Triple
 }
 
-func New(NumRows int, NumCols int, Coding []*extensor.Extensor) *Matrix {
+func New(NumRows int, NumCols int, Values []*extensor.Extensor) *Matrix {
 	data := []*Triple{}
 
-	for i, v := range Coding {
+	for i, v := range Values {
 		if !v.IsZero() {
 			rowIndex := i / NumCols
 			colIndex := i % NumCols
 			data = append(data, &Triple{
 				rowIndex: rowIndex,
 				colIndex: colIndex,
-				value:    Coding[i],
+				value:    Values[i],
 			})
 		}
 	}

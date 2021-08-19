@@ -151,15 +151,25 @@ pub(crate) fn std_dev(values: &Vec<f64>) -> f64 {
 }
 
 pub(crate) fn t_value(degrees_of_freedom: u32) -> f64 {
-    match degrees_of_freedom {
-        0..=4 => 3.747,
-        5..=8 => 2.896,
-        9..=16 => 2.583,
-        17..=32 => 2.457,
-        33..=64 => 2.390,
-        65..=128 => 2.358,
-        _ => 2.326,
+    if degrees_of_freedom <= 4 {
+        return 3.747;
     }
+    if degrees_of_freedom <= 8 {
+        return 2.896;
+    }
+    if degrees_of_freedom <= 16 {
+        return 2.583;
+    }
+    if degrees_of_freedom <= 32 {
+        return 2.457;
+    }
+    if degrees_of_freedom <= 64 {
+        return 2.390;
+    }
+    if degrees_of_freedom <= 128 {
+        return 2.358;
+    }
+    2.326
 }
 
 #[cfg(test)]
