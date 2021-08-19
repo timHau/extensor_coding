@@ -199,7 +199,7 @@ pub fn c_values_std_dev(g: Graph, k: usize, eps: f64) -> Vec<f64> {
     means
 }
 
-pub fn c_std_dev(g: Graph, k: usize, eps: f64) -> Vec<f64> {
+pub fn c_std_dev(g: Graph, k: usize, _eps: f64) -> Vec<f64> {
     let mut step = 1;
     let mut values = Vec::new();
     let mut means = Vec::new();
