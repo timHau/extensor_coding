@@ -72,7 +72,7 @@ func New(coeffs []int, basis [][]uint8) *Extensor {
 	}
 }
 
-func (e *Extensor) Add(other *Extensor) *Extensor {
+func (e *Extensor) Add(other Extensor) *Extensor {
 	data := make(map[bitvector.Len32]int)
 
 	for b, c := range e.Data {
@@ -92,7 +92,7 @@ func (e *Extensor) Add(other *Extensor) *Extensor {
 	}
 }
 
-func (e *Extensor) Mul(other *Extensor) *Extensor {
+func (e *Extensor) Mul(other Extensor) *Extensor {
 	data := make(map[bitvector.Len32]int)
 
 	for baseA, coeffA := range e.Data {
@@ -117,7 +117,7 @@ func (e *Extensor) Mul(other *Extensor) *Extensor {
 }
 
 func (e *Extensor) IsZero() bool {
-	return len(e.Data) == 0
+	return e == nil || len(e.Data) == 0
 }
 
 func Zero() *Extensor {
@@ -136,13 +136,13 @@ func (e *Extensor) Coeffs() []int {
 	return res
 }
 
-func (e *Extensor) Lift(k uint8) *Extensor {
+func (e *Extensor) Lift(k int) *Extensor {
 	data := make(map[bitvector.Len32]int)
 
 	for b, c := range e.Data {
-		b = b.Push(k)
+		b = b.Push(uint8(k))
 		data[b] = c
 	}
 
-	return e.Mul(&Extensor{Data: data})
+	return e.Mul(Extensor{Data: data})
 }

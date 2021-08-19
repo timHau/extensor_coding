@@ -2,6 +2,7 @@ package graph
 
 import (
 	"bufio"
+	"fmt"
 	"math/rand"
 	"os"
 	"strconv"
@@ -18,25 +19,25 @@ type Graph struct {
 func createBernoulli(n int, k int) []*extensor.Extensor {
 	res := make([]*extensor.Extensor, n)
 
-	for i := 1; i <= n; i++ {
+	for i := 0; i < n; i++ {
 		coeffs := make([]int, k)
-		basis := make([][]uint8, k)
-		for j := 0; j < k; j++ {
+		basis := [][]uint8{}
+		for j := 1; j <= k; j++ {
 			r := rand.Intn(2)
 			if r == 0 {
 				r = -1
 			}
-			coeffs = append(coeffs, r)
-			basis = append(basis, []uint8{uint8(j) + 1})
+			coeffs[j-1] = r
+			basis = append(basis, []uint8{uint8(j)})
 		}
 		e := extensor.New(coeffs, basis)
-		res = append(res, e)
+		res[i] = e.Lift(k)
 	}
 
 	return res
 }
 
-func FromTsvWithCoding(path string, k int) *Graph {
+func AdjMatFromTsv(path string) (int, int, []uint8) {
 	file, err := os.Open(path)
 	if err != nil {
 		panic(err)
@@ -83,36 +84,46 @@ func FromTsvWithCoding(path string, k int) *Graph {
 		}
 	}
 
-	return NewWithCoding(k, nrows, ncols, adjMat)
+	return nrows, ncols, adjMat
 }
 
-func NewWithCoding(k int, nrows int, ncols int, data []uint8) *Graph {
-	coding := createBernoulli(nrows*ncols, k)
+func NewWithCoding(k int, nrows int, ncols int, data []uint8) (*Graph, []extensor.Extensor) {
+	coding := createBernoulli(ncols, k)
 
 	adjMat := make([]*extensor.Extensor, len(data))
 	for i, v := range data {
 		if v != 0 {
 			rowIndex := i / ncols
-			adjMat = append(adjMat, coding[rowIndex])
+			adjMat[i] = coding[rowIndex]
 		}
+	}
+
+	coding_into := make([]extensor.Extensor, len(coding))
+	for i, v := range coding {
+		coding_into[i] = *v
 	}
 
 	return &Graph{
 		AdjMat: matrix.New(nrows, ncols, adjMat),
-	}
+	}, coding_into
 }
 
-func (g *Graph) ComputeWalkSum(k int) *extensor.Extensor {
-	b := make([]*extensor.Extensor, g.AdjMat.NumCols)
-
-	b = g.AdjMat.Mul(b)
+func (g *Graph) ComputeWalkSum(k int, coding []extensor.Extensor) int {
+	b := g.AdjMat.Mul(coding)
 	for i := 1; i < k-1; i++ {
 		b = g.AdjMat.Mul(b)
 	}
 
-	res := extensor.Zero()
+	fmt.Println(coding)
+
+	resExt := extensor.Zero()
 	for _, e := range b {
-		res.Add(e)
+		resExt = resExt.Add(e)
+	}
+
+	res := 0
+	for _, c := range resExt.Coeffs() {
+		res += c
 	}
 
 	return res

@@ -9,9 +9,9 @@ import (
 )
 
 func TestMul(t *testing.T) {
-	vec := []*extensor.Extensor{
-		extensor.New([]int{5}, [][]uint8{{3}}),
-		extensor.New([]int{6}, [][]uint8{{4}}),
+	vec := []extensor.Extensor{
+		*extensor.New([]int{5}, [][]uint8{{3}}),
+		*extensor.New([]int{6}, [][]uint8{{4}}),
 	}
 	m := matrix.New(2, 2, []*extensor.Extensor{
 		extensor.New([]int{1}, [][]uint8{{1}}),

@@ -38,12 +38,22 @@ func New(NumRows int, NumCols int, Values []*extensor.Extensor) *Matrix {
 	}
 }
 
-func (m *Matrix) Mul(other []*extensor.Extensor) []extensor.Extensor {
+func (m *Matrix) Mul(other []extensor.Extensor) []extensor.Extensor {
 	data := make([]extensor.Extensor, m.NumRows)
 
 	for _, v := range m.Data {
-		data[v.rowIndex] = *data[v.rowIndex].Add(v.value.Mul(other[v.colIndex]))
+		data[v.rowIndex] = *data[v.rowIndex].Add(*v.value.Mul(other[v.colIndex]))
 	}
 
 	return data
+}
+
+func (m *Matrix) Get(i int, j int) extensor.Extensor {
+	for _, triple := range m.Data {
+		if triple.rowIndex == i && triple.colIndex == j {
+			return *triple.value
+		}
+	}
+
+	return *extensor.Zero()
 }

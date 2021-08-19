@@ -1,6 +1,7 @@
-package main
+package algorithm
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/timHau/extensor_coding/graph"
@@ -61,24 +62,27 @@ func C(graphPath string, k int, eps float64) float64 {
 	values := []float64{}
 	means := []float64{}
 
-	g := graph.FromTsvWithCoding(graphPath, k)
+	nrows, ncols, adjMat := graph.AdjMatFromTsv(graphPath)
 	for step < int(math.Pow(float64(k), 2.0)/math.Pow(eps, 2.0)) {
-		v_j := g.ComputeWalkSum(k)
-		coeff := v_j.Coeffs()[0]
-		denom := Factorial(k)
-		x_j := math.Abs(float64(coeff)) / float64(denom)
+		g, coding := graph.NewWithCoding(k, nrows, ncols, adjMat)
+		v_j := g.ComputeWalkSum(k, coding)
+		denom := float64(Factorial(k))
+		x_j := math.Abs(float64(v_j)) / denom
+		fmt.Println(v_j)
 		values = append(values, x_j)
 
 		mean = Mean(values)
 		means = append(means, mean)
-
 		stdDev := StdDev(means)
+		// tVal := TValue(uint32(step - 1))
 
-		tVal := TValue(uint32(step - 1))
+		fmt.Printf("stdDev: %v, mean: %v, step: %v \n", stdDev, mean, step)
 
-		if mean-tVal*stdDev/math.Sqrt(float64(step)) > (1.0-eps)*mean {
-			return mean
-		}
+		/*
+			if mean-tVal*stdDev/math.Sqrt(float64(step)) > (1.0-eps)*mean {
+				return mean
+			}
+		*/
 		step += 1
 	}
 

@@ -1,7 +1,7 @@
 mod utils;
 
 use extensor_coding::{algorithm, graph::Graph};
-use plotters::{prelude::*, style};
+use plotters::style;
 use std::time::Instant;
 
 fn bench_c(num_iter: u64, path_str: &str) -> Vec<Vec<f64>> {
