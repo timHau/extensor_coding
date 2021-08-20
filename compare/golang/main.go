@@ -7,6 +7,6 @@ import (
 )
 
 func main() {
-	res := algorithm.C("../../src/data/out.brunson_southern-women_southern-women", 4, 0.1)
+	res := algorithm.C("../../src/data/out.brunson_revolution_revolution", 4, 0.1)
 	fmt.Println(res)
 }

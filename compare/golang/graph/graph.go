@@ -87,7 +87,7 @@ func AdjMatFromTsv(path string) (int, int, []uint8) {
 }
 
 func NewWithCoding(k int, nrows int, ncols int, data []uint8) (*Graph, []*extensor.Extensor) {
-	coding := createBernoulli(ncols, k)
+	coding := createBernoulli(ncols+nrows, k)
 
 	adjMat := make([]*extensor.Extensor, len(data))
 	for i, v := range data {

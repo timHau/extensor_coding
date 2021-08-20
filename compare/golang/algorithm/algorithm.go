@@ -73,15 +73,13 @@ func C(graphPath string, k int, eps float64) float64 {
 		mean = Mean(values)
 		means = append(means, mean)
 		stdDev := StdDev(means)
-		// tVal := TValue(uint32(step - 1))
+		tVal := TValue(uint32(step - 1))
 
 		fmt.Printf("stdDev: %v, mean: %v, step: %v \n", stdDev, mean, step)
 
-		/*
-			if mean-tVal*stdDev/math.Sqrt(float64(step)) > (1.0-eps)*mean {
-				return mean
-			}
-		*/
+		if (mean-tVal*stdDev/math.Sqrt(float64(step)) > (1.0-eps)*mean || stdDev == 0) && step > 30 {
+			return mean
+		}
 		step += 1
 	}
 
