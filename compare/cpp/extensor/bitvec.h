@@ -18,17 +18,23 @@ struct Comparer {
 class Extensor
 {
 private:
-	map<bitset<32>, int, Comparer> data;
 
 	int get_sign(bitset<32> b_1, bitset<32> b_2);
+
 	vector<int> get_indices(bitset<32> bv);
 
 public:
+	map<bitset<32>, int, Comparer> data;
+
 	Extensor(vector<int> coeffs, vector<vector<int>> basis);
 	Extensor(map<bitset<32>, int, Comparer> init_data) : data(init_data) {};
 
+	void lift(int k);
+
 	Extensor operator + (Extensor const &other);
 	Extensor operator * (Extensor const &other);
+
+
 };
 
 

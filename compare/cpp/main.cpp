@@ -11,5 +11,10 @@ int main()
 
 	e1 * e2;
 
+	e1.lift(9);
+	for (const auto& [base, coeff] : e1.data) {
+		std::cout << base << std::endl;
+	}
+
 	return 0;
 }
