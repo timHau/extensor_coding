@@ -32,6 +32,10 @@ debug = true
 #name = "algorithm"
 #harness = false
 
+#[[bench]]
+#name = "convergence"
+#harness = false
+
 [[bench]]
-name = "convergence"
+name = "compare"
 harness = false

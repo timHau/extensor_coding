@@ -1,12 +1,18 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <chrono>
+#include <fstream>
 
 #include "./extensor.h"
 #include "./matrix.h"
 #include "./graph.h"
 
 using std::vector;
+using std::chrono::high_resolution_clock;
+using std::chrono::duration_cast;
+using std::chrono::duration;
+using std::chrono::milliseconds;
 
 int factorial(int n) {
 	int res = 1;
@@ -87,7 +93,6 @@ float algorithm_c(Graph g, int k, float eps) {
 		means.push_back(mean_val);
 		float std_dev_val = std_dev(means);
 
-		std::cout << "std_dev: " << std_dev_val << " mean: " << mean_val << " step: " << step << std::endl;
 		float t_val = t_value(step - 1);
 		if ((((mean_val - t_val * std_dev_val / sqrt(step)) > (1.0 - eps) * mean_val) || std_dev_val == 0.0 ) && step > 30) {
 			return mean_val;
@@ -100,23 +105,40 @@ float algorithm_c(Graph g, int k, float eps) {
 
 int main(int argc, char *argv[])
 {
-	float eps = 0.5;
+	float eps = 0.8;
+	int num_iter = 5;
+	int max_k = 9;
+	vector<float> times;
 
-	if (argc == 1) {
-		int k = 4;
-		auto t = Graph::from_tsv_with_coding("out.brunson_revolution_revolution", k);
-		Graph g = get<0>(t);
-		float res = algorithm_c(g, k, eps);
-		std::cout << "res: " << res << std::endl;
+	for (int k = 2; k < max_k; k++) {
+		vector<float> times_per_run;
+
+		for (int i = 0; i < num_iter; i++) {
+			auto t1 = high_resolution_clock::now();
+
+			auto t = Graph::from_tsv_with_coding("out.brunson_revolution_revolution", k);
+			Graph g = get<0>(t);
+			float _res = algorithm_c(g, k, eps);
+
+			auto t2 = high_resolution_clock::now();
+			duration<float, std::milli> ms_elapsed = t2 - t1;
+
+			times_per_run.push_back(ms_elapsed.count());
+		}
+
+		float mean_time = mean(times_per_run);
+		times.push_back(mean_time);
 	}
 
-	if (argc == 2) {
-		int k = std::stoi(argv[1]);
-		auto t = Graph::from_tsv_with_coding("out.brunson_revolution_revolution", k);
-		Graph g = get<0>(t);
-		float res = algorithm_c(g, k, eps);
-		std::cout << "res: " << res << std::endl;
+	std::ofstream file;
+	file.open("bench_k_cpp.txt");
+
+	int k = 2;
+	for (const auto& t : times) {
+		file << k << ", " << t << std::endl;
+		k++;
 	}
+	file.close();
 
 	return 0;
 }
