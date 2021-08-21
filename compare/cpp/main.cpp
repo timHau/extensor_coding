@@ -98,14 +98,25 @@ float algorithm_c(Graph g, int k, float eps) {
 	return mean_val;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-	int k = 4;
-	float eps = 0.1;
-	auto t = Graph::from_tsv_with_coding("out.brunson_revolution_revolution", k);
-	Graph g = get<0>(t);
-	float res = algorithm_c(g, k, eps);
-	std::cout << "res: " << res << std::endl;
+	float eps = 0.5;
+
+	if (argc == 1) {
+		int k = 4;
+		auto t = Graph::from_tsv_with_coding("out.brunson_revolution_revolution", k);
+		Graph g = get<0>(t);
+		float res = algorithm_c(g, k, eps);
+		std::cout << "res: " << res << std::endl;
+	}
+
+	if (argc == 2) {
+		int k = std::stoi(argv[1]);
+		auto t = Graph::from_tsv_with_coding("out.brunson_revolution_revolution", k);
+		Graph g = get<0>(t);
+		float res = algorithm_c(g, k, eps);
+		std::cout << "res: " << res << std::endl;
+	}
 
 	return 0;
 }
