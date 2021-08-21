@@ -48,7 +48,7 @@ int Extensor::get_sign(bitset<32> b_1, bitset<32> b_2)
 	return num_perm % 2 == 0 ? 1 : -1;
 }
 
-void Extensor::lift(int k)
+Extensor Extensor::lift(int k)
 {
 	map<bitset<32>, int, Comparer> lifted_data;
 
@@ -56,7 +56,9 @@ void Extensor::lift(int k)
 		lifted_data[base << k] = coeff;
 	}
 
-	data = lifted_data;
+	Extensor lifted{lifted_data, };
+	Extensor self{this->data};
+	return self * lifted;
 }
 
 bool Extensor::is_zero()
@@ -68,6 +70,17 @@ Extensor Extensor::zero()
 {
 	map<bitset<32>, int, Comparer> data;
 	return Extensor{data};
+}
+
+vector<int> Extensor::coeffs()
+{
+	vector<int> res;
+
+	for (const auto& [base, coeff] : this->data) {
+		res.push_back(coeff);
+	}
+
+	return res;
 }
 
 Extensor Extensor::operator + (Extensor const &other) {

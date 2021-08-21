@@ -50,7 +50,8 @@ vector<Extensor> Graph::create_bernoulli(int n, int k)
 			coeffs[j] = r;
 			base[j] = vector<int>{j+1};
 		}
-		res[i] = Extensor{coeffs, base};
+		Extensor e{coeffs, base};
+		res[i] = e.lift(k);
 	}
 
 	return res;
