@@ -1,4 +1,4 @@
-#include "bitvec.h"
+#include "extensor.h"
 
 Extensor::Extensor(vector<int> coeffs, vector<vector<int>> basis)
 {
@@ -59,6 +59,17 @@ void Extensor::lift(int k)
 	data = lifted_data;
 }
 
+bool Extensor::is_zero()
+{
+	return this->data.empty();
+}
+
+Extensor Extensor::zero()
+{
+	map<bitset<32>, int, Comparer> data;
+	return Extensor{data};
+}
+
 Extensor Extensor::operator + (Extensor const &other) {
 	map<bitset<32>, int, Comparer> data;
 	data = this->data;
@@ -96,4 +107,11 @@ Extensor Extensor::operator*(const Extensor& other)
 	}
 
 	return Extensor(data);
+}
+
+void Extensor::debug()
+{
+	for (const auto& d : data) {
+		std::cout << d.first << " : " << d.second << std::endl;
+	}
 }

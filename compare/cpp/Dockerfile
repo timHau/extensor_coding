@@ -8,7 +8,7 @@ COPY . /usr/src/extensor_coding
 
 WORKDIR /usr/src/extensor_coding
 
-RUN clang++ -std=c++20 main.cpp ./extensor/bitvec.cpp -o main
+RUN clang++ -std=c++20 *.cpp -o main
 
 CMD ["./main"]
 
