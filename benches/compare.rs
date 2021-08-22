@@ -1,17 +1,25 @@
 use extensor_coding::{algorithm, graph::Graph};
+use std::fs;
 use std::time::Instant;
 
 mod utils;
 
-fn bench_rust(num_iter: u64) -> Vec<Vec<f64>> {
-    let mut times = vec![];
-    let max_k = 9;
+pub(crate) fn mean(values: &Vec<f64>) -> f64 {
+    match values.len() {
+        0 => 0.0,
+        _ => values.iter().sum::<f64>() / (values.len() as f64),
+    }
+}
 
-    for _j in 0..num_iter {
+fn bench_rust(num_iter: u64) -> Vec<f64> {
+    let mut times = vec![];
+    let max_k = 3;
+
+    for k in 2..=max_k {
         let mut times_per_iter = vec![];
 
-        for k in 2..=max_k {
-            let g = Graph::from_tsv("../src/data/out.brunson_revolution_revolution");
+        for _j in 0..num_iter {
+            let g = Graph::from_tsv("./src/data/out.brunson_revolution_revolution");
             let eps = 0.5;
 
             let now = Instant::now();
@@ -22,10 +30,19 @@ fn bench_rust(num_iter: u64) -> Vec<Vec<f64>> {
             println!("[rust] k: {}", k);
         }
 
-        times.push(times_per_iter);
+        times.push(mean(&times_per_iter));
     }
 
     times
 }
 
-fn main() {}
+fn main() {
+    let times = bench_rust(1);
+
+    let mut data = "".to_owned();
+    for (i, t) in times.iter().enumerate() {
+        data.push_str(&format!("{} {} \n", i + 2, t));
+    }
+
+    fs::write("./benches/ouput/bench_k_rust.txt", data).expect("Unable to write file");
+}

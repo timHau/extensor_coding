@@ -232,8 +232,8 @@ pub fn c_std_dev(g: Graph, k: usize, _eps: f64) -> Vec<f64> {
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm;
     use crate::graph::Graph;
+    use crate::{algorithm, utils};
 
     #[test]
     fn u_3() {
@@ -634,6 +634,48 @@ mod tests {
         let eps = 0.5;
         let res = algorithm::c(g, k, eps);
         let expect = 66.0;
+        let lower_bound = (1. - eps) * expect;
+        let upper_bound = (1. + eps) * expect;
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
+        );
+    }
+
+    #[test]
+    fn complete_graph_10_3_path() {
+        // Test algorithm c on complete graph with 10 vertices
+        let g = Graph::from_graph6("src/data/K10.g6");
+        let k = 3;
+        let eps = 0.8;
+        let res = algorithm::c(g, k, eps);
+        let n = 10;
+        let expect = utils::factorial(n) as f64 / utils::factorial(n - k) as f64;
+        let lower_bound = (1. - eps) * expect;
+        let upper_bound = (1. + eps) * expect;
+        println!(
+            "lower: {}, res: {}, upper: {}",
+            lower_bound, res, upper_bound
+        );
+        assert!(
+            lower_bound <= res.abs() && res.abs() <= upper_bound,
+            "randomized counting algorithm c is inside bounds"
+        );
+    }
+
+    #[test]
+    fn complete_graph_20_3_path() {
+        // Test algorithm c on complete graph with 20 vertices
+        let g = Graph::from_graph6("src/data/K20.g6");
+        let k = 3;
+        let eps = 0.9;
+        let res = algorithm::c(g, k, eps);
+        let n = 20;
+        let expect = utils::factorial(n) as f64 / utils::factorial(n - k) as f64;
         let lower_bound = (1. - eps) * expect;
         let upper_bound = (1. + eps) * expect;
         println!(
