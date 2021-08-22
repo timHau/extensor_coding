@@ -41,7 +41,7 @@ fn main() {
 
     let mut data = "".to_owned();
     for (i, t) in times.iter().enumerate() {
-        data.push_str(&format!("{} {} \n", i + 2, t));
+        data.push_str(&format!("{}, {} \n", i + 2, t));
     }
 
     fs::write("benches/output/bench_k_rust.txt", data).expect("Unable to write file");
