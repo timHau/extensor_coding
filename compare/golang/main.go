@@ -10,13 +10,14 @@ import (
 )
 
 func main() {
-	num_iter := 5
+	num_iter := 3
 	times := []float64{}
-	max_k := 9
+	max_k := 8
 
 	for k := 2; k <= max_k; k++ {
 		timesPerRun := []float64{}
 
+		fmt.Println(k)
 		for i := 0; i < num_iter; i++ {
 			start := time.Now()
 			_ = algorithm.C("./out.brunson_revolution_revolution", k, 0.8)
@@ -36,7 +37,7 @@ func main() {
 
 	w := bufio.NewWriter(file)
 	for i, t := range times {
-		line := fmt.Sprintf("%v %v", i+2, t)
+		line := fmt.Sprintf("%v, %v", i+2, t)
 		fmt.Fprintln(w, line)
 	}
 	w.Flush()

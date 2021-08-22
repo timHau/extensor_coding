@@ -19,7 +19,7 @@ fn bench_rust(num_iter: u64) -> Vec<f64> {
         let mut times_per_iter = vec![];
 
         for _j in 0..num_iter {
-            let g = Graph::from_tsv("./src/data/out.brunson_revolution_revolution");
+            let g = Graph::from_tsv("src/data/out.brunson_revolution_revolution");
             let eps = 0.5;
 
             let now = Instant::now();
@@ -44,5 +44,5 @@ fn main() {
         data.push_str(&format!("{} {} \n", i + 2, t));
     }
 
-    fs::write("./benches/ouput/bench_k_rust.txt", data).expect("Unable to write file");
+    fs::write("benches/output/bench_k_rust.txt", data).expect("Unable to write file");
 }
