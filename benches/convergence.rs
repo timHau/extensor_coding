@@ -16,6 +16,7 @@ fn bench_convergence_t_test(num_iter: u64, g: Graph) -> Vec<Vec<f64>> {
     all_values
 }
 
+#[allow(dead_code)]
 fn bench_convergence_naive(num_iter: u64, g: Graph) -> Vec<Vec<f64>> {
     let mut all_values = vec![];
 
@@ -29,6 +30,7 @@ fn bench_convergence_naive(num_iter: u64, g: Graph) -> Vec<Vec<f64>> {
     all_values
 }
 
+#[allow(dead_code)]
 fn bench_convergence_std_dev(num_iter: u64, g: Graph) -> Vec<Vec<f64>> {
     let mut all_values = vec![];
 
@@ -42,6 +44,7 @@ fn bench_convergence_std_dev(num_iter: u64, g: Graph) -> Vec<Vec<f64>> {
     all_values
 }
 
+#[allow(dead_code)]
 fn bench_std_dev(num_iter: u64, g: Graph) -> Vec<Vec<f64>> {
     let mut all_values = vec![];
 

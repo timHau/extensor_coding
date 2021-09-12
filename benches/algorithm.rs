@@ -90,10 +90,10 @@ fn iterations_eps(num_iter: u64, g: Graph) -> Vec<Vec<f64>> {
 
 fn main() {
     let g_rand = utils::rand_graph(200, 0.5);
-    let num_iterations_rand = count_iterations(1, g_rand);
+    let _num_iterations_rand = count_iterations(1, g_rand);
 
     let g_arenas_jazz = Graph::from_tsv("src/data/out.arenas-jazz");
-    let num_iterations_arenas = count_iterations(1, g_arenas_jazz.clone());
+    let _num_iterations_arenas = count_iterations(1, g_arenas_jazz.clone());
 
     /*
     let result = vec![

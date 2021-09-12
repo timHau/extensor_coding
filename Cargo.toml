@@ -36,6 +36,6 @@ debug = true
 #name = "convergence"
 #harness = false
 
-[[bench]]
-name = "compare"
-harness = false
+#[[bench]]
+#name = "compare"
+#harness = false

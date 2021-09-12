@@ -80,7 +80,7 @@ fn main() {
         "wedge product comparison (vector)",
         (
             ("Anzahl von Basiselementen", 0f32..31f32),
-            ("Laufzeit (in ns)", 0f32..1000000f32),
+            ("Laufzeit (in ns)", 0f32..1500000f32),
         ),
         0,
         "benches/output/wedge_prod",
